@@ -6,6 +6,7 @@ import re
 import numpy as np
 
 from ..nucleo import decolagem as DC
+from ..nucleo.modelador import aeronave_geometria as AG
 
 _NAO_SUSTENTA = re.compile(r"empenagem|estab|deriva|leme|profund|helice|hélice|canard|winglet|endplate", re.I)
 
@@ -109,3 +110,24 @@ def decolagem(p: dict) -> dict:
         "varredura": [{k: _lim(v) for k, v in q.items()} for q in varre],
         "numba": DC.COM_NUMBA,
     }
+
+def equilibrio(p: dict) -> dict:
+    from ..nucleo.aero.equilibrio import longitudinal
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    V, rho = _num(p, "V", 15.0, positivo=True), _num(p, "rho", 1.1, positivo=True)
+    CL_alvo = _num(p, "CL_alvo", positivo=True) if p.get("CL_alvo") is not None else None
+    x_cg, origem = p.get("x_cg"), "voce"
+    try:
+        if x_cg is None:
+            cg = AG.massa_e_cg(AG.constroi(esq))["cg_m"]
+            x_cg, origem = (float(cg[0]), "massas do modelo") if cg else (None, "")
+        if x_cg is None:
+            base = longitudinal(esq, 0.0, V=V, rho=rho)
+            x_cg, origem = base["ponto_neutro"] - 0.15 * base["c_ref"], "estimado"
+        r = longitudinal(esq, float(x_cg), V=V, rho=rho, CL_alvo=CL_alvo, comando=p.get("comando"))
+    except (GeometriaInvalida, ValueError) as e:
+        return {"erro": str(e).split("\n")[0]}
+    r["cg_origem"] = origem
+    return r

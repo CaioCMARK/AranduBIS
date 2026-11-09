@@ -49,3 +49,16 @@ def test_entrada_invalida_diz_qual_campo():
     del p["aeronave"]["CL_max"]
     with pytest.raises(AN.ErroDeAnalise, match="CL_max"):
         AN.decolagem(p)
+
+def test_equilibrio_usa_o_cg_do_modelo_quando_ha_massas():
+    import json
+    from pathlib import Path
+    d = json.loads((Path(__file__).resolve().parents[1] / "cases/geometria/generico/generico.json").read_text(encoding="utf-8"))
+    r = AN.equilibrio({"esquema": d, "x_cg": 0.5, "CL_alvo": 0.8})
+    assert r["cg_origem"] == "voce" and r["estavel"] and r["trim"]["CL"] == pytest.approx(0.8, abs=1e-6)
+    r2 = AN.equilibrio({"esquema": d})
+    assert r2["cg_origem"] in ("estimado", "massas do modelo") and r2["margem_estatica"] > 0
+
+def test_equilibrio_sem_asa_devolve_erro_legivel():
+    r = AN.equilibrio({"esquema": {"elementos": []}, "x_cg": 0.1})
+    assert "erro" in r and "asa" in r["erro"]

@@ -122,6 +122,8 @@ def fazer_handler(est: Estado):
                     return self._json(RG.avalia(d.get("regra"), d.get("valores")))
                 if self.path == "/api/regra/grava":
                     return self._json({"caminho": RG.grava(est.pasta, d.get("regra") or {}, d.get("nome", ""))})
+                if self.path == "/api/equilibrio":
+                    return self._json(AN.equilibrio(d))
                 if self.path == "/api/decolagem":
                     return self._json(AN.decolagem(d))
                 if self.path == "/api/grava":

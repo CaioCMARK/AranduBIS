@@ -16,9 +16,9 @@ const Etapas = (() => {
 })();
 
 const Analise = (() => {
-  const ITENS = [["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
+  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
   const MODULOS = {};
-  let ativo = "decolagem";
+  let ativo = "equilibrio";
 
   function lista() {
     const L = $("lista2"); L.innerHTML = "";
@@ -27,7 +27,7 @@ const Analise = (() => {
       d.onclick = () => { ativo = k; lista(); pinta(); };
       L.append(d);
     });
-    ["Polares do perfil", "Equilíbrio e estabilidade"].forEach(n => {
+    ["Polares do perfil"].forEach(n => {
       L.append(Object.assign(document.createElement("div"), { className: "el breve", textContent: n + " — em breve" }));
     });
   }
