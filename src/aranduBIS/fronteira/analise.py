@@ -194,20 +194,36 @@ def propulsao(p: dict) -> dict:
     except ValueError as e:
         return {"erro": _erro(e)}
 
+def _args_dinamica(p: dict) -> dict:
+    I = {k: _num(p["inercias"], k) for k in ("Ixx", "Iyy", "Izz", "Ixz") if (p.get("inercias") or {}).get(k) is not None}
+    if I and len(I) < 4 and not all(k in I for k in ("Ixx", "Iyy", "Izz")):
+        raise ValueError("Informe Ixx, Iyy e Izz (e Ixz, ou zero), ou deixe todas vazias para usar as do modelo.")
+    I = ({"Ixz": 0.0, **I} if I else None)
+    raios = ({k: _num(p["raios"], k, positivo=True) for k in ("rx", "ry", "rz") if (p.get("raios") or {}).get(k) is not None}
+             if p.get("raios") is not None else None)
+    return dict(x_cg=None if p.get("x_cg") is None else _num(p, "x_cg"), V=_num(p, "V", 15.0, positivo=True),
+                rho=_num(p, "rho", 1.1, positivo=True),
+                massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True), I=I,
+                raios=raios, modo_inercia=str(p.get("modo_inercia") or "auto"))
+
 def dinamica(p: dict) -> dict:
     from ..nucleo.aero.dinamica import dinamica as din
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
 
-    esq = p.get("esquema") or {}
-    I = {k: _num(p["inercias"], k) for k in ("Ixx", "Iyy", "Izz", "Ixz") if (p.get("inercias") or {}).get(k) is not None}
-    if I and len(I) < 4 and not all(k in I for k in ("Ixx", "Iyy", "Izz")):
-        return {"erro": "Informe Ixx, Iyy e Izz (e Ixz, ou zero), ou deixe todas vazias para usar as do modelo."}
-    I = ({"Ixz": 0.0, **I} if I else None)
     try:
-        return din(esq, x_cg=None if p.get("x_cg") is None else _num(p, "x_cg"),
-                   V=_num(p, "V", 15.0, positivo=True), rho=_num(p, "rho", 1.1, positivo=True),
-                   massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True), I=I,
-                   raios={k: _num(p["raios"], k, positivo=True) for k in ("rx", "ry", "rz") if (p.get("raios") or {}).get(k) is not None}
-                   if p.get("raios") is not None else None, modo_inercia=str(p.get("modo_inercia") or "auto"))
+        return din(p.get("esquema") or {}, **_args_dinamica(p))
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
+def controle(p: dict) -> dict:
+    from ..nucleo.aero.controle import autoridade_rolagem
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    try:
+        return autoridade_rolagem(p.get("esquema") or {}, **_args_dinamica(p),
+                                  sobe_max=_num(p, "sobe_max", 30.0, positivo=True), desce_max=_num(p, "desce_max", 25.0, positivo=True),
+                                  pb2V_min=_num(p, "pb2V_min", 0.05, positivo=True),
+                                  t_inclinacao_max=_num(p, "t_inclinacao_max", 1.5, positivo=True),
+                                  inclinacao=_num(p, "inclinacao", 30.0, positivo=True), beta=_num(p, "beta", 0.0))
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}

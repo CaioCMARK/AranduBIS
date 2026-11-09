@@ -28,7 +28,7 @@ class Opcao:
         return "texto" if isinstance(self.padrao, str) else "numero"
 
 OPCOES: tuple[Opcao, ...] = (
-    Opcao("aparencia.tema", "Aparência", "Tema da interface", "auto",
+    Opcao("aparencia.tema", "Aparência", "Tema da interface", "cinza",
           "auto: segue o claro/escuro do sistema. escuro: preto azulado. cinza: cinza médio, menos contraste e menos cansativo. claro: fundo claro.",
           escolhas=("auto", "escuro", "cinza", "claro")),
     Opcao("polares.fonte", "Polares", "De onde vêm as polares", "banco",
@@ -102,6 +102,17 @@ OPCOES: tuple[Opcao, ...] = (
           "Fração do comprimento. 0,38 é típico de avião leve monomotor (Roskam).", minimo=0.05, maximo=0.8),
     Opcao("dinamica.raio_z", "Padrões da dinâmica de voo", "Raio de giro em guinada (Rz/média de b e L)", 0.39,
           "Fração da média entre envergadura e comprimento. 0,39 é típico de avião leve monomotor (Roskam).", minimo=0.05, maximo=0.8),
+    Opcao("controle.sobe_max", "Padrões dos ailerons", "Deflexão máxima para cima (°)", 30.0,
+          "Batente do aileron para cima. Projetos costumam usar 25 a 30°.", minimo=1.0, maximo=45.0),
+    Opcao("controle.desce_max", "Padrões dos ailerons", "Deflexão máxima para baixo (°)", 25.0,
+          "Batente para baixo, na opção sobe e desce. Na opção só sobe o aileron não desce.", minimo=1.0, maximo=45.0),
+    Opcao("controle.pb2V_min", "Padrões dos ailerons", "pb/2V mínimo", 0.05,
+          "Taxa de rolagem adimensional exigida. Hipótese de projeto: use o número do requisito da equipe (REQ-EC-09).",
+          minimo=0.005, maximo=0.5),
+    Opcao("controle.t_inclinacao_max", "Padrões dos ailerons", "Tempo máximo para inclinar (s)", 1.5,
+          "Tempo para atingir a inclinação abaixo. Hipótese de projeto, ajuste ao requisito da equipe.", minimo=0.2, maximo=10.0),
+    Opcao("controle.inclinacao", "Padrões dos ailerons", "Inclinação do critério (°)", 30.0,
+          "Ângulo de rolagem usado no critério de tempo.", minimo=5.0, maximo=90.0),
     Opcao("decolagem.pista_m", "Padrões da decolagem", "Distância até o obstáculo (m)", 55.0,
           "Muda de ano para ano e de regulamento.", minimo=5.0, maximo=500.0),
     Opcao("decolagem.obstaculo_m", "Padrões da decolagem", "Altura do obstáculo (m)", 0.9,
