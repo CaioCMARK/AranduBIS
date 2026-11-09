@@ -1,7 +1,7 @@
 "use strict";
 
 const Etapa3 = (() => {
-  const ITENS = [["cargas", "Cargas (V-n e envergadura)"], ["asa", "Asa: longarina e chapeado"]];
+  const ITENS = [["cargas", "Cargas (V-n e envergadura)"], ["asa", "Asa: longarina e chapeado"], ["torcao", "Torção e reversão de comando"]];
   const MODULOS = {};
   let ativo = "cargas";
 

@@ -251,6 +251,30 @@ def asa(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def torcao(p: dict) -> dict:
+    from ..nucleo.estrutura.torcao import analisa
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        saidas = []
+        for e in esq.get("elementos", []):
+            if e.get("tipo") != "asa" or not e.get("estrutura"):
+                continue
+            saidas.append(analisa(esq, e["nome"], mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True),
+                                  Vd=_num(p, "Vd", 15.9, positivo=True), fator=_num(p, "margem_aeroelastica", 1.2, positivo=True),
+                                  x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True), cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True),
+                                  eficiencia=_num(p, "eficiencia_comando", 0.85, positivo=True), calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True),
+                                  ea_desloc_c=_num(p, "ea_desloc_c", 0.0)))
+        if not saidas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        com_vr = [s for s in saidas if s["VR"] is not None]
+        pior = min(com_vr, key=lambda s: s["VR"]) if com_vr else saidas[0]
+        return {"asas": saidas, "pior": pior["nome"], "VR": pior["VR"], "V_requerida": pior["V_requerida"], "margem_VR": pior["margem_VR"],
+                "avisos": sorted({a for s in saidas for a in s["avisos"]})}
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
 def _cargas(p: dict) -> dict:
     from ..nucleo.aero.equilibrio import monta
     from ..nucleo.aero.estabilidade import derivadas
