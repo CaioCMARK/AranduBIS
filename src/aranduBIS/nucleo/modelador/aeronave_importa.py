@@ -159,7 +159,7 @@ def _apelidos_de_comando(asas):
     nomes = list(dict.fromkeys(c["nome"] for e in asas for c in e.get("controles", [])))
     return {nome: f"C{i + 1}" for i, nome in enumerate(nomes)}
 
-def _linhas_de_controle(elemento, y, corda_local, apelidos):
+def _linhas_de_controle(elemento, y, corda_local, apelidos, xle=0.0):
     linhas = []
     for controle in elemento.get("controles", []):
         y0, y1 = controle["y"]
@@ -170,7 +170,9 @@ def _linhas_de_controle(elemento, y, corda_local, apelidos):
             continue
         ganho = -1.0 if modo == "anti" and y < 0 else 1.0
         xhinge = float(controle.get("xc", 0.75))
-        if "corda" in controle:
+        if "x" in controle:
+            xhinge = min(0.95, max(0.05, (float(controle["x"]) - xle) / corda_local))
+        elif "corda" in controle:
             xhinge = max(0.05, 1.0 - float(controle["corda"]) / corda_local)
         linhas += ["CONTROL", f"{apelidos[controle['nome']]} {ganho:g} {xhinge:g} 0 0 0 1"]
     return linhas
@@ -194,7 +196,7 @@ def avl_exporta(esq, mach=0.0, n_corda=8, n_env=70) -> dict:
             nf = z.get("arquivo") or e.get("arquivo"); pf = str(z.get("perfil") or e.get("perfil") or "")
             if nf: L += ["AFILE", str(nf)]
             elif pf.upper().startswith("NACA"): L += ["NACA", pf.split()[-1]]
-            L += _linhas_de_controle(e, float(z["y"]), float(z["corda"]), apelidos)
+            L += _linhas_de_controle(e, float(z["y"]), float(z["corda"]), apelidos, float(z.get("xle", 0.0)))
             L.append("")
     L += [f"# comando {curto} = {nome}" for nome, curto in apelidos.items()]
     return dict(texto="\n".join(L) + "\n", omitidos=omit, avisos=avisos, superficies=[e["nome"] for e in asas])
