@@ -19,7 +19,7 @@ const Cargas3 = (() => {
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = c.p === undefined ? null : c.p; });
   Padroes.aplica(v, CAMPOS);
   Padroes.aoMudar(() => { Padroes.aplica(v, CAMPOS); if (ativa()) { parametros(); agenda(); } });
-  const ativa = () => document.body.dataset.etapa === "3";
+  const ativa = () => Etapa3.ativa() && Etapa3.nome() === "cargas";
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
 
@@ -117,7 +117,6 @@ const Cargas3 = (() => {
   }
 
   function mostra() { if (!ativa()) return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
-  const lista = () => { const L = $("lista3"); L.innerHTML = ""; L.append(Object.assign(document.createElement("div"), { className: "el sel", textContent: "Cargas (V-n e envergadura)" })); };
-
-  return { entra() { lista(); parametros(); agenda(); if (res) mostra(); }, dados: () => ({ v, res }) };
+  Etapa3.registra("cargas", { pinta() { parametros(); agenda(); if (res) mostra(); } });
+  return { corpo, dados: () => ({ v, res }) };
 })();
