@@ -251,6 +251,15 @@ def asa(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def massa_estrutural(p: dict) -> dict:
+    from ..nucleo.estrutura.massa import balanco
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    try:
+        return balanco(p.get("esquema") or {}, _num(p, "mtow_kg", positivo=True) if p.get("mtow_kg") is not None else None)
+    except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError) as e:
+        return {"erro": _erro(e)}
+
 def trem(p: dict) -> dict:
     from ..nucleo.estrutura.trem import analisa
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
