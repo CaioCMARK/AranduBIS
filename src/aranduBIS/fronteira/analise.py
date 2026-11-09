@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import re
 from pathlib import Path
@@ -207,6 +208,60 @@ def envelope_cg(p: dict) -> dict:
                    massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True),
                    CL_alvo=None if p.get("CL_alvo") is None else _num(p, "CL_alvo", positivo=True),
                    margem_minima=_num(p, "margem_minima", 0.05, positivo=True))
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
+_CL_MAX: dict = {}
+
+def cargas(p: dict) -> dict:
+    from ..nucleo.aero.equilibrio import monta
+    from ..nucleo.aero.estabilidade import derivadas
+    from ..nucleo.aero.limites import cl_max as cl_max_aeronave
+    from ..nucleo.estrutura.cargas import casos_de_carga
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        rho = _num(p, "rho", 1.1, positivo=True)
+        Vc = _num(p, "Vc", 13.0, positivo=True)
+        Vd = _num(p, "Vd", 15.9, positivo=True)
+        if Vd <= Vc:
+            return {"erro": "Vd precisa ser maior que Vc."}
+        A = AG.constroi(esq)
+        mc = AG.massa_e_cg(A)
+        massa = _num(p, "massa_kg", positivo=True) if p.get("massa_kg") is not None else mc["massa_kg"]
+        if not massa or massa <= 0:
+            return {"erro": "Sem massa: declare as pecas no modelo ou informe a massa."}
+        cg = mc["cg_m"]
+        x_cg = float(p["x_cg"]) if p.get("x_cg") is not None else (float(cg[0]) if cg else None)
+        z_cg = float(cg[2]) if cg else 0.0
+        if x_cg is None:
+            return {"erro": "Sem CG: declare as pecas no modelo ou informe x_cg."}
+        vlm = monta(esq, x_cg, z_cg)
+        d = derivadas(vlm, 3.0, V=Vc, rho=rho, laterais=False)
+        avisos = []
+        if p.get("CL_max") is not None:
+            clm, origem = _num(p, "CL_max", positivo=True), "voce"
+        else:
+            ncrit = int(_num(p, "ncrit", 4.0, positivo=True))
+            chave = (json.dumps(esq, sort_keys=True, default=str), round(x_cg, 6), round(Vc, 3), round(rho, 4), ncrit)
+            if chave not in _CL_MAX:
+                if len(_CL_MAX) > 8:
+                    _CL_MAX.clear()
+                _CL_MAX[chave] = float(cl_max_aeronave(esq, x_cg, V=Vc, rho=rho, ncrit=ncrit, com_solo=False)["CL_max"])
+            clm, origem = _CL_MAX[chave], "teoria de faixas (polares do banco)"
+        sai = casos_de_carga(esq, x_cg, z_cg, massa, rho, clm, float(d.CL_alpha), float(vlm.c_ref), float(vlm.S_ref), Vc, Vd,
+                             n_max=_num(p, "n_max", 1.8, positivo=True), n_min=_num(p, "n_min", 0.0),
+                             U_c=_num(p, "U_c", 4.0, positivo=True), U_d=_num(p, "U_d", 2.0, positivo=True),
+                             fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True),
+                             cl_min_rel=_num(p, "cl_min_rel", 0.5, positivo=True))
+        for c in sai["casos"]:
+            if c["CL"] > clm * 1.001:
+                avisos.append(f"{c['nome']}: o CL pedido ({c['CL']:.2f}) passa do CL maximo ({clm:.2f}): a aeronave estola antes; "
+                              "a carga real e menor que a calculada.")
+        sai["avisos"] = avisos + sai["avisos"]
+        sai.update(massa_kg=massa, origem_CL_max=origem, origem_massa="informada" if p.get("massa_kg") is not None else "massas do modelo")
+        return sai
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
