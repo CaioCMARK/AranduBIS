@@ -1,0 +1,25 @@
+{
+ "versao": 1,
+ "nome": "asa_ar3_naca0012",
+ "unidade": "m",
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 60,
+   "secoes_lineares": {
+    "y": [
+     -1.5,
+     1.5
+    ],
+    "n": 34,
+    "xle": 0.0,
+    "zle": 0.0,
+    "corda": 1.0,
+    "ainc": 0.0
+   }
+  }
+ ],
+ "marcas": []
+}

@@ -1,0 +1,168 @@
+{
+ "versao": 1,
+ "nome": "generico",
+ "unidade": "m",
+ "referencia": {
+  "Sref": 16.0,
+  "Cref": 1.2,
+  "Bref": 10.0,
+  "Xref": 0.3,
+  "Yref": 0.0,
+  "Zref": 0.0
+ },
+ "titulo": "Aviao generico (teste do zero: AVL -> esquema -> malha)",
+ "elementos": [
+  {
+   "nome": "Asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "secoes": [
+    {
+     "y": -5.0,
+     "xle": 0.35,
+     "zle": 0.2,
+     "corda": 1.0,
+     "ainc": 2.0,
+     "perfil": "NACA 2412"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 1.6,
+     "ainc": 2.0,
+     "perfil": "NACA 2412"
+    },
+    {
+     "y": 5.0,
+     "xle": 0.35,
+     "zle": 0.2,
+     "corda": 1.0,
+     "ainc": 2.0,
+     "perfil": "NACA 2412"
+    }
+   ]
+  },
+  {
+   "nome": "Profundor",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "secoes": [
+    {
+     "y": -2.0,
+     "xle": 0.15,
+     "zle": 0.0,
+     "corda": 0.5,
+     "ainc": 0.0,
+     "perfil": "NACA 0012"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.8,
+     "ainc": 0.0,
+     "perfil": "NACA 0012"
+    },
+    {
+     "y": 2.0,
+     "xle": 0.15,
+     "zle": 0.0,
+     "corda": 0.5,
+     "ainc": 0.0,
+     "perfil": "NACA 0012"
+    }
+   ],
+   "posicao": [
+    4.6,
+    0.0,
+    0.5
+   ]
+  },
+  {
+   "nome": "Deriva",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 1.0,
+     "ainc": 0.0,
+     "perfil": "NACA 0012"
+    },
+    {
+     "y": 1.4,
+     "xle": 0.4,
+     "zle": 0.0,
+     "corda": 0.6,
+     "ainc": 0.0,
+     "perfil": "NACA 0012"
+    }
+   ],
+   "posicao": [
+    4.8,
+    0.0,
+    0.5
+   ]
+  },
+  {
+   "nome": "fuselagem",
+   "tipo": "corpo",
+   "n_secao": 24,
+   "estacoes": [
+    {
+     "x": -0.9,
+     "a": 0.02,
+     "b": 0.02,
+     "zc": 0.0
+    },
+    {
+     "x": -0.8,
+     "a": 0.18,
+     "b": 0.18,
+     "zc": 0.0
+    },
+    {
+     "x": -0.5,
+     "a": 0.3,
+     "b": 0.3,
+     "zc": 0.0
+    },
+    {
+     "x": 0.0,
+     "a": 0.35,
+     "b": 0.35,
+     "zc": 0.0
+    },
+    {
+     "x": 1.2,
+     "a": 0.35,
+     "b": 0.35,
+     "zc": 0.0
+    },
+    {
+     "x": 2.6,
+     "a": 0.25,
+     "b": 0.25,
+     "zc": 0.0
+    },
+    {
+     "x": 4.0,
+     "a": 0.12,
+     "b": 0.12,
+     "zc": 0.0
+    },
+    {
+     "x": 5.4,
+     "a": 0.05,
+     "b": 0.05,
+     "zc": 0.0
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

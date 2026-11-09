@@ -1,0 +1,66 @@
+{
+ "versao": 1,
+ "nome": "mda_30p30n_faixa",
+ "unidade": "corda_recolhida",
+ "fonte": "UIUC Airfoil Data Site (Selig), 30p-30n.dat: MDA 30P-30N, slat 30 gr / flape 30 gr; coordenadas ja com as deflexoes",
+ "elementos": [
+  {
+   "nome": "slat",
+   "tipo": "asa",
+   "perfil_pontos": {
+    "arquivo": "30p30n.dat",
+    "secao": "Slat"
+   },
+   "secoes_lineares": {
+    "y": [
+     0.0,
+     0.1
+    ],
+    "n": 2,
+    "xle": 0.0,
+    "zle": 0.0,
+    "corda": 1.0,
+    "ainc": 0.0
+   }
+  },
+  {
+   "nome": "principal",
+   "tipo": "asa",
+   "perfil_pontos": {
+    "arquivo": "30p30n.dat",
+    "secao": "Main Element"
+   },
+   "secoes_lineares": {
+    "y": [
+     0.0,
+     0.1
+    ],
+    "n": 2,
+    "xle": 0.0,
+    "zle": 0.0,
+    "corda": 1.0,
+    "ainc": 0.0
+   }
+  },
+  {
+   "nome": "flape",
+   "tipo": "asa",
+   "perfil_pontos": {
+    "arquivo": "30p30n.dat",
+    "secao": "Flap"
+   },
+   "secoes_lineares": {
+    "y": [
+     0.0,
+     0.1
+    ],
+    "n": 2,
+    "xle": 0.0,
+    "zle": 0.0,
+    "corda": 1.0,
+    "ainc": 0.0
+   }
+  }
+ ],
+ "marcas": []
+}
