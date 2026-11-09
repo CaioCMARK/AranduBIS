@@ -141,6 +141,8 @@ OPCOES: tuple[Opcao, ...] = (
           "Documento de referência: 1,0.", minimo=0.5, maximo=3.0),
     Opcao("estrutura.raio_inercia", "Trem de pouso", "Raio de espalhamento da massa (m)", 0.25,
           "HIPÓTESE: a massa da aeronave entra igual em todos os nós da treliça a menos deste raio do CG; define por onde a inércia carrega a estrutura.", minimo=0.05, maximo=1.0),
+    Opcao("estrutura.raio_solda", "Trem de pouso", "Zona rígida da solda do eixo (m)", 0.02,
+          "HIPÓTESE: a união de fibras enroladas e epóxi que prende o eixo a cada pé da treliça é rígida por este meio-comprimento ao longo do eixo. 0 = junta pontual.", minimo=0.0, maximo=0.1),
     Opcao("analise.efeito_solo", "Padrões da análise", "Efeito solo na corrida", True,
           "Considera o chão (imagem do sistema de vórtices) no CL e no CD da corrida e da subida."),
     Opcao("tracao.potencia_w", "Padrões da tração", "Potência na bateria (W)", 600.0,

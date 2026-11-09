@@ -270,7 +270,7 @@ def trem(p: dict) -> dict:
                     x_cg=_num(p, "x_cg") if p.get("x_cg") is not None else None, fator_pouso=_num(p, "fator_pouso", 5.4, positivo=True),
                     atrito_pouso=_num(p, "atrito_pouso", 0.3), fator_taxi_y=_num(p, "fator_taxi_y", 0.5), fator_taxi_z=_num(p, "fator_taxi_z", 1.0, positivo=True),
                     fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True), K_flambagem=_num(p, "K_flambagem", 0.8, positivo=True),
-                    raio_inercia=_num(p, "raio_inercia", 0.25, positivo=True), mats=p.get("materiais"), qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True))
+                    raio_inercia=_num(p, "raio_inercia", 0.25, positivo=True), raio_solda=_num(p, "raio_solda", 0.0), mats=p.get("materiais"), qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True))
         return r
     except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, StopIteration) as e:
         return {"erro": _erro(e)}

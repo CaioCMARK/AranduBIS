@@ -62,3 +62,14 @@ def test_fronteira_trem(biplano):
     sem = copy.deepcopy(biplano)
     sem["elementos"] = [e for e in sem["elementos"] if e["tipo"] != "roda"]
     assert "rodas" in AN.trem({"esquema": sem})["erro"]
+
+def test_solda_do_eixo_cria_zona_rigida_e_alivia_o_eixo():
+    esq = json.loads((RAIZ / "cases/geometria/biplano/biplano_2025.json").read_text(encoding="utf-8")); esq["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    esq2, zonas = TR._com_solda(esq, 0.01)
+    assert len(zonas) == 2
+    for c, ext in zonas:
+        assert all(abs(float((q - c)[1])) == pytest.approx(0.01, abs=1e-6) for q in ext)
+    a = TR.analisa(esq, massa_kg=14.0, raio_solda=0.0); b = TR.analisa(esq, massa_kg=14.0, raio_solda=0.02)
+    assert b["zonas_solda"] == 2
+    assert b["casos"][0]["margem"] >= a["casos"][0]["margem"] - 1e-9
+    assert TR.analisa(esq, massa_kg=14.0, raio_solda=0.5)["zonas_solda"] == 2
