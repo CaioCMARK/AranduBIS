@@ -143,7 +143,7 @@ class Sistema:
         for eid, gl, T, kl, L in self.locais:
             ef[eid] = kl @ (T @ u[gl])
         saida["esforcos"] = ef
-        saida["residuo_livres"] = float(np.linalg.norm((self.K @ u - f)[self.livres]) / max(np.linalg.norm(f), 1e-30))
+        saida["residuo_livres"] = float(np.linalg.norm(self.Kr @ ur - fr) / max(np.linalg.norm(fr), 1e-30))
         return saida
 
     def modos(self, n_modos=6):

@@ -132,6 +132,8 @@ def fazer_handler(est: Estado):
                     return self._json(AN.envelope_cg(d))
                 if self.path == "/api/asa":
                     return self._json(AN.asa(d))
+                if self.path == "/api/trem":
+                    return self._json(AN.trem(d))
                 if self.path == "/api/flambagem":
                     return self._json(AN.flambagem(d))
                 if self.path == "/api/cauda":

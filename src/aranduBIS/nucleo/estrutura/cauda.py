@@ -27,7 +27,34 @@ def _orienta(d):
     v = np.array([0.0, 0.0, 1.0]) if abs(d[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
     return tuple(v)
 
-def monta(esq: dict, mats: dict | None = None, qualidade_carbono: float = 1.0, tol: float = 1e-3):
+def margens_barras(esforcos, barras, info, pos, ligados, esq, mats, qualidade_carbono, fator_seguranca, K_flambagem, adm=None):
+    lista = []
+    for eid, pid, ga, gb in barras:
+        d = info[eid]
+        if ga not in ligados:
+            continue
+        p = propriedades(d["material"], esq, mats, qualidade_carbono=qualidade_carbono)
+        if adm is not None:
+            adm[d["material"]] = p
+        f = fator_seguranca * esforcos[eid]
+        A = 0.25 * np.pi * (d["de"] ** 2 - d["di"] ** 2); I = np.pi / 64 * (d["de"] ** 4 - d["di"] ** 4); c_ = d["de"] / 2
+        L = float(np.linalg.norm(pos[gb - 1] - pos[ga - 1]))
+        N = f[6]
+        M = max(np.hypot(f[4], f[5]), np.hypot(f[10], f[11]))
+        V_ = max(np.hypot(f[1], f[2]), np.hypot(f[7], f[8]))
+        sb = M * c_ / I
+        s_comp, s_tr = max(0.0, -N / A) + sb, max(0.0, N / A) + sb
+        tau = abs(f[9]) * c_ / (2 * I) + 2 * V_ / A
+        Pcr = np.pi ** 2 * p["E"] * I / (K_flambagem * L) ** 2
+        marg = {"compressao": INF if s_comp < 1e-9 else min(INF, p["XC"] / s_comp - 1),
+                "tracao": INF if s_tr < 1e-9 else min(INF, p["X"] / s_tr - 1),
+                "cisalhamento": INF if tau < 1e-9 else min(INF, p["S"] / tau - 1),
+                "flambagem": INF if N >= -1e-9 else min(INF, Pcr / (-N) - 1)}
+        lista.append({"id": eid, "elemento": d["elemento"], "tubo": d["tubo"], "L": L, "N": float(N), "M": float(M), "T": float(abs(f[9])),
+                      "margens": marg, "margem": min(marg.values()), "modo": min(marg, key=marg.get), "curta": bool(L < 10 * d["de"])})
+    return lista
+
+def monta(esq: dict, mats: dict | None = None, qualidade_carbono: float = 1.0, tol: float = 1e-3, divide: float = 0.0):
     pts, origem = [], []
     for el in esq.get("elementos", []):
         if el.get("tipo") != "trelica":
@@ -77,9 +104,18 @@ def monta(esq: dict, mats: dict | None = None, qualidade_carbono: float = 1.0, t
             if ga == gb:
                 avisos.append(f"{el['nome']}: barra {b[0]}-{b[1]} tem os dois nos fundidos (comprimento nulo) e foi ignorada")
                 continue
-            eid += 1
-            m.barra(eid, prop_id[(el["nome"], chave)], ga, gb, _orienta(pos[gb - 1] - pos[ga - 1]))
-            info[eid] = {"elemento": el["nome"], "tubo": chave, "de": de, "di": di, "material": nome_mat, "ga": ga, "gb": gb}
+            cadeia = [ga, gb]
+            if divide > 0:
+                pa, pb = pos[ga - 1], pos[gb - 1]
+                ab = pb - pa
+                tt = np.clip(((pos - pa) @ ab) / float(ab @ ab), 0.0, 1.0)
+                dist = np.linalg.norm(pos - (pa + tt[:, None] * ab), axis=1)
+                meio = [(tt[i], i + 1) for i in range(len(pos)) if dist[i] < divide and 1e-6 < tt[i] < 1 - 1e-6 and (i + 1) not in (ga, gb)]
+                cadeia = [ga] + [n for _, n in sorted(meio)] + [gb]
+            for u, w in zip(cadeia[:-1], cadeia[1:]):
+                eid += 1
+                m.barra(eid, prop_id[(el["nome"], chave)], u, w, _orienta(pos[w - 1] - pos[u - 1]))
+                info[eid] = {"elemento": el["nome"], "tubo": chave, "de": de, "di": di, "material": nome_mat, "ga": u, "gb": w}
     return m, pos, info, avisos
 
 def _grupos(m):
@@ -174,30 +210,7 @@ def analisa(esq: dict, casos_cargas: list | None = None, peso_N: float = 148.5, 
     resultados = []
     for k, (nome_c, desc, _) in enumerate(cargas, 1):
         r = S.estatica(k)
-        lista = []
-        for eid, pid, ga, gb in barras:
-            d = info[eid]
-            if ga not in ligados:
-                continue
-            p = propriedades(d["material"], esq, mats, qualidade_carbono=qualidade_carbono)
-            adm[d["material"]] = p
-            f = fator_seguranca * r["esforcos"][eid]
-            A = 0.25 * np.pi * (d["de"] ** 2 - d["di"] ** 2); I = np.pi / 64 * (d["de"] ** 4 - d["di"] ** 4); c_ = d["de"] / 2
-            L = float(np.linalg.norm(pos[gb - 1] - pos[ga - 1]))
-            N = f[6]
-            M = max(np.hypot(f[4], f[5]), np.hypot(f[10], f[11]))
-            V_ = max(np.hypot(f[1], f[2]), np.hypot(f[7], f[8]))
-            sb = M * c_ / I
-            s_comp, s_tr = max(0.0, -N / A) + sb, max(0.0, N / A) + sb
-            tau = abs(f[9]) * c_ / (2 * I) + 2 * V_ / A
-            Pcr = np.pi ** 2 * p["E"] * I / (K_flambagem * L) ** 2
-            marg = {"compressao": INF if s_comp < 1e-9 else min(INF, p["XC"] / s_comp - 1),
-                    "tracao": INF if s_tr < 1e-9 else min(INF, p["X"] / s_tr - 1),
-                    "cisalhamento": INF if tau < 1e-9 else min(INF, p["S"] / tau - 1),
-                    "flambagem": INF if N >= -1e-9 else min(INF, Pcr / (-N) - 1)}
-            lista.append({"id": eid, "elemento": d["elemento"], "tubo": d["tubo"], "L": L, "N": float(N), "M": float(M), "T": float(abs(f[9])),
-                          "margens": marg, "margem": min(marg.values()), "modo": min(marg, key=marg.get),
-                          "curta": bool(L < 10 * d["de"])})
+        lista = margens_barras(r["esforcos"], barras, info, pos, ligados, esq, mats, qualidade_carbono, fator_seguranca, K_flambagem, adm)
         bins, mb = {}, {}
         for n in ligados:
             if m.nos[n][0] > x_apoio:
