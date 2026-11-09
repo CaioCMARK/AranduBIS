@@ -74,3 +74,23 @@ def test_arquivos_da_equipe_pelo_http(srv, tmp_path_factory):
     st, b = pede(porta, "GET", "/api/arquivo?pasta=relatorios&caminho=a.txt")
     assert st == 200 and b == b"conteudo"
     assert pede(porta, "GET", "/api/arquivo?pasta=relatorios&caminho=../x")[0] == 400
+
+def test_decolagem_e_pontuacao_pelo_http(srv):
+    porta, pasta = srv
+    par = {"massa_kg": 12.0, "aeronave": {"S": 1.4, "CL_max": 2.0, "CL_corrida": 0.5, "CD_corrida": 0.06},
+           "tracao": {"T0": 60.0, "V0": 40.0}, "condicoes": {}}
+    st, b = pede(porta, "POST", "/api/decolagem", par)
+    assert st == 200 and "massa_maxima" in json.loads(b)
+    par["aeronave"]["S"] = 0
+    assert pede(porta, "POST", "/api/decolagem", par)[0] == 400
+    st, b = pede(porta, "GET", "/api/regras")
+    regras = json.loads(b)["regras"]
+    assert any(r["nome"] == "sae2026_regular" for r in regras)
+    st, b = pede(porta, "GET", "/api/regra?nome=sae2026_regular&origem=fabrica")
+    regra = json.loads(b)
+    st, b = pede(porta, "POST", "/api/regra/avalia", {"regra": regra, "valores": {"PV": 5, "CP_bruta": 10}})
+    assert st == 200 and json.loads(b)["total"] > 0
+    st, b = pede(porta, "POST", "/api/regra/grava", {"regra": regra, "nome": "minha_2027"})
+    assert st == 200 and (pasta / "regras" / "minha_2027.json").is_file()
+    assert pede(porta, "POST", "/api/regra/grava", {"regra": regra, "nome": "../x"})[0] == 400
+    assert any(r["origem"] == "equipe" for r in json.loads(pede(porta, "GET", "/api/regras")[1])["regras"])

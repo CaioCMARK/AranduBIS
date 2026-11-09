@@ -9,8 +9,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from .fronteira import analise as AN
 from .fronteira import arquivos as AQ
 from .fronteira import geometria as G
+from .fronteira import regras as RG
 from .nucleo import configuracao as C
 
 WEB = Path(__file__).resolve().parent / "web"
@@ -94,11 +96,16 @@ def fazer_handler(est: Estado):
                 if u.path == "/api/arquivo":
                     q = parse_qs(u.query)
                     return self._arquivo(AQ.caminho_do_arquivo(est.cfg, q.get("pasta", [""])[0], q.get("caminho", [""])[0]))
+                if u.path == "/api/regras":
+                    return self._json({"regras": RG.lista(est.pasta)})
+                if u.path == "/api/regra":
+                    q = parse_qs(u.query)
+                    return self._json(RG.abre(est.pasta, q.get("nome", [""])[0], q.get("origem", [""])[0]))
                 if u.path == "/api/materiais":
                     return self._json({"materiais": G.materiais()})
                 if u.path == "/api/configuracao":
                     return self._json(_estado_cfg(est))
-            except (G.ErroDeGeometria, AQ.ErroDeArquivo, OSError) as e:
+            except (G.ErroDeGeometria, AQ.ErroDeArquivo, RG.ErroDeRegra, OSError) as e:
                 return self._json({"erro": str(e)}, 400)
             return self._json({"erro": "não encontrado"}, 404)
 
@@ -109,6 +116,14 @@ def fazer_handler(est: Estado):
                 d = self._corpo()
                 if self.path == "/api/constroi":
                     return self._json(G.constroi(d))
+                if self.path == "/api/aero/resumo":
+                    return self._json(AN.resumo_aero(d))
+                if self.path == "/api/regra/avalia":
+                    return self._json(RG.avalia(d.get("regra"), d.get("valores")))
+                if self.path == "/api/regra/grava":
+                    return self._json({"caminho": RG.grava(est.pasta, d.get("regra") or {}, d.get("nome", ""))})
+                if self.path == "/api/decolagem":
+                    return self._json(AN.decolagem(d))
                 if self.path == "/api/grava":
                     return self._json({"caminho": G.grava(d, est.pasta_aeronaves)})
                 if self.path == "/api/configuracao":
@@ -117,7 +132,7 @@ def fazer_handler(est: Estado):
                     est.pasta.mkdir(parents=True, exist_ok=True)
                     est.cfg.gravar(est.arq_cfg)
                     return self._json(_estado_cfg(est))
-            except (G.ErroDeGeometria, C.ConfiguracaoInvalida) as e:
+            except (G.ErroDeGeometria, C.ConfiguracaoInvalida, AN.ErroDeAnalise, RG.ErroDeRegra) as e:
                 return self._json({"erro": str(e)}, 400)
             except (ValueError, KeyError, TypeError) as e:
                 return self._json({"erro": f"pedido inválido: {e}"}, 400)
