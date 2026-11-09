@@ -4,6 +4,10 @@ const Tracao = (() => {
   const CHAVE = "aranduBIS.tracao";
   let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 18, realista: true, celulas: "", v_celula: 3.6, capacidade_Ah: null, taxa_C: null };
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
+  const PADROES = [["motor", "tracao.motor"], ["helice", "tracao.helice"], ["P_w", "tracao.potencia_w"], ["rho", "analise.rho"],
+    ["V_max", "tracao.V_max"], ["v_celula", "tracao.v_celula"], ["realista", "tracao.perdas_realistas"]].map(([k, cfg]) => ({ k, cfg }));
+  Padroes.aplica(v, PADROES);
+  Padroes.aoMudar(() => { Padroes.aplica(v, PADROES); if (Analise.nome() === "tracao" && cat) { parametros(); agenda(); } });
   let cat = null, res = null, tempo = null, seq = 0;
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
@@ -13,7 +17,7 @@ const Tracao = (() => {
     const s = document.createElement("select");
     opcoes.forEach(([val, txt]) => { const o = el("option", txt); o.value = val; s.append(o); });
     s.value = v[chave];
-    s.onchange = () => { v[chave] = s.value; guarda(); agenda(); };
+    s.onchange = () => { v[chave] = s.value; Padroes.toca(v, chave); guarda(); agenda(); };
     return [l, s];
   }
 
@@ -24,7 +28,7 @@ const Tracao = (() => {
     G.append(...escolha("Motor", "motor", cat.motores.map(m => [m.nome, `${m.nome} (${m.Kv} kV)`]), "Kv, R e I0 do catálogo do fabricante."));
     G.append(...escolha("Hélice APC", "helice", cat.helices.map(h => [h.nome, h.nome]), "Catálogo APC Thin Electric: só existem os pares diâmetro x passo vendidos."));
     [["P_w", "Potência na bateria (W)"], ["rho", "Densidade do ar (kg/m³)"], ["V_max", "Até a velocidade (m/s)"]].forEach(([k, r]) => {
-      G.append(el("label", r), entrada("number", v[k], x => { if (x === null || !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; guarda(); agenda(); }));
+      G.append(el("label", r), entrada("number", v[k], x => { if (x === null || !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; Padroes.toca(v, k); guarda(); agenda(); }));
     });
     const g2 = el("div", "Pack de bateria", "grupo-par"); P.append(g2);
     const H = document.createElement("div"); H.className = "prop"; P.append(H);
@@ -33,12 +37,12 @@ const Tracao = (() => {
      ["capacidade_Ah", "Capacidade (Ah)", "Com a taxa C dá a corrente máxima do pack. Vazio = sem limite de corrente."],
      ["taxa_C", "Taxa de descarga (C)", "Vazio = sem limite de corrente."]].forEach(([k, r, d]) => {
       const l = el("label", r); l.title = d;
-      const i = entrada("number", v[k], x => { if (x !== null && !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; guarda(); agenda(); });
+      const i = entrada("number", v[k], x => { if (x !== null && !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; Padroes.toca(v, k); guarda(); agenda(); });
       i.title = d; if (v[k] === null) i.placeholder = "sem limite"; H.append(l, i);
     });
     const l = el("label", "Perdas realistas"); l.title = "Enrolamento a 70 °C, perdas em vazio crescendo com a rotação e ESC com curva. Desligado = modelo simples.";
     const c = document.createElement("input"); c.type = "checkbox"; c.checked = v.realista;
-    c.onchange = () => { v.realista = c.checked; guarda(); agenda(); };
+    c.onchange = () => { v.realista = c.checked; Padroes.toca(v, "realista"); guarda(); agenda(); };
     G.append(l, c);
   }
 

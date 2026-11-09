@@ -90,10 +90,23 @@ def altura_do_solo(esq: dict, alpha: float, x_ref: float, z_ref: float = 0.0) ->
     zs = [z_ref - (x - x_ref) * math.sin(al) + (z - z_ref) * math.cos(al) for x, z in pts]
     return z_ref - min(zs)
 
+ALTURAS_SOLO = (0.3, 0.6, 1.2)
+H_LIVRE = 5.0
+
+def _tabela_solo(esq: dict, x_cg: float, h0: float, alpha: float, V: float, rho: float) -> list[dict]:
+    sup = superficies(esq)
+    pts = []
+    for hh in (h0, *[x for x in ALTURAS_SOLO if x > h0 + 1e-9]):
+        q = VLM.arfada(sup, alpha, hh, x_ref=x_cg).resolver(0.0, V=V, rho=rho)[0]
+        pts.append({"h": float(hh), "CL": float(q.CL), "CDi": float(q.CDi), "K": float(q.CDi / q.CL ** 2) if abs(q.CL) > 1e-6 else 0.0})
+    q = VLM(sup, x_ref=x_cg).resolver(alpha, V=V, rho=rho)[0]
+    pts.append({"h": H_LIVRE, "CL": float(q.CL), "CDi": float(q.CDi), "K": float(q.CDi / q.CL ** 2) if abs(q.CL) > 1e-6 else 0.0})
+    return pts
+
 def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int = 4,
            a_max: float = 24.0, passo: float = 1.0, caminho=None,
            alpha_solo: float | None = None, CdA_proprio: float | None = None,
-           altura: float | None = None, com_solo: bool = True, tabela_solo: bool = False) -> dict:
+           altura: float | None = None, com_solo: bool = True) -> dict:
     vlm = VLM(superficies(esq), x_ref=float(x_cg))
     polares, info = polares_da_aeronave(vlm, ncrit, caminho)
     avisos = avisos_de_ignoradas(esq) + [i["nota"] for i in info if i["nota"]]
@@ -126,16 +139,7 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             usou_solo = True
             vs = VLM(superficies(esq), x_ref=float(x_cg), altura_solo=float(h))
             rs = TeoriaDeFaixas(vs, polares, rho=rho).resolver(float(alpha_solo), V)
-            ref0 = rs.CL
-            solo_tab = [] if tabela_solo else None
-            for hh in ((h, 0.3, 0.6, 1.2) if tabela_solo else ()):
-                if hh < h - 1e-9:
-                    continue
-                q = VLM(superficies(esq), x_ref=float(x_cg), altura_solo=float(hh)).resolver(float(alpha_solo), V=V, rho=rho)[0]
-                solo_tab.append({"h": float(hh), "CL": float(q.CL), "CDi": float(q.CDi)})
-            if tabela_solo:
-                q = VLM(superficies(esq), x_ref=float(x_cg)).resolver(float(alpha_solo), V=V, rho=rho)[0]
-                solo_tab.append({"h": None, "CL": float(q.CL), "CDi": float(q.CDi)})
+            solo_tab = _tabela_solo(esq, float(x_cg), float(h), float(alpha_solo), V, rho)
     avisos += sorted({str(x.message).split(" Acima")[0] for x in w if "ESTOL" in str(x.message)})
     if not r.convergiu:
         avisos.append(f"a iteracao nao fechou no pico ({r.motivo}): CL_max com incerteza maior")

@@ -3,18 +3,22 @@
 const Polares = (() => {
   const CAMPOS = [
     { g: "Condição", k: "x_cg", r: "Posição do CG x (m)", d: "Vazio = soma das massas do modelo." },
-    { k: "V", r: "Velocidade (m/s)", p: 12, d: "Define o Reynolds de cada faixa. Use a velocidade de estol esperada." },
-    { k: "rho", r: "Densidade do ar (kg/m³)", p: 1.1, d: "1330 m de altitude-densidade ≈ 1,06." },
+    { k: "V", cfg: "analise.velocidade_voo", r: "Velocidade (m/s)", p: 12, d: "Define o Reynolds de cada faixa. Use a velocidade de estol esperada." },
+    { k: "rho", cfg: "analise.rho", r: "Densidade do ar (kg/m³)", p: 1.1, d: "1330 m de altitude-densidade ≈ 1,06." },
     { g: "Corrida no solo", k: "alpha_solo", r: "Ângulo de ataque no solo (°)", d: "Vazio = pela reta que toca o chão nas rodas." },
     { k: "CdA", r: "Arrasto parasita CdA (m²)", d: "Vazio = estimado por componentes (fuselagem, rodas, tubos, motor, deriva). Preencha se você mediu." },
     { k: "altura", r: "Altura sobre o chão h (m)", d: "Do ponto de referência ao chão. Vazio = pelas rodas do modelo. Efeito solo: imagem do sistema de vórtices." },
-    { g: "Banco de polares", k: "ncrit", r: "Ncrit do banco (4 ou 7)", p: 4, d: "4 = ar livre turbulento; 7 = ar mais limpo. Se o perfil só existe num deles, o outro é usado e avisado." },
+    { g: "Banco de polares", k: "ncrit", cfg: "polares.ncrit_banco", r: "Ncrit do banco (4 ou 7)", p: 4, d: "4 = ar livre turbulento; 7 = ar mais limpo. Se o perfil só existe num deles, o outro é usado e avisado." },
   ];
   const CHAVE = "aranduBIS.polares";
   let v = {}, res = null, tempo = null, seq = 0;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = c.p === undefined ? null : c.p; });
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
+  const PADROES = CAMPOS.concat([{ k: "com_solo", cfg: "analise.efeito_solo" }]);
+  const aplicaPadroes = () => { Padroes.aplica(v, PADROES); v.ncrit = +v.ncrit; };
+  aplicaPadroes();
+  Padroes.aoMudar(() => { aplicaPadroes(); if (Analise.nome() === "polares") { parametros(); agenda(); } });
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
 
   function parametros() {
@@ -28,7 +32,7 @@ const Polares = (() => {
         if (x === null && nulavel) v[c.k] = null;
         else if (x === null || (c.k === "CdA" && !(x >= 0)) || (!nulavel && !(x > 0)) || (c.k === "ncrit" && x !== 4 && x !== 7)) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; }
         else v[c.k] = x;
-        guarda(); agenda();
+        Padroes.toca(v, c.k); guarda(); agenda();
       });
       i.title = c.d;
       if (v[c.k] === null) i.placeholder = { x_cg: "do modelo", alpha_solo: "da geometria", CdA: "estimado", altura: "pelas rodas" }[c.k] || "";
@@ -36,7 +40,7 @@ const Polares = (() => {
     });
     const ls = el("label", "Efeito solo na corrida"); ls.title = "Desligado = voo livre: pessimista no arrasto induzido (a asa baixa de um biplano chega a perder 40 %).";
     const cs = document.createElement("input"); cs.type = "checkbox"; cs.checked = v.com_solo !== false;
-    cs.onchange = () => { v.com_solo = cs.checked; guarda(); agenda(); };
+    cs.onchange = () => { v.com_solo = cs.checked; Padroes.toca(v, "com_solo"); guarda(); agenda(); };
     P.append(ls, cs);
   }
 
@@ -100,7 +104,9 @@ const Polares = (() => {
     b.onclick = () => {
       Decolagem.aplica("CL_max", +res.CL_max.toFixed(3), "polares"); Decolagem.aplica("CL_corrida", +k.CL.toFixed(3), "polares");
       Decolagem.aplica("CD_corrida", +k.CD.toFixed(4), "polares"); Decolagem.aplica("S", +k.S_ref.toFixed(4), "polares");
-      msg("CL máximo, CL e CD de corrida e área levados para a Decolagem.");
+      const t = res.solo.tabela;
+      Decolagem.aplicaSolo(res.solo.usado && t ? { h0: res.solo.h, h: t.map(x => x.h), K: t.map(x => +x.K.toFixed(5)) } : null);
+      msg("CL máximo, CL e CD de corrida, área e o efeito solo levados para a Decolagem.");
     };
     C.append(b);
     res.parasita.notas.forEach(a => C.append(el("div", a, "nota")));

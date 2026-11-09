@@ -512,6 +512,14 @@ class VLM:
                                       dCp=dcp, forca_painel=forca))
         return saida
 
+    @classmethod
+    def arfada(cls, superficies: list[Superficie], alpha: float, altura_solo: float, x_ref: float = 0.0,
+               z_ref: float = 0.0, comprimento_esteira: float = 50.0) -> "VLM":
+        base = cls.__new__(cls)
+        base.superficies, base.x_ref, base.z_ref = superficies, x_ref, z_ref
+        base.altura_solo, base.comprimento_esteira, base.usar_gpu = altura_solo, comprimento_esteira, None
+        return base._aux_solo(alpha)
+
     def _gira_ponto(self, pt: np.ndarray, alpha: float) -> np.ndarray:
         al = np.radians(alpha)
         c, s_ = np.cos(al), np.sin(al)

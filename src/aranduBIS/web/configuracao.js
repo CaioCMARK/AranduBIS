@@ -40,6 +40,7 @@ const Config = (() => {
   }
 
   function pinta(d) {
+    Padroes.atualiza(d);
     aviso.classList.remove("erro");
     aviso.hidden = !d.problemas.length;
     aviso.textContent = d.problemas.join(" ");

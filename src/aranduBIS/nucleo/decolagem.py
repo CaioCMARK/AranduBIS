@@ -47,6 +47,12 @@ class Aeronave:
     CD_corrida: float
     tracao_v: tuple = (0.0, 30.0)
     tracao_n: tuple = (60.0, 20.0)
+    solo_h: tuple = ()
+    solo_K: tuple = ()
+    h0: float = 0.0
+
+    def K(self, h: float) -> float:
+        return float(np.interp(h, self.solo_h, self.solo_K)) if self.solo_h else 0.0
 
 @dataclass
 class Resultado:
@@ -66,8 +72,10 @@ class Resultado:
 _OK, _SEM_TRACAO, _NAO_ATINGIU_VLO, _NAO_SAIU_DO_SOLO = 0, 1, 2, 3
 
 @njit(cache=True)
-def _laco(m, S, CLmax, CLc, CDc, vt, tt, rho, mu, pista, dalpha, taxa, margem, dt, tmax, saida, forcas):
+def _laco(m, S, CLmax, CLc, CD0, hK, Kt, h0, vt, tt, rho, mu, pista, dalpha, taxa, margem, dt, tmax, saida, forcas):
     W = m * G
+    K0 = np.interp(h0, hK, Kt)
+    CDc = CD0 + K0 * CLc * CLc
     v_lo = margem * math.sqrt(2.0 * W / (rho * S * CLmax))
     t = 0.0
     x = 0.0
@@ -111,7 +119,7 @@ def _laco(m, S, CLmax, CLc, CDc, vt, tt, rho, mu, pista, dalpha, taxa, margem, d
         if L >= W:
             no_solo = False
             break
-        D = q * S * CDc
+        D = q * S * (CD0 + K0 * cl * cl)
         T = np.interp(v, vt, tt)
         F = mu * max(W - L, 0.0)
         a = (T - D - F) / m
@@ -128,7 +136,7 @@ def _laco(m, S, CLmax, CLc, CDc, vt, tt, rho, mu, pista, dalpha, taxa, margem, d
     while x < pista and t < tmax and n < cap - 1:
         q = 0.5 * rho * v * v
         cl = min(CLmax, W / max(q * S, 1e-9))
-        D = q * S * CDc
+        D = q * S * (CD0 + np.interp(h0 + h, hK, Kt) * cl * cl)
         T = np.interp(v, vt, tt)
         exc = T - D
         sg = min(1.0, max(-1.0, exc / W))
@@ -153,7 +161,14 @@ def simular(massa_kg: float, ae: Aeronave, c: Condicoes = Condicoes(), forcas: b
     fz = np.zeros((cap, 5))
     vt = np.asarray(ae.tracao_v, float)
     tt = np.asarray(ae.tracao_n, float)
-    est, n, x_lo, v_lo, h = _laco(float(massa_kg), ae.S, ae.CL_max, ae.CL_corrida, ae.CD_corrida, vt, tt,
+    hK = np.asarray(ae.solo_h if ae.solo_h else (0.0, 1.0), float)
+    Kt = np.asarray(ae.solo_K if ae.solo_h else (0.0, 0.0), float)
+    if len(hK) != len(Kt) or len(hK) < 2 or np.any(np.diff(hK) <= 0) or np.any(Kt < 0):
+        raise ValueError("Tabela de efeito solo: alturas crescentes e K não negativo, mesmo número de pontos.")
+    CD0 = ae.CD_corrida - float(np.interp(ae.h0, hK, Kt)) * ae.CL_corrida ** 2
+    if CD0 <= 0:
+        raise ValueError("CD de corrida menor que o arrasto induzido do solo (K·CL²): confira CD, CL e a tabela de solo.")
+    est, n, x_lo, v_lo, h = _laco(float(massa_kg), ae.S, ae.CL_max, ae.CL_corrida, CD0, hK, Kt, float(ae.h0), vt, tt,
                                   c.rho, c.mu, c.pista_m, c.d_alpha_rotacao, c.taxa_rotacao,
                                   c.margem_rotacao, c.dt, c.t_max, saida, fz)
     s = saida[:n]

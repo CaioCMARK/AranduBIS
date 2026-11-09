@@ -47,19 +47,21 @@ const Decolagem = (() => {
     { k: "CD_corrida", r: "CD na corrida", p: 0.08, o: "estimado", d: "Arrasto total na atitude de corrida." },
     { g: "Tração", k: "T0", r: "Tração estática (N)", p: 45, o: "você", d: "Tração com a aeronave parada." },
     { k: "V0", r: "Velocidade em que a tração zera (m/s)", p: 28, o: "você", d: "A tração cai em reta de T0 até zero nesta velocidade." },
-    { g: "Pista e ar", k: "pista_m", r: "Distância até o obstáculo (m)", p: 55, o: "regulamento", d: "Muda de ano para ano e de regulamento." },
-    { k: "obstaculo_m", r: "Altura do obstáculo (m)", p: 0.9, o: "regulamento", d: "Quanto a aeronave precisa estar acima do chão nessa distância." },
-    { k: "altitude_densidade_m", r: "Altitude-densidade (m)", p: 1330, o: "regulamento", d: "Define a densidade do ar (atmosfera padrão)." },
-    { k: "mu", r: "Atrito de rolagem μ", p: 0.062, o: "hipótese", d: "Depende da pista e das rodas. Meça o da sua." },
-    { g: "Rotação", k: "d_alpha_rotacao", r: "Giro até sair do solo (°)", p: 6, o: "hipótese", d: "Quanto a atitude muda da corrida até a saída." },
-    { k: "taxa_rotacao", r: "Taxa de rotação (°/s)", p: 20, o: "hipótese", d: "Velocidade com que o piloto levanta o nariz." },
-    { k: "margem_rotacao", r: "Início da rotação (× V de estol)", p: 1.02, o: "hipótese", d: "Fração da velocidade de estol em que começa a puxar." },
+    { g: "Pista e ar", k: "pista_m", cfg: "decolagem.pista_m", r: "Distância até o obstáculo (m)", p: 55, o: "regulamento", d: "Muda de ano para ano e de regulamento." },
+    { k: "obstaculo_m", cfg: "decolagem.obstaculo_m", r: "Altura do obstáculo (m)", p: 0.9, o: "regulamento", d: "Quanto a aeronave precisa estar acima do chão nessa distância." },
+    { k: "altitude_densidade_m", cfg: "decolagem.altitude_densidade_m", r: "Altitude-densidade (m)", p: 1330, o: "regulamento", d: "Define a densidade do ar (atmosfera padrão)." },
+    { k: "mu", cfg: "decolagem.mu", r: "Atrito de rolagem μ", p: 0.062, o: "hipótese", d: "Depende da pista e das rodas. Meça o da sua." },
+    { g: "Rotação", k: "d_alpha_rotacao", cfg: "decolagem.d_alpha_rotacao", r: "Giro até sair do solo (°)", p: 6, o: "hipótese", d: "Quanto a atitude muda da corrida até a saída." },
+    { k: "taxa_rotacao", cfg: "decolagem.taxa_rotacao", r: "Taxa de rotação (°/s)", p: 20, o: "hipótese", d: "Velocidade com que o piloto levanta o nariz." },
+    { k: "margem_rotacao", cfg: "decolagem.margem_rotacao", r: "Início da rotação (× V de estol)", p: 1.02, o: "hipótese", d: "Fração da velocidade de estol em que começa a puxar." },
   ];
   const CHAVE = "aranduBIS.decolagem";
   let v = {}, res = null, aba = "Resumo", tempo = null, seq = 0;
 
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (typeof v[c.k] !== "number") v[c.k] = c.p; });
+  Padroes.aplica(v, CAMPOS);
+  Padroes.aoMudar(() => { Padroes.aplica(v, CAMPOS); if (Analise.nome() === "decolagem") { parametros(); agenda(); } });
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
 
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
@@ -71,7 +73,7 @@ const Decolagem = (() => {
       if (c.g) { P.append(el("div", c.g, "grupo-par")); G = document.createElement("div"); G.className = "prop"; P.append(G); }
       const l = el("label", c.r); l.title = c.d;
       const caixa = document.createElement("div"); caixa.className = "campo-origem";
-      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; if (v.__o) delete v.__o[c.k]; if ((c.k === "T0" || c.k === "V0") && v.__tab) { delete v.__tab; if (v.__o) { delete v.__o.T0; delete v.__o.V0; } parametros(); } guarda(); agenda(); });
+      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; Padroes.toca(v, c.k); if (v.__o) delete v.__o[c.k]; if ((c.k === "T0" || c.k === "V0") && v.__tab) { delete v.__tab; if (v.__o) { delete v.__o.T0; delete v.__o.V0; } parametros(); } guarda(); agenda(); });
       i.title = c.d;
       const o = (v.__o || {})[c.k] || c.o;
       caixa.append(i, el("span", o, "origem o-" + o));
@@ -89,6 +91,11 @@ const Decolagem = (() => {
       }
       G.append(l, caixa);
     });
+    if (v.__solo) {
+      const n = el("div", `Arrasto com efeito solo: CD = CD0 + K(h)·CL², h₀ = ${fmt(v.__solo.h0, 3)} m. O arrasto induzido cresce com o CL na rotação e na subida.`, "nota");
+      const b = el("button", "tirar o efeito solo"); b.onclick = () => { v.__solo = null; guarda(); parametros(); agenda(); };
+      P.append(n, b);
+    }
   }
 
   async function lerGeometria() {
@@ -107,7 +114,7 @@ const Decolagem = (() => {
     const meu = ++seq;
     const corpo = {
       massa_kg: v.massa_kg,
-      aeronave: { S: v.S, CL_max: v.CL_max, CL_corrida: v.CL_corrida, CD_corrida: v.CD_corrida },
+      aeronave: { S: v.S, CL_max: v.CL_max, CL_corrida: v.CL_corrida, CD_corrida: v.CD_corrida, solo: v.__solo || null },
       tracao: v.__tab ? { v: v.__tab.v, n: v.__tab.n } : { T0: v.T0, V0: v.V0 },
       condicoes: Object.fromEntries(["pista_m", "obstaculo_m", "altitude_densidade_m", "mu", "d_alpha_rotacao", "taxa_rotacao", "margem_rotacao"].map(k => [k, v[k]])),
     };
@@ -201,6 +208,7 @@ const Decolagem = (() => {
   });
   return {
     dados: () => ({ v, res }),
+    aplicaSolo(solo) { v.__solo = solo; guarda(); if (Analise.nome() === "decolagem") { parametros(); agenda(); } },
     aplicaTracao(vel, tr, rotulo) {
       v.__tab = { v: vel, n: tr, rotulo }; v.T0 = +tr[0].toFixed(2); v.V0 = +vel[vel.length - 1].toFixed(1);
       v.__o = Object.assign(v.__o || {}, { T0: "hélice", V0: "hélice" }); guarda();

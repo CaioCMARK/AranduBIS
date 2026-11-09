@@ -61,3 +61,26 @@ def test_corrida_com_solo_tem_menos_arrasto_que_em_voo_livre(conv):
     assert r["solo"]["usado"] and r["solo"]["origem"] == "voce"
     assert r["corrida"]["CD"] < r["solo"]["livre"]["CD"]
     assert not L.cl_max(conv, 0.5, com_solo=False)["solo"]["usado"]
+
+def test_decolagem_com_solo_e_arrasto_que_cresce_com_cl():
+    from aranduBIS.nucleo import decolagem as DC
+    base = dict(S=1.5, CL_max=1.8, CL_corrida=0.6, CD_corrida=0.10, tracao_v=(0.0, 30.0), tracao_n=(40.0, 10.0))
+    c = DC.Condicoes()
+    sem = DC.simular(12.0, DC.Aeronave(**base), c, forcas=False)
+    com = DC.simular(12.0, DC.Aeronave(**base, solo_h=(0.15, 0.6, 5.0), solo_K=(0.03, 0.05, 0.06), h0=0.15), c)
+    assert sem.decolou and com.decolou
+    assert com.altura_obstaculo != pytest.approx(sem.altura_obstaculo, abs=1e-6)
+    assert com.forcas["D"][0] == pytest.approx(0.0)
+    i = next(k for k, v in enumerate(com.v) if v > 5.0)
+    q = 0.5 * c.rho * com.v[i] ** 2 * 1.5
+    assert com.forcas["D"][i] == pytest.approx(q * 0.10, rel=1e-6)
+    with pytest.raises(ValueError):
+        DC.simular(12.0, DC.Aeronave(**base, solo_h=(0.15, 0.6), solo_K=(0.5, 0.5), h0=0.15), c)
+
+def test_subir_perde_o_solo_e_aumenta_o_arrasto_induzido():
+    from aranduBIS.nucleo import decolagem as DC
+    base = dict(S=1.5, CL_max=1.8, CL_corrida=0.6, CD_corrida=0.10, tracao_v=(0.0, 30.0), tracao_n=(40.0, 10.0))
+    forte = DC.Aeronave(**base, solo_h=(0.15, 5.0), solo_K=(0.01, 0.10), h0=0.15)
+    fraco = DC.Aeronave(**base, solo_h=(0.15, 5.0), solo_K=(0.01, 0.01), h0=0.15)
+    c = DC.Condicoes()
+    assert DC.simular(12.0, forte, c, forcas=False).altura_obstaculo < DC.simular(12.0, fraco, c, forcas=False).altura_obstaculo

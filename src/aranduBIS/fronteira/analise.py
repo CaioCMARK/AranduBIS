@@ -86,9 +86,11 @@ def decolagem(p: dict) -> dict:
         _num(campos, k)
     cond = DC.Condicoes(**campos)
     vt, tt = _tracao(p.get("tracao") or {})
+    solo = a.get("solo") or {}
+    sh, sk = tuple(map(float, solo.get("h", ()))), tuple(map(float, solo.get("K", ())))
     ae = DC.Aeronave(S=_num(a, "S", positivo=True), CL_max=_num(a, "CL_max", positivo=True),
                      CL_corrida=_num(a, "CL_corrida"), CD_corrida=_num(a, "CD_corrida", positivo=True),
-                     tracao_v=vt, tracao_n=tt)
+                     tracao_v=vt, tracao_n=tt, solo_h=sh, solo_K=sk, h0=float(solo.get("h0", 0.0)))
     massa = _num(p, "massa_kg", positivo=True)
     try:
         r = DC.simular(massa, ae, cond)
@@ -138,7 +140,18 @@ def equilibrio(p: dict) -> dict:
     r["cg_origem"] = origem
     return r
 
+_MEMO_LIMITES: dict = {}
+
 def limites(p: dict) -> dict:
+    import json
+    chave = json.dumps(p, sort_keys=True, default=str)
+    if chave not in _MEMO_LIMITES:
+        if len(_MEMO_LIMITES) >= 6:
+            _MEMO_LIMITES.pop(next(iter(_MEMO_LIMITES)))
+        _MEMO_LIMITES[chave] = _limites(p)
+    return _MEMO_LIMITES[chave]
+
+def _limites(p: dict) -> dict:
     from ..nucleo.aero.limites import cl_max
     from ..nucleo.aero.equilibrio import longitudinal
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida

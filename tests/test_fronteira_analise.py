@@ -90,3 +90,14 @@ def test_pack_com_poucas_celulas_limita_a_tracao():
     assert AN.propulsao(dict(base, celulas=6))["T0"] == pytest.approx(livre)
     rc = AN.propulsao(dict(base, celulas=6, capacidade_Ah=2.0, taxa_C=10))
     assert rc["limite"][0] == "corrente" and rc["I"][0] == pytest.approx(20.0, abs=0.1)
+
+def test_decolagem_aceita_tabela_de_efeito_solo():
+    base = {"massa_kg": 10, "aeronave": {"S": 1.5, "CL_max": 1.8, "CL_corrida": 0.6, "CD_corrida": 0.10},
+            "tracao": {"T0": 40, "V0": 30}}
+    sem = AN.decolagem(base)
+    base["aeronave"]["solo"] = {"h0": 0.15, "h": [0.15, 0.6, 5.0], "K": [0.03, 0.05, 0.06]}
+    com = AN.decolagem(base)
+    assert com["decolou"] and sem["decolou"] and com["altura_obstaculo_m"] != sem["altura_obstaculo_m"]
+    base["aeronave"]["solo"] = {"h0": 0.15, "h": [0.6, 0.15], "K": [0.05, 0.03]}
+    with pytest.raises(AN.ErroDeAnalise):
+        AN.decolagem(base)

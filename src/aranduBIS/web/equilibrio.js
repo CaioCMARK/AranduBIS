@@ -3,15 +3,17 @@
 const Equilibrio = (() => {
   const CAMPOS = [
     { g: "Condição de voo", k: "x_cg", r: "Posição do CG x (m)", o: "modelo", d: "Medida do bordo de ataque da raiz da asa, positiva para trás. Vazio = soma das massas do modelo." },
-    { k: "V", r: "Velocidade (m/s)", p: 15, o: "você", d: "Velocidade de cruzeiro para o cálculo das cargas." },
-    { k: "rho", r: "Densidade do ar (kg/m³)", p: 1.1, o: "você", d: "Padrão a 1330 m de altitude-densidade ≈ 1,06." },
-    { k: "CL_alvo", r: "CL a equilibrar", p: 0.8, o: "você", d: "O CL em que a aeronave deve voar equilibrada. Vazio = só estabilidade." },
+    { k: "V", cfg: "analise.velocidade_cruzeiro", r: "Velocidade (m/s)", p: 15, o: "você", d: "Velocidade de cruzeiro para o cálculo das cargas." },
+    { k: "rho", cfg: "analise.rho", r: "Densidade do ar (kg/m³)", p: 1.1, o: "você", d: "Padrão a 1330 m de altitude-densidade ≈ 1,06." },
+    { k: "CL_alvo", cfg: "analise.CL_alvo", r: "CL a equilibrar", p: 0.8, o: "você", d: "O CL em que a aeronave deve voar equilibrada. Vazio = só estabilidade." },
   ];
   const CHAVE = "aranduBIS.equilibrio";
   let v = {}, res = null, tempo = null, seq = 0;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = c.p === undefined ? null : c.p; });
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
+  Padroes.aplica(v, CAMPOS);
+  Padroes.aoMudar(() => { Padroes.aplica(v, CAMPOS); if (Analise.nome() === "equilibrio") { parametros(); agenda(); } });
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
 
   function parametros() {
@@ -26,7 +28,7 @@ const Equilibrio = (() => {
         if (x === null && vazio) v[c.k] = null;
         else if (x === null || (c.k !== "x_cg" && !(x > 0))) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; }
         else v[c.k] = x;
-        guarda(); agenda();
+        Padroes.toca(v, c.k); guarda(); agenda();
       });
       i.title = c.d; if (vazio && v[c.k] === null) i.placeholder = c.k === "x_cg" ? "do modelo" : "só estabilidade";
       caixa.append(i, el("span", c.k === "x_cg" && v.x_cg === null && res ? res.cg_origem : (v[c.k] === null ? "" : c.o), "origem o-" + c.o));
