@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 import warnings
 from pathlib import Path
@@ -8,6 +9,7 @@ import numpy as np
 
 from .aeronave_vlm import avisos_de_ignoradas, superficies
 from .faixas import TeoriaDeFaixas
+from .parasita import parasita
 from .perfil import Perfil
 from .polares import BancoPolares, Polar
 from .vlm import VLM
@@ -69,8 +71,19 @@ def polares_da_aeronave(vlm: VLM, ncrit: int = 4, caminho=None) -> tuple[dict, l
         info.append({"superficie": s.nome, "perfil": s.perfil.nome, "polar": pol.nome, "origem": origem, "nota": nota})
     return polares, info
 
+def atitude_de_solo(esq: dict) -> float | None:
+    pts = [(float(e["posicao"][0]), float(e["posicao"][2]) - float(e["diametro"]) / 2)
+           for e in esq.get("elementos", []) if e.get("tipo") == "roda"]
+    if len(pts) < 2:
+        return None
+    a, b = min(pts), max(pts)
+    if b[0] - a[0] < 1e-3:
+        return None
+    return -math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+
 def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int = 4,
-           a_max: float = 24.0, passo: float = 1.0, caminho=None) -> dict:
+           a_max: float = 24.0, passo: float = 1.0, caminho=None,
+           alpha_solo: float | None = None, CdA_proprio: float | None = None) -> dict:
     vlm = VLM(superficies(esq), x_ref=float(x_cg))
     polares, info = polares_da_aeronave(vlm, ncrit, caminho)
     avisos = avisos_de_ignoradas(esq) + [i["nota"] for i in info if i["nota"]]
@@ -90,11 +103,23 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             else:
                 quedas = 0
         r, clm, a_est = melhor, melhor.CL, melhor.alpha
+        origem_solo = "voce"
+        if alpha_solo is None:
+            alpha_solo = atitude_de_solo(esq)
+            origem_solo = "geometria" if alpha_solo is not None else "padrao 0"
+            alpha_solo = 0.0 if alpha_solo is None else alpha_solo
+        rs = tf.resolver(float(alpha_solo), V)
     avisos += sorted({str(x.message).split(" Acima")[0] for x in w if "ESTOL" in str(x.message)})
     if not r.convergiu:
         avisos.append(f"a iteracao nao fechou no pico ({r.motivo}): CL_max com incerteza maior")
     if a_est >= a_max - passo:
         avisos.append(f"nao houve queda de CL ate {a_max:.0f}°: CL_max e um limite inferior")
+    par = parasita(esq, vlm.S_ref, V, rho)
+    CD_par = par["CD"] if CdA_proprio is None else CdA_proprio / vlm.S_ref
+    avisos.append("Arrasto parasita estimado por componentes (Hoerner/Raymer), nao medido: o tunel do IPT mediu CD minimo bem acima do da asa limpa." if CdA_proprio is None
+                  else f"Arrasto parasita fixado por voce: CdA = {CdA_proprio:g} m2.")
+    if not rs.convergiu:
+        avisos.append("a iteracao nao fechou no angulo de solo: CL e CD de corrida com incerteza maior")
     ref = next(s.nome for s in vlm.superficies if s.de_referencia)
     inicio = r.inicio_do_estol(ref)
     semi = vlm.b_ref / 2
@@ -105,4 +130,7 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             "inicio_estol_y": None if inicio is None else float(inicio),
             "inicio_estol_rel": None if inicio is None else float(inicio / semi),
             "convergiu": bool(r.convergiu), "CDp": float(r.CDp),
-            "curva": {"alpha": [float(q.alpha) for q in curva], "CL": [float(q.CL) for q in curva], "CD": [float(q.CD) for q in curva]}, "polares": info, "avisos": avisos}
+            "curva": {"alpha": [float(q.alpha) for q in curva], "CL": [float(q.CL) for q in curva], "CD": [float(q.CD + CD_par) for q in curva]},
+            "corrida": {"alpha": float(alpha_solo), "origem": origem_solo, "CL": float(rs.CL), "CDi": float(rs.CDi), "CDp": float(rs.CDp),
+                        "CD_parasita": float(CD_par), "CD": float(rs.CD + CD_par), "S_ref": float(vlm.S_ref)},
+            "parasita": par, "polares": info, "avisos": avisos}

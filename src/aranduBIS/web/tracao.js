@@ -2,7 +2,7 @@
 
 const Tracao = (() => {
   const CHAVE = "aranduBIS.tracao";
-  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 30, realista: true };
+  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 30, realista: true, celulas: "", v_celula: 3.6, capacidade_Ah: null, taxa_C: null };
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   let cat = null, res = null, tempo = null, seq = 0;
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
@@ -26,6 +26,16 @@ const Tracao = (() => {
     [["P_w", "Potência na bateria (W)"], ["rho", "Densidade do ar (kg/m³)"], ["V_max", "Até a velocidade (m/s)"]].forEach(([k, r]) => {
       G.append(el("label", r), entrada("number", v[k], x => { if (x === null || !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; guarda(); agenda(); }));
     });
+    const g2 = el("div", "Pack de bateria", "grupo-par"); P.append(g2);
+    const H = document.createElement("div"); H.className = "prop"; P.append(H);
+    H.append(...escolha("Células em série", "celulas", [["", "sem limite"], ["4", "4S"], ["5", "5S"], ["6", "6S"]], "A tensão do pack (células × V por célula) limita a rotação do motor."));
+    [["v_celula", "V por célula sob carga", "3,6 V é hipótese; sob 40 A uma célula pequena cai bem abaixo da nominal."],
+     ["capacidade_Ah", "Capacidade (Ah)", "Com a taxa C dá a corrente máxima do pack. Vazio = sem limite de corrente."],
+     ["taxa_C", "Taxa de descarga (C)", "Vazio = sem limite de corrente."]].forEach(([k, r, d]) => {
+      const l = el("label", r); l.title = d;
+      const i = entrada("number", v[k], x => { if (x !== null && !(x > 0)) { msg("Valor inválido em “" + r + "”.", true); parametros(); return; } v[k] = x; guarda(); agenda(); });
+      i.title = d; if (v[k] === null) i.placeholder = "sem limite"; H.append(l, i);
+    });
     const l = el("label", "Perdas realistas"); l.title = "Enrolamento a 70 °C, perdas em vazio crescendo com a rotação e ESC com curva. Desligado = modelo simples.";
     const c = document.createElement("input"); c.type = "checkbox"; c.checked = v.realista;
     c.onchange = () => { v.realista = c.checked; guarda(); agenda(); };
@@ -37,7 +47,7 @@ const Tracao = (() => {
   async function calcula() {
     const meu = ++seq;
     try {
-      const r = await chama("/api/propulsao", v);
+      const r = await chama("/api/propulsao", Object.assign({}, v, { celulas: v.celulas ? +v.celulas : null }));
       if (meu !== seq) return;
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }
@@ -48,7 +58,7 @@ const Tracao = (() => {
     const V = $("veredito"); V.hidden = false; V.className = "veredito";
     if (!res) { V.textContent = "—"; return; }
     const mot = cat.motores.find(m => m.nome === res.motor), Ipk = Math.max(...res.I);
-    V.classList.add(mot && mot.I_max && Ipk > mot.I_max ? "ruim" : "ok");
+    V.classList.add((mot && mot.I_max && Ipk > mot.I_max) || res.limite[0] ? "ruim" : "ok");
     V.innerHTML = `<b>Tração estática ${fmt(res.T0, 1)} N</b> a ${fmt(res.P_w, 0)} W · ${fmt(res.rpm0, 0)} rpm · ${fmt(res.I[0], 0)} A a ${fmt(res.U[0], 1)} V`
       + ` · ${fmt(res.T[res.T.length - 1], 1)} N a ${fmt(res.V[res.V.length - 1], 0)} m/s`;
   }

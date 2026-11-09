@@ -81,3 +81,12 @@ def test_propulsao_lista_e_curva():
     assert r["rpm"][0] > 3000 and r["V"][0] == 0.0
     assert "erro" in AN.propulsao({"motor": "nao existe", "helice": "22x10E"})
     assert AN.propulsao({"motor": "Scorpion SII-4035-330", "helice": "22x10E", "P_w": 400})["T0"] < r["T0"]
+
+def test_pack_com_poucas_celulas_limita_a_tracao():
+    base = {"motor": "Scorpion SII-4035-330", "helice": "22x10E"}
+    livre = AN.propulsao(base)["T0"]
+    r3 = AN.propulsao(dict(base, celulas=3))
+    assert r3["limite"][0] == "tensao" and r3["T0"] < livre
+    assert AN.propulsao(dict(base, celulas=6))["T0"] == pytest.approx(livre)
+    rc = AN.propulsao(dict(base, celulas=6, capacidade_Ah=2.0, taxa_C=10))
+    assert rc["limite"][0] == "corrente" and rc["I"][0] == pytest.approx(20.0, abs=0.1)

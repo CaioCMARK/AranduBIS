@@ -156,7 +156,11 @@ def limites(p: dict) -> dict:
         if x_cg is None:
             base = longitudinal(esq, 0.0, V=V, rho=rho)
             x_cg = base["ponto_neutro"] - 0.15 * base["c_ref"]
-        return cl_max(esq, float(x_cg), V=V, rho=rho, ncrit=ncrit)
+        a_solo = p.get("alpha_solo")
+        cda = p.get("CdA")
+        return cl_max(esq, float(x_cg), V=V, rho=rho, ncrit=ncrit,
+                      alpha_solo=None if a_solo is None else _num(p, "alpha_solo"),
+                      CdA_proprio=None if cda is None else _num(p, "CdA"))
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
@@ -167,6 +171,10 @@ def propulsao(p: dict) -> dict:
     try:
         return PR.curva(str(p.get("motor", "")), str(p.get("helice", "")), P_w=_num(p, "P_w", 600.0, positivo=True),
                         rho=_num(p, "rho", 1.1, positivo=True), V_max=_num(p, "V_max", 30.0, positivo=True),
-                        realista=bool(p.get("realista", True)))
+                        realista=bool(p.get("realista", True)),
+                        celulas=int(_num(p, "celulas")) if p.get("celulas") else None,
+                        v_celula=_num(p, "v_celula", 3.6, positivo=True),
+                        capacidade_Ah=_num(p, "capacidade_Ah", positivo=True) if p.get("capacidade_Ah") else None,
+                        taxa_C=_num(p, "taxa_C", positivo=True) if p.get("taxa_C") else None)
     except ValueError as e:
         return {"erro": _erro(e)}
