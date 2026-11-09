@@ -115,7 +115,7 @@ def _ponto_empenagem(esq, nome):
 
 def analisa(esq: dict, casos_cargas: list | None = None, peso_N: float = 148.5, rho: float = 1.1, Vc: float = 13.0, Vd: float = 15.9,
             U_c: float = 4.0, fator_seguranca: float = 1.2, x_apoio: float = 0.30, CL_max_h: float = 0.8, K_flambagem: float = 0.8,
-            tailstrike_peso: float = 1.5, mats: dict | None = None, qualidade_carbono: float = 1.0, raio_ligacao: float = 0.10) -> dict:
+            tailstrike_peso: float = 0.0, mats: dict | None = None, qualidade_carbono: float = 1.0, raio_ligacao: float = 0.10) -> dict:
     m, pos, info, avisos = monta(esq, mats, qualidade_carbono)
     grupos = _grupos(m)
     if len(grupos) > 1:
@@ -162,8 +162,9 @@ def analisa(esq: dict, casos_cargas: list | None = None, peso_N: float = 148.5, 
             F = 0.5 * rho * Vv ** 2 * v["S"] * a * U / Vv
             cargas.append((nome_c, f"rajada lateral de {U:.1f} m/s na deriva em {Vv:.1f} m/s: {F:.1f} N a {v['ponto'][2]:.2f} m de altura", {no_v: [0, F, 0, 0, 0, 0]}))
     no_ponta = max((n for n in ligados), key=lambda n: m.nos[n][0])
-    Ft = tailstrike_peso * peso_N
-    cargas.append(("tailstrike", f"reacao vertical na ponta do boom: {tailstrike_peso:.2f} x peso = {Ft:.0f} N (hipotese)", {no_ponta: [0, 0, Ft, 0, 0, 0]}))
+    if tailstrike_peso > 0:
+        Ft = tailstrike_peso * peso_N
+        cargas.append(("tailstrike", f"reacao vertical na ponta do boom: {tailstrike_peso:.2f} x peso = {Ft:.0f} N (hipotese)", {no_ponta: [0, 0, Ft, 0, 0, 0]}))
     for k, (_, _, c) in enumerate(cargas, 1):
         for no, F in c.items():
             m.carga(k, no, F)

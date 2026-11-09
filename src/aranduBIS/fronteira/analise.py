@@ -251,6 +251,22 @@ def asa(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def flambagem(p: dict) -> dict:
+    from ..nucleo.estrutura.flambagem import verifica as fl
+
+    a = asa(p)
+    if "erro" in a:
+        return a
+    esq = p.get("esquema") or {}
+    try:
+        saidas = [dict(fl(esq, x["nome"], x, mats=p.get("materiais"), qualidade_balsa=_num(p, "qualidade_balsa", 1.0, positivo=True),
+                          E_transv_GPa=_num(p, "balsa_E_transv", 0.12, positivo=True), knockdown=_num(p, "knockdown_pele", 0.5, positivo=True),
+                          margem_alvo=_num(p, "margem_alvo_flambagem", 0.0)), fontes=x["fontes"]) for x in a["asas"]]
+        pior = min(saidas, key=lambda s: s["pior_pele"]["margem_pele"] if s["pior_pele"] else 1e9)
+        return {"asas": saidas, "pior": pior["nome"], "critico": pior["pior_pele"], "vn": a["vn"], "avisos": a["avisos"]}
+    except (ValueError, FileNotFoundError, KeyError) as e:
+        return {"erro": _erro(e)}
+
 def torcao(p: dict) -> dict:
     from ..nucleo.estrutura.torcao import analisa
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
@@ -292,7 +308,7 @@ def cauda(p: dict) -> dict:
                     Vd=_num(p, "Vd", 15.9, positivo=True), U_c=_num(p, "U_c", 4.0, positivo=True),
                     fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True), x_apoio=_num(p, "x_apoio", 0.30),
                     CL_max_h=_num(p, "CL_max_h", 0.8, positivo=True), K_flambagem=_num(p, "K_flambagem", 0.8, positivo=True),
-                    tailstrike_peso=_num(p, "tailstrike_peso", 1.5, positivo=True), mats=p.get("materiais"),
+                    tailstrike_peso=_num(p, "tailstrike_peso", 0.0), mats=p.get("materiais"),
                     qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True))
         r["avisos"] = aviso + r["avisos"]
         r["peso_N"] = peso

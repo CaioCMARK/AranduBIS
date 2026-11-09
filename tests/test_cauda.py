@@ -19,7 +19,7 @@ def biplano():
 
 @pytest.fixture(scope="module")
 def r(biplano):
-    return CA.analisa(biplano)
+    return CA.analisa(biplano, tailstrike_peso=1.5)
 
 def viga_simples(L=1.0, de=0.01, di=0.008):
     n = 8
@@ -63,6 +63,9 @@ def test_deck_bdf_reproduz_a_deformada(biplano, r):
     ref = next(c for c in r["casos"] if c["caso"] == "tailstrike")
     u = Sistema(m).estatica(next(i for i, c in enumerate(r["casos"], 1) if c["caso"] == "tailstrike"))["u"]
     assert max(abs(v[2]) for v in u.values()) * 1000 >= ref["flecha_ponta_mm"] - 1e-6
+
+def test_tailstrike_so_entra_quando_pedido(biplano):
+    assert "tailstrike" not in [c["caso"] for c in CA.analisa(biplano)["casos"]]
 
 def test_fronteira_cauda(biplano):
     r2 = AN.cauda({"esquema": biplano, "com_cargas": False})
