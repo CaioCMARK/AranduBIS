@@ -212,8 +212,46 @@ def envelope_cg(p: dict) -> dict:
         return {"erro": _erro(e)}
 
 _CL_MAX: dict = {}
+_CARGAS: dict = {}
 
 def cargas(p: dict) -> dict:
+    chave = json.dumps(p, sort_keys=True, default=str)
+    if chave not in _CARGAS:
+        r = _cargas(p)
+        if "erro" in r:
+            return r
+        if len(_CARGAS) > 4:
+            _CARGAS.clear()
+        _CARGAS[chave] = r
+    return _CARGAS[chave]
+
+def asa(p: dict) -> dict:
+    from ..nucleo.estrutura.asa import verifica
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    c = cargas(p)
+    if "erro" in c:
+        return c
+    esq = p.get("esquema") or {}
+    try:
+        saidas, avisos = [], []
+        for e in esq.get("elementos", []):
+            if e.get("tipo") != "asa" or not e.get("estrutura"):
+                continue
+            if not any(s["nome"] == e["nome"] for s in c["casos"][0]["superficies"]):
+                continue
+            saidas.append(verifica(esq, e["nome"], c["casos"], mats=p.get("materiais"), fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True),
+                                   qualidade_balsa=_num(p, "qualidade_balsa", 1.0, positivo=True),
+                                   qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True)))
+        if not saidas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        pior = min(saidas, key=lambda s: s["critico"]["margem"])
+        return {"asas": saidas, "critico": dict(pior["critico"], asa=pior["nome"]), "vn": c["vn"], "massa_kg": c["massa_kg"],
+                "avisos": avisos + c["avisos"] + [a for s in saidas for a in s["avisos"]]}
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
+def _cargas(p: dict) -> dict:
     from ..nucleo.aero.equilibrio import monta
     from ..nucleo.aero.estabilidade import derivadas
     from ..nucleo.aero.limites import cl_max as cl_max_aeronave
