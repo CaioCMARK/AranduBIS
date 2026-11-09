@@ -275,6 +275,31 @@ def torcao(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def cauda(p: dict) -> dict:
+    from ..nucleo.estrutura.cauda import analisa
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        aviso = []
+        c = cargas(p) if p.get("com_cargas", True) else {"erro": "nao pedidas"}
+        if "erro" in c:
+            casos, peso = None, _num(p, "peso_N", 148.5, positivo=True)
+            aviso.append("Sem as cargas do V-n (" + str(c["erro"]) + "): o caso de trim da empenagem ficou em zero.")
+        else:
+            casos, peso = c["casos"], c["massa_kg"] * 9.80665
+        r = analisa(esq, casos, peso_N=peso, rho=_num(p, "rho", 1.1, positivo=True), Vc=_num(p, "Vc", 13.0, positivo=True),
+                    Vd=_num(p, "Vd", 15.9, positivo=True), U_c=_num(p, "U_c", 4.0, positivo=True),
+                    fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True), x_apoio=_num(p, "x_apoio", 0.30),
+                    CL_max_h=_num(p, "CL_max_h", 0.8, positivo=True), K_flambagem=_num(p, "K_flambagem", 0.8, positivo=True),
+                    tailstrike_peso=_num(p, "tailstrike_peso", 1.5, positivo=True), mats=p.get("materiais"),
+                    qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True))
+        r["avisos"] = aviso + r["avisos"]
+        r["peso_N"] = peso
+        return r
+    except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError) as e:
+        return {"erro": _erro(e)}
+
 def _cargas(p: dict) -> dict:
     from ..nucleo.aero.equilibrio import monta
     from ..nucleo.aero.estabilidade import derivadas
