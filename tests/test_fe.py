@@ -101,3 +101,14 @@ def test_linha_elastica_torta_acopla_flexao_e_torcao():
     reto = resolve(y, ea_c=0.054 / c, **kw)["theta"][-1]
     torto = resolve(y, ea_c=np.full(41, 0.15), **kw)["theta"][-1]
     assert abs(torto - reto) > 0.01 * abs(reto)
+
+def test_alivio_inercial_fecha_forca_e_momento():
+    from aranduBIS.nucleo.fe.inercia import alivio
+    rng = np.random.default_rng(1)
+    pos = rng.uniform(-0.3, 0.3, (9, 3)); m = rng.uniform(0.5, 2.0, 9)
+    ref = (m[:, None] * pos).sum(0) / m.sum() + 0.02
+    ext = [(np.array([0.2, 0.1, -0.1]), np.array([5.0, 20.0, 160.0]), np.zeros(3)), (np.array([-0.3, 0.0, -0.1]), np.array([0.0, -3.0, 70.0]), np.array([0.0, 0.5, 0.0]))]
+    f, a, alfa = alivio(pos, m, ref, ext)
+    F = f.sum(0) + sum(e[1] for e in ext)
+    M = np.cross(pos - ref, f).sum(0) + sum(np.cross(e[0] - ref, e[1]) + e[2] for e in ext)
+    assert np.allclose(F, 0, atol=1e-9) and np.allclose(M, 0, atol=1e-9)
