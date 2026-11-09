@@ -14,7 +14,7 @@ def banco():
 
 def test_banco_traz_os_dois_ncrit(banco):
     nomes = sorted(banco.polares)
-    assert len(nomes) == 98
+    assert len(nomes) == 100
     assert any(n.endswith("@n4") for n in nomes) and any(n.endswith("@n7") for n in nomes)
     assert banco["BOLA@n4"].meta["ncrit"] == 4.0
 
