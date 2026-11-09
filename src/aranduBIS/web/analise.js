@@ -16,7 +16,7 @@ const Etapas = (() => {
 })();
 
 const Analise = (() => {
-  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["polares", "CL e CD (polares)"], ["tracao", "Tração do motor e hélice"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
+  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["dinamica", "Dinâmica de voo (modos)"], ["polares", "CL e CD (polares)"], ["tracao", "Tração do motor e hélice"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
   const MODULOS = {};
   let ativo = "equilibrio";
 

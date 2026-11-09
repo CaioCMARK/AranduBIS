@@ -193,3 +193,19 @@ def propulsao(p: dict) -> dict:
                         taxa_C=_num(p, "taxa_C", positivo=True) if p.get("taxa_C") else None)
     except ValueError as e:
         return {"erro": _erro(e)}
+
+def dinamica(p: dict) -> dict:
+    from ..nucleo.aero.dinamica import dinamica as din
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    I = {k: _num(p["inercias"], k) for k in ("Ixx", "Iyy", "Izz", "Ixz") if (p.get("inercias") or {}).get(k) is not None}
+    if I and len(I) < 4 and not all(k in I for k in ("Ixx", "Iyy", "Izz")):
+        return {"erro": "Informe Ixx, Iyy e Izz (e Ixz, ou zero), ou deixe todas vazias para usar as do modelo."}
+    I = ({"Ixz": 0.0, **I} if I else None)
+    try:
+        return din(esq, x_cg=None if p.get("x_cg") is None else _num(p, "x_cg"),
+                   V=_num(p, "V", 15.0, positivo=True), rho=_num(p, "rho", 1.1, positivo=True),
+                   massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True), I=I)
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}

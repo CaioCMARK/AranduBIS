@@ -126,6 +126,8 @@ def fazer_handler(est: Estado):
                     return self._json(AN.equilibrio(d))
                 if self.path == "/api/limites":
                     return self._json(AN.limites(d))
+                if self.path == "/api/dinamica":
+                    return self._json(AN.dinamica(d))
                 if self.path == "/api/propulsao":
                     return self._json(AN.propulsao(d))
                 if self.path == "/api/decolagem":
