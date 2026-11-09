@@ -62,3 +62,13 @@ def test_equilibrio_usa_o_cg_do_modelo_quando_ha_massas():
 def test_equilibrio_sem_asa_devolve_erro_legivel():
     r = AN.equilibrio({"esquema": {"elementos": []}, "x_cg": 0.1})
     assert "erro" in r and "asa" in r["erro"]
+
+def test_limites_devolve_cl_max_com_origem_das_polares():
+    import json
+    from pathlib import Path
+    d = json.loads((Path(__file__).resolve().parents[1] / "cases/geometria/generico/generico.json").read_text(encoding="utf-8"))
+    r = AN.limites({"esquema": d, "x_cg": 0.5})
+    assert 1.0 < r["CL_max"] < 2.0 and len(r["curva"]["alpha"]) >= 5
+    assert {p["origem"] for p in r["polares"]} <= {"banco", "aproximado"}
+    assert "erro" in AN.limites({"esquema": d, "ncrit": 5})
+    assert "erro" in AN.limites({"esquema": {"elementos": []}, "x_cg": 0.1})

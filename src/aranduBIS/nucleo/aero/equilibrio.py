@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .aeronave_vlm import superficies
+from .aeronave_vlm import avisos_de_ignoradas, superficies
 from .estabilidade import derivadas
 from .trim import trimar
 from .vlm import VLM, Superficie
@@ -24,7 +24,7 @@ def longitudinal(esq: dict, x_cg: float, V: float = 15.0, rho: float = 1.1, CL_a
                  comando: str | None = None, alphas=None, z_cg: float = 0.0) -> dict:
     vlm = monta(esq, x_cg, z_cg)
     S = vlm.superficies
-    avisos: list[str] = []
+    avisos: list[str] = avisos_de_ignoradas(esq)
     d = derivadas(vlm, 3.0, V=V, rho=rho, laterais=False)
     alphas = np.linspace(-4.0, 12.0, 17) if alphas is None else np.asarray(alphas, float)
     r = vlm.resolver(alphas, V=V, rho=rho)

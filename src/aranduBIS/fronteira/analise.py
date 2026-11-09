@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import re
+from pathlib import Path
 
 import numpy as np
 
@@ -111,6 +112,11 @@ def decolagem(p: dict) -> dict:
         "numba": DC.COM_NUMBA,
     }
 
+def _erro(e: Exception) -> str:
+    if isinstance(e, FileNotFoundError):
+        return "arquivo de perfil nao encontrado: " + Path(str(e.filename)).name
+    return str(e).split(chr(10))[0]
+
 def equilibrio(p: dict) -> dict:
     from ..nucleo.aero.equilibrio import longitudinal
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
@@ -127,7 +133,29 @@ def equilibrio(p: dict) -> dict:
             base = longitudinal(esq, 0.0, V=V, rho=rho)
             x_cg, origem = base["ponto_neutro"] - 0.15 * base["c_ref"], "estimado"
         r = longitudinal(esq, float(x_cg), V=V, rho=rho, CL_alvo=CL_alvo, comando=p.get("comando"))
-    except (GeometriaInvalida, ValueError) as e:
-        return {"erro": str(e).split("\n")[0]}
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
     r["cg_origem"] = origem
     return r
+
+def limites(p: dict) -> dict:
+    from ..nucleo.aero.limites import cl_max
+    from ..nucleo.aero.equilibrio import longitudinal
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    V, rho = _num(p, "V", 12.0, positivo=True), _num(p, "rho", 1.1, positivo=True)
+    ncrit = int(_num(p, "ncrit", 4.0, positivo=True))
+    if ncrit not in (4, 7):
+        return {"erro": "Ncrit do banco: 4 (ar livre) ou 7."}
+    x_cg = p.get("x_cg")
+    try:
+        if x_cg is None:
+            cg = AG.massa_e_cg(AG.constroi(esq))["cg_m"]
+            x_cg = float(cg[0]) if cg else None
+        if x_cg is None:
+            base = longitudinal(esq, 0.0, V=V, rho=rho)
+            x_cg = base["ponto_neutro"] - 0.15 * base["c_ref"]
+        return cl_max(esq, float(x_cg), V=V, rho=rho, ncrit=ncrit)
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}

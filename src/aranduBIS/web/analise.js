@@ -16,7 +16,7 @@ const Etapas = (() => {
 })();
 
 const Analise = (() => {
-  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
+  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["polares", "Polares e CL máximo"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
   const MODULOS = {};
   let ativo = "equilibrio";
 
@@ -26,9 +26,6 @@ const Analise = (() => {
       const d = Object.assign(document.createElement("div"), { className: "el" + (k === ativo ? " sel" : ""), textContent: n });
       d.onclick = () => { ativo = k; lista(); pinta(); };
       L.append(d);
-    });
-    ["Polares do perfil"].forEach(n => {
-      L.append(Object.assign(document.createElement("div"), { className: "el breve", textContent: n + " — em breve" }));
     });
   }
 
@@ -74,9 +71,10 @@ const Decolagem = (() => {
       if (c.g) { P.append(el("div", c.g, "grupo-par")); G = document.createElement("div"); G.className = "prop"; P.append(G); }
       const l = el("label", c.r); l.title = c.d;
       const caixa = document.createElement("div"); caixa.className = "campo-origem";
-      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; guarda(); agenda(); });
+      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; if (v.__o) delete v.__o[c.k]; guarda(); agenda(); });
       i.title = c.d;
-      caixa.append(i, el("span", c.o, "origem o-" + c.o));
+      const o = (v.__o || {})[c.k] || c.o;
+      caixa.append(i, el("span", o, "origem o-" + o));
       if (c.k === "S") {
         const b = el("button", "↻"); b.title = "Ler a área da Geometria";
         b.onclick = lerGeometria; caixa.append(b);
@@ -201,5 +199,8 @@ const Decolagem = (() => {
   Analise.registra("decolagem", {
     pinta() { parametros(); $("graficos2").className = "graficos"; agenda(); if (res) mostra(); },
   });
-  return { dados: () => ({ v, res }) };
+  return {
+    dados: () => ({ v, res }),
+    aplica(k, x, origem) { v[k] = x; (v.__o = v.__o || {})[k] = origem; guarda(); if (Analise.nome() === "decolagem") { parametros(); agenda(); } },
+  };
 })();

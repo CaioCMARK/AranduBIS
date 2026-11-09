@@ -59,9 +59,21 @@ def superficie_do_elemento(el: dict, pasta: str = ".", n_span: int | None = None
         perfil=raiz, perfil_ponta=ponta if ponta.nome != raiz.nome else None,
         n_span=n_span, n_chord=n_chord, de_referencia=el.get("referencia"))
 
+def sustenta(el: dict) -> bool:
+    if "sustenta" in el:
+        return bool(el["sustenta"])
+    return not el.get("guinada")
+
+def ignoradas(esq: dict) -> list[str]:
+    return [el.get("nome", "asa") for el in esq.get("elementos", []) if el.get("tipo") == "asa" and not sustenta(el)]
+
+def avisos_de_ignoradas(esq: dict) -> list[str]:
+    n = ignoradas(esq)
+    return [f"Fora do calculo de sustentacao: {', '.join(n)} (guinada diferente de zero ou \"sustenta\": false)."] if n else []
+
 def superficies(esq: dict, n_span: int | None = None, n_chord: int = 4) -> list[Superficie]:
     pasta = esq.get("_pasta", ".")
-    lista = [superficie_do_elemento(el, pasta, n_span, n_chord) for el in esq.get("elementos", []) if el.get("tipo") == "asa"]
+    lista = [superficie_do_elemento(el, pasta, n_span, n_chord) for el in esq.get("elementos", []) if el.get("tipo") == "asa" and sustenta(el)]
     if not lista:
         raise GeometriaInvalida("o modelo nao tem nenhuma asa: nada para o calculo aerodinamico")
     area = lambda s: s.planform.area * (1.0 if s.espelhada else 0.5)

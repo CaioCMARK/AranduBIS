@@ -124,6 +124,8 @@ def fazer_handler(est: Estado):
                     return self._json({"caminho": RG.grava(est.pasta, d.get("regra") or {}, d.get("nome", ""))})
                 if self.path == "/api/equilibrio":
                     return self._json(AN.equilibrio(d))
+                if self.path == "/api/limites":
+                    return self._json(AN.limites(d))
                 if self.path == "/api/decolagem":
                     return self._json(AN.decolagem(d))
                 if self.path == "/api/grava":

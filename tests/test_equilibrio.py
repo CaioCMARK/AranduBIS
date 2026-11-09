@@ -80,3 +80,11 @@ def test_resultado_vai_para_json(convencional):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         longitudinal(convencional, 0.5)
+
+def test_helice_desenhada_como_asa_fica_fora_do_calculo(convencional):
+    d = copy.deepcopy(convencional)
+    d["elementos"].append({"tipo": "asa", "nome": "helice", "rolagem": 90.0, "guinada": 90.0, "posicao": [0.0, 0.0, 0.1],
+                           "secoes": convencional["elementos"][1]["secoes"]})
+    r = longitudinal(d, 0.5)
+    assert "helice" not in [s["nome"] for s in r["superficies"]]
+    assert any("helice" in a for a in r["avisos"])
