@@ -423,7 +423,9 @@ class VLM:
                 raise ValueError(
                     f"v_local deve ter forma ({self.N}, 3), veio {v_local.shape}")
         if self.altura_solo is not None and not getattr(self, "_pular_solo", False):
-            return [self._resolver_com_solo(float(a), V, rho) for a in alphas]
+            return [self._resolver_com_solo(float(a), V, rho, delta_alpha=delta_alpha, delta_flap=delta_flap,
+                                            x_charneira=x_charneira, beta=beta, p=p, q_taxa=q_taxa, r_taxa=r_taxa,
+                                            v_local=v_local, guardar_campos=guardar_campos) for a in alphas]
 
         extra = np.zeros(self.N)
         for fonte, so_flape in ((delta_alpha, False), (delta_flap, True)):
@@ -510,15 +512,36 @@ class VLM:
                                       dCp=dcp, forca_painel=forca))
         return saida
 
-    def _resolver_com_solo(self, alpha: float, V: float, rho: float) -> ResultadoVLM:
-        import dataclasses
+    def _gira_ponto(self, pt: np.ndarray, alpha: float) -> np.ndarray:
+        al = np.radians(alpha)
+        c, s_ = np.cos(al), np.sin(al)
+        dx, dz = pt[..., 0] - self.x_ref, pt[..., 2] - self.z_ref
+        saida = np.array(pt, dtype=float, copy=True)
+        saida[..., 0] = self.x_ref + dx * c + dz * s_
+        saida[..., 2] = self.z_ref - dx * s_ + dz * c
+        return saida
 
-        giradas = [dataclasses.replace(s, incidencia=s.incidencia + alpha)
-                   for s in self.superficies]
-        aux = VLM(giradas, altura_solo=self.altura_solo,
-                  comprimento_esteira=self.comprimento_esteira)
-        aux._pular_solo = True
-        r = aux.resolver(0.0, V=V, rho=rho)[0]
+    def _aux_solo(self, alpha: float) -> "VLM":
+        import dataclasses
+        cache = self.__dict__.setdefault("_cache_solo", {})
+        chave = round(float(alpha), 9)
+        if chave not in cache:
+            if len(cache) > 64:
+                cache.clear()
+            giradas = []
+            for s in self.superficies:
+                p = self._gira_ponto(np.array([s.x_le, 0.0, s.z]), alpha)
+                giradas.append(dataclasses.replace(s, incidencia=s.incidencia + alpha, x_le=float(p[0]), z=float(p[2])))
+            aux = VLM(giradas, altura_solo=self.altura_solo, comprimento_esteira=self.comprimento_esteira,
+                      x_ref=float(self.x_ref + 0.0), z_ref=float(self.z_ref), usar_gpu=self.usar_gpu)
+            aux._pular_solo = True
+            cache[chave] = aux
+        return cache[chave]
+
+    def _resolver_com_solo(self, alpha: float, V: float, rho: float, **kw) -> ResultadoVLM:
+        import dataclasses
+        aux = self._aux_solo(alpha)
+        r = aux.resolver(0.0, V=V, rho=rho, **kw)[0]
         return dataclasses.replace(r, alpha=alpha)
 
     def _circulacao_liquida(self, G: np.ndarray) -> np.ndarray:
@@ -535,18 +558,7 @@ class VLM:
         al = np.radians(alpha)
 
         if self.altura_solo is not None and not getattr(self, "_pular_solo", False):
-            import dataclasses
-
-            giradas = [dataclasses.replace(s, incidencia=s.incidencia + alpha)
-                       for s in self.superficies]
-            aux = VLM(giradas, altura_solo=self.altura_solo,
-                      comprimento_esteira=self.comprimento_esteira)
-            aux._pular_solo = True
-            c, s_ = np.cos(al), np.sin(al)
-            p = pontos.copy()
-            p[:, 0] = pontos[:, 0] * c
-            p[:, 2] = pontos[:, 2] - pontos[:, 0] * s_
-            return aux.downwash_em(p, 0.0, V=V)
+            return self._aux_solo(alpha).downwash_em(self._gira_ponto(pontos, alpha), 0.0, V=V)
 
         Vinf = V * np.array([np.cos(al), 0.0, np.sin(al)])
         G = lu_solve(self._lu, -(self.normais @ Vinf))

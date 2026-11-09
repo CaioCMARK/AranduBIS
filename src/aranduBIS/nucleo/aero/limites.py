@@ -81,9 +81,19 @@ def atitude_de_solo(esq: dict) -> float | None:
         return None
     return -math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
 
+def altura_do_solo(esq: dict, alpha: float, x_ref: float, z_ref: float = 0.0) -> float | None:
+    pts = [(float(e["posicao"][0]), float(e["posicao"][2]) - float(e["diametro"]) / 2)
+           for e in esq.get("elementos", []) if e.get("tipo") == "roda"]
+    if not pts:
+        return None
+    al = math.radians(alpha)
+    zs = [z_ref - (x - x_ref) * math.sin(al) + (z - z_ref) * math.cos(al) for x, z in pts]
+    return z_ref - min(zs)
+
 def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int = 4,
            a_max: float = 24.0, passo: float = 1.0, caminho=None,
-           alpha_solo: float | None = None, CdA_proprio: float | None = None) -> dict:
+           alpha_solo: float | None = None, CdA_proprio: float | None = None,
+           altura: float | None = None, com_solo: bool = True, tabela_solo: bool = False) -> dict:
     vlm = VLM(superficies(esq), x_ref=float(x_cg))
     polares, info = polares_da_aeronave(vlm, ncrit, caminho)
     avisos = avisos_de_ignoradas(esq) + [i["nota"] for i in info if i["nota"]]
@@ -108,7 +118,24 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             alpha_solo = atitude_de_solo(esq)
             origem_solo = "geometria" if alpha_solo is not None else "padrao 0"
             alpha_solo = 0.0 if alpha_solo is None else alpha_solo
-        rs = tf.resolver(float(alpha_solo), V)
+        rl = tf.resolver(float(alpha_solo), V)
+        h = altura if altura is not None else altura_do_solo(esq, alpha_solo, float(x_cg))
+        origem_h = "voce" if altura is not None else "rodas"
+        rs, solo_tab, usou_solo = rl, None, False
+        if com_solo and h is not None and h > 0:
+            usou_solo = True
+            vs = VLM(superficies(esq), x_ref=float(x_cg), altura_solo=float(h))
+            rs = TeoriaDeFaixas(vs, polares, rho=rho).resolver(float(alpha_solo), V)
+            ref0 = rs.CL
+            solo_tab = [] if tabela_solo else None
+            for hh in ((h, 0.3, 0.6, 1.2) if tabela_solo else ()):
+                if hh < h - 1e-9:
+                    continue
+                q = VLM(superficies(esq), x_ref=float(x_cg), altura_solo=float(hh)).resolver(float(alpha_solo), V=V, rho=rho)[0]
+                solo_tab.append({"h": float(hh), "CL": float(q.CL), "CDi": float(q.CDi)})
+            if tabela_solo:
+                q = VLM(superficies(esq), x_ref=float(x_cg)).resolver(float(alpha_solo), V=V, rho=rho)[0]
+                solo_tab.append({"h": None, "CL": float(q.CL), "CDi": float(q.CDi)})
     avisos += sorted({str(x.message).split(" Acima")[0] for x in w if "ESTOL" in str(x.message)})
     if not r.convergiu:
         avisos.append(f"a iteracao nao fechou no pico ({r.motivo}): CL_max com incerteza maior")
@@ -118,6 +145,8 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
     CD_par = par["CD"] if CdA_proprio is None else CdA_proprio / vlm.S_ref
     avisos.append("Arrasto parasita estimado por componentes (Hoerner/Raymer), nao medido: o tunel do IPT mediu CD minimo bem acima do da asa limpa." if CdA_proprio is None
                   else f"Arrasto parasita fixado por voce: CdA = {CdA_proprio:g} m2.")
+    if h is None and com_solo:
+        avisos.append("Sem rodas no modelo e sem altura informada: efeito solo NAO considerado (CD de corrida pessimista).")
     if not rs.convergiu:
         avisos.append("a iteracao nao fechou no angulo de solo: CL e CD de corrida com incerteza maior")
     ref = next(s.nome for s in vlm.superficies if s.de_referencia)
@@ -131,6 +160,8 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             "inicio_estol_rel": None if inicio is None else float(inicio / semi),
             "convergiu": bool(r.convergiu), "CDp": float(r.CDp),
             "curva": {"alpha": [float(q.alpha) for q in curva], "CL": [float(q.CL) for q in curva], "CD": [float(q.CD + CD_par) for q in curva]},
+            "solo": {"usado": usou_solo, "h": None if h is None else float(h), "origem": origem_h if h is not None else "",
+                     "livre": {"CL": float(rl.CL), "CD": float(rl.CD + CD_par)}, "tabela": solo_tab},
             "corrida": {"alpha": float(alpha_solo), "origem": origem_solo, "CL": float(rs.CL), "CDi": float(rs.CDi), "CDp": float(rs.CDp),
                         "CD_parasita": float(CD_par), "CD": float(rs.CD + CD_par), "S_ref": float(vlm.S_ref)},
             "parasita": par, "polares": info, "avisos": avisos}

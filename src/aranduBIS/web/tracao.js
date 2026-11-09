@@ -2,7 +2,7 @@
 
 const Tracao = (() => {
   const CHAVE = "aranduBIS.tracao";
-  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 30, realista: true, celulas: "", v_celula: 3.6, capacidade_Ah: null, taxa_C: null };
+  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 18, realista: true, celulas: "", v_celula: 3.6, capacidade_Ah: null, taxa_C: null };
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   let cat = null, res = null, tempo = null, seq = 0;
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };

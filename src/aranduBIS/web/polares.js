@@ -7,6 +7,7 @@ const Polares = (() => {
     { k: "rho", r: "Densidade do ar (kg/m³)", p: 1.1, d: "1330 m de altitude-densidade ≈ 1,06." },
     { g: "Corrida no solo", k: "alpha_solo", r: "Ângulo de ataque no solo (°)", d: "Vazio = pela reta que toca o chão nas rodas." },
     { k: "CdA", r: "Arrasto parasita CdA (m²)", d: "Vazio = estimado por componentes (fuselagem, rodas, tubos, motor, deriva). Preencha se você mediu." },
+    { k: "altura", r: "Altura sobre o chão h (m)", d: "Do ponto de referência ao chão. Vazio = pelas rodas do modelo. Efeito solo: imagem do sistema de vórtices." },
     { g: "Banco de polares", k: "ncrit", r: "Ncrit do banco (4 ou 7)", p: 4, d: "4 = ar livre turbulento; 7 = ar mais limpo. Se o perfil só existe num deles, o outro é usado e avisado." },
   ];
   const CHAVE = "aranduBIS.polares";
@@ -23,16 +24,20 @@ const Polares = (() => {
       if (c.g) { P.append(el("div", c.g, "grupo-par")); G = document.createElement("div"); G.className = "prop"; P.append(G); }
       const l = el("label", c.r); l.title = c.d;
       const i = entrada("number", v[c.k], x => {
-        const nulavel = ["x_cg", "alpha_solo", "CdA"].includes(c.k);
+        const nulavel = ["x_cg", "alpha_solo", "CdA", "altura"].includes(c.k);
         if (x === null && nulavel) v[c.k] = null;
         else if (x === null || (c.k === "CdA" && !(x >= 0)) || (!nulavel && !(x > 0)) || (c.k === "ncrit" && x !== 4 && x !== 7)) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; }
         else v[c.k] = x;
         guarda(); agenda();
       });
       i.title = c.d;
-      if (v[c.k] === null) i.placeholder = { x_cg: "do modelo", alpha_solo: "da geometria", CdA: "estimado" }[c.k] || "";
+      if (v[c.k] === null) i.placeholder = { x_cg: "do modelo", alpha_solo: "da geometria", CdA: "estimado", altura: "pelas rodas" }[c.k] || "";
       G.append(l, i);
     });
+    const ls = el("label", "Efeito solo na corrida"); ls.title = "Desligado = voo livre: pessimista no arrasto induzido (a asa baixa de um biplano chega a perder 40 %).";
+    const cs = document.createElement("input"); cs.type = "checkbox"; cs.checked = v.com_solo !== false;
+    cs.onchange = () => { v.com_solo = cs.checked; guarda(); agenda(); };
+    P.append(ls, cs);
   }
 
   function agenda() { clearTimeout(tempo); tempo = setTimeout(calcula, 300); }
@@ -42,7 +47,7 @@ const Polares = (() => {
     if (!esq || !esq.elementos.length) { res = null; msg("Abra ou desenhe uma aeronave na etapa 1.", true); mostra(); return; }
     msg("Calculando o CL máximo (teoria de faixas, alguns segundos)…");
     try {
-      const r = await chama("/api/limites", { esquema: esq, x_cg: v.x_cg, V: v.V, rho: v.rho, ncrit: v.ncrit, alpha_solo: v.alpha_solo, CdA: v.CdA });
+      const r = await chama("/api/limites", { esquema: esq, x_cg: v.x_cg, V: v.V, rho: v.rho, ncrit: v.ncrit, alpha_solo: v.alpha_solo, CdA: v.CdA, altura: v.altura, com_solo: v.com_solo !== false });
       if (meu !== seq) return;
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }
@@ -87,6 +92,7 @@ const Polares = (() => {
     const lin = (r, x, u) => `<tr><td>${r}</td><td>${x}</td><td>${u}</td></tr>`;
     q.innerHTML = "<tr><th>corrida (α = " + fmt(k.alpha, 2) + "°, " + k.origem + ")</th><th>valor</th><th></th></tr>"
       + lin("CL", fmt(k.CL, 3), "") + lin("CD induzido", fmt(k.CDi, 4), "") + lin("CD de perfil (polares)", fmt(k.CDp, 4), "")
+      + (res.solo.usado ? lin("Efeito solo", "h = " + fmt(res.solo.h, 3) + " m (" + res.solo.origem + ")", "em voo livre: CL " + fmt(res.solo.livre.CL, 2) + ", CD " + fmt(res.solo.livre.CD, 3)) : "")
       + lin("CD parasita (estimado)", fmt(k.CD_parasita, 4), "") + lin("CD total", fmt(k.CD, 4), "ref. S = " + fmt(k.S_ref, 3) + " m²")
       + res.parasita.partes.map(p => lin("· " + p.nome, fmt(p.CD, 4), "CdA " + fmt(p.CdA, 4) + " m²")).join("");
     C.append(q);

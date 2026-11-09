@@ -160,7 +160,9 @@ def limites(p: dict) -> dict:
         cda = p.get("CdA")
         return cl_max(esq, float(x_cg), V=V, rho=rho, ncrit=ncrit,
                       alpha_solo=None if a_solo is None else _num(p, "alpha_solo"),
-                      CdA_proprio=None if cda is None else _num(p, "CdA"))
+                      CdA_proprio=None if cda is None else _num(p, "CdA"),
+                      altura=None if p.get("altura") is None else _num(p, "altura", positivo=True),
+                      com_solo=bool(p.get("com_solo", True)))
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
