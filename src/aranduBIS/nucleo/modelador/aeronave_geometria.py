@@ -117,7 +117,7 @@ def _pivos_dos_comandos(comandos, secoes, x, Z):
                 zs = (1 - t) * Z[i][0] + t * Z[i + 1][0]
                 zi = (1 - t) * Z[i][1] + t * Z[i + 1][1]
                 contorno = ES.anel_de(x, zs, zi)
-                xc = SC.charneira_em(comando, q[3])
+                xc = SC.charneira_em(comando, q[3], q[0])
                 zc = SC._altura_do_eixo(contorno, xc, comando.get("charneira", "meio"))
                 incidencia = np.radians(q[4])
                 ao_longo_da_corda = np.array([np.cos(incidencia), 0, -np.sin(incidencia)])
@@ -156,7 +156,7 @@ def _constroi_asa_aneis(el, nome, esq):
             if d * q[3] > flecha: flecha = d * q[3]; corte = {"y": y, "x": np.round(x, 5).tolist(), "zs0": np.round(zs0, 6).tolist(), "zi0": np.round(zi0, 6).tolist(), "zs": np.round(zs, 6).tolist(), "zi": np.round(zi, 6).tolist()}
             coef = max(coef, d)
         ai = np.radians(q[4]); cd = np.array([np.cos(ai), 0, -np.sin(ai)]); nd = np.array([np.sin(ai), 0, np.cos(ai)]); A0 = ES.anel_de(x, zs, zi)
-        if comandos: A0 = SC.aplica(A0, comandos, y, y_ponta, q[3])
+        if comandos: A0 = SC.aplica(A0, comandos, y, y_ponta, q[3], q[0])
         aneis.append(np.array(q[:3]) + q[3] * (A0[:, 0:1] * cd + A0[:, 1:2] * nd)); D.append(A0)
     V = np.vstack(aneis); ns = len(est); mA = 2 * n - 2; T = []; lab = []; idx = lambda j, k: j * mA + (k % mA)
     for j in range(ns - 1):

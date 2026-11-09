@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 
+from ..modelador import superficies_comando as SC
 from .aeronave_vlm import avisos_de_ignoradas
 from .dinamica import dinamica
 from .equilibrio import monta
@@ -20,7 +21,7 @@ def comandos_de_rolagem(esq: dict) -> list[tuple[str, dict]]:
             continue
         for c in el.get("controles") or []:
             if c.get("modo") == "anti":
-                sai.append((el.get("nome"), c))
+                sai.append((el.get("nome"), SC.resolve(c, el.get("secoes") or [])))
     return sai
 
 def _faixas(info: dict, c: dict) -> tuple[np.ndarray, float]:

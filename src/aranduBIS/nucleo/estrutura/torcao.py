@@ -161,8 +161,10 @@ def aeroelastica(y, c, GJ, ea_c, ac_c, ail, a, rho, Vd, fator, eficiencia=0.85, 
     return saida
 
 def _ail_de(el, c_ref):
+    from ..modelador.superficies_comando import resolve
     for ct in el.get("controles", []):
         if ct.get("modo") == "anti":
+            ct = resolve(ct, el.get("secoes") or [])
             y0, y1 = (abs(float(v)) for v in ct["y"])
             return (min(y0, y1), max(y0, y1), float(ct["corda"]) if "corda" in ct else None, float(ct["xc"]) if "xc" in ct else None)
     return None

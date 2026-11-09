@@ -65,18 +65,20 @@ def estacoes_extras(controles, ys):
                 extras += [a, -a]
     return [y for y in extras if ys[0] < y < ys[-1]]
 
-def charneira_em(controle, corda_local):
+def charneira_em(controle, corda_local, xle=0.0):
+    if "x" in controle:
+        return min(0.95, max(0.05, (float(controle["x"]) - xle) / corda_local))
     if "corda" in controle:
         return max(0.05, 1.0 - float(controle["corda"]) / corda_local)
     return float(controle.get("xc", 0.75))
 
-def aplica(anel, controles, y, y_ponta, corda_local=1.0):
+def aplica(anel, controles, y, y_ponta, corda_local=1.0, xle=0.0):
     anel = np.array(anel, float)
     for c in controles:
         fator = fator_envergadura(c, y, y_ponta) * _sinal_do_lado(c, y)
         angulo = np.radians(float(c.get("deflexao", 0.0))) * fator
         if angulo != 0.0:
-            xc = charneira_em(c, corda_local)
+            xc = charneira_em(c, corda_local, xle)
             anel = _gira_atras_da_charneira(
                 anel, xc, angulo, bool(c.get("movel")), c.get("charneira", "meio")
             )
@@ -127,3 +129,11 @@ def lista(esquema):
         for c in elemento.get("controles", []):
             saida.append({"elemento": elemento.get("nome"), **c})
     return saida
+
+def resolve(controle, secoes):
+    if "x" not in controle or not secoes:
+        return controle
+    S = sorted((abs(float(s["y"])), float(s.get("xle", 0.0)), float(s["corda"])) for s in secoes)
+    ys = np.array([q[0] for q in S]); y0, y1 = (abs(float(v)) for v in controle["y"]); g = np.linspace(min(y0, y1), max(y0, y1), 21)
+    te = np.interp(g, ys, [q[1] + q[2] for q in S])
+    return dict(controle, corda=float(np.mean(te - float(controle["x"]))))
