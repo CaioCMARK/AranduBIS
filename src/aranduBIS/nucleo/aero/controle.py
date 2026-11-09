@@ -7,6 +7,8 @@ import numpy as np
 from .aeronave_vlm import avisos_de_ignoradas
 from .dinamica import dinamica
 from .equilibrio import monta
+from .limites import polares_da_aeronave
+from .polares import reynolds
 
 OPCOES = ("sobe_desce", "so_sobe")
 
@@ -51,6 +53,36 @@ def _deflexoes(vlm, ailerons, opcao: str, sobe: float, desce: float, lado: int =
         saida[nome] = np.radians(d)
     return saida, float(np.mean(xcs)) if xcs else 0.75
 
+def margem_de_estol(vlm, polares: dict, ailerons, alpha: float, dflap: dict, xc: float, V: float, rho: float,
+                    passo: float = 1.0, ate: float = 20.0) -> dict:
+    alfas = alpha + np.arange(0.0, ate + 1e-9, passo)
+    rs = vlm.resolver(alfas, V=V, rho=rho, delta_flap=dflap or None, x_charneira=xc)
+    melhor = None
+    for nome, c in ailerons:
+        info, pol = vlm._fatias[nome], polares.get(nome)
+        if pol is None:
+            continue
+        y = np.asarray(info["y"], float)
+        ext = np.abs(y) >= float(c["y"][0])
+        idx = np.flatnonzero(ext)
+        cmax = np.array([pol.cl_max(float(reynolds(V, float(info["c"][i]), rho)))[0] for i in idx])
+        margem = np.array([cmax - np.asarray(r.cl_faixa[nome], float)[idx] for r in rs])
+        pior = margem.min(axis=1)
+        k = int(np.argmax(pior <= 0)) if (pior <= 0).any() else None
+        if k is None:
+            da = float(ate)
+        elif k == 0:
+            da = 0.0
+        else:
+            da = float(passo * (k - 1) + passo * pior[k - 1] / (pior[k - 1] - pior[k]))
+        i_crit = int(np.argmin(margem[0]))
+        cand = {"delta_alpha_graus": da, "ilimitado": k is None, "superficie": nome, "y_critico": float(y[idx][i_crit]),
+                "cl_demanda": float(np.asarray(rs[0].cl_faixa[nome], float)[idx][i_crit]), "cl_max_perfil": float(cmax[i_crit])}
+        if melhor is None or da < melhor["delta_alpha_graus"]:
+            melhor = cand
+    return melhor or {"delta_alpha_graus": float("nan"), "ilimitado": False, "superficie": None, "y_critico": None,
+                      "cl_demanda": None, "cl_max_perfil": None}
+
 def _tempo_ate(phi_graus: float, p_ss: float, tau: float) -> float | None:
     alvo = math.radians(phi_graus)
     if p_ss <= 0 or alvo <= 0:
@@ -70,7 +102,7 @@ def autoridade_rolagem(esq: dict, x_cg: float | None = None, V: float = 15.0, rh
                        massa_kg: float | None = None, I: dict | None = None, raios: dict | None = None,
                        modo_inercia: str = "auto", sobe_max: float = 30.0, desce_max: float = 25.0,
                        pb2V_min: float = 0.05, t_inclinacao_max: float = 1.5, inclinacao: float = 30.0,
-                       beta: float = 0.0) -> dict:
+                       beta: float = 0.0, ncrit: int = 4) -> dict:
     ailerons = comandos_de_rolagem(esq)
     if not ailerons:
         raise ValueError("o modelo nao tem ailerons: declare um comando com \"modo\": \"anti\" em uma asa")
@@ -86,24 +118,34 @@ def autoridade_rolagem(esq: dict, x_cg: float | None = None, V: float = 15.0, rh
     if Cl_p >= 0:
         avisos.append("Clp >= 0: sem amortecimento em rolagem no modelo; a taxa de regime nao existe.")
 
-    def um(opcao, sobe, desce):
-        piores = None
+    polares, info_pol = polares_da_aeronave(vlm, ncrit)
+    for i in info_pol:
+        if i["origem"] == "aproximado" and any(i["superficie"] == n for n, _ in ailerons):
+            avisos.append(f"Perfil de {i['superficie']} aproximado para o estol local: {i['nota']}")
+    xc0 = _deflexoes(vlm, ailerons, "sobe_desce", 0.0, 0.0)[1]
+    sem = margem_de_estol(vlm, polares, ailerons, alpha, {}, xc0, V, rho)
+
+    def um(opcao, sobe, desce, com_estol=False):
+        piores, pior_estol = None, None
         for lado in (+1, -1):
             dflap, xc = _deflexoes(vlm, ailerons, opcao, sobe, desce, lado)
             r = vlm.resolver(alpha, V=V, rho=rho, beta=beta, delta_flap=dflap, x_charneira=xc)[0]
             cl, cn = float(r.Cl - base.Cl), float(r.Cn - base.Cn)
+            est = margem_de_estol(vlm, polares, ailerons, alpha, dflap, xc, V, rho) if com_estol else None
             if piores is None or abs(cl) < abs(piores["Cl"]):
                 piores = {"Cl": cl, "Cn": cn, "xc": xc, "lado": lado}
+            if com_estol and (pior_estol is None or est["delta_alpha_graus"] < pior_estol["delta_alpha_graus"]):
+                pior_estol = est
         pb2V = abs(piores["Cl"] / Cl_p) if Cl_p < 0 else float("nan")
         p_ss = pb2V * 2.0 * V / b if math.isfinite(pb2V) else float("nan")
         t_inc = _tempo_ate(inclinacao, p_ss, tau) if math.isfinite(p_ss) and math.isfinite(tau) else None
         return {"opcao": opcao, "sobe": sobe, "desce": desce if opcao == "sobe_desce" else 0.0, "Cl_comando": piores["Cl"],
                 "Cn_comando": piores["Cn"], "pb2V": pb2V, "p_regime_graus_s": math.degrees(p_ss) if math.isfinite(p_ss) else None,
                 "tempo_inclinacao_s": t_inc, "guinada_adversa": piores["Cn"] / piores["Cl"] if abs(piores["Cl"]) > 1e-9 else None,
-                "xc": piores["xc"], "ok_pb2V": bool(math.isfinite(pb2V) and pb2V >= pb2V_min),
+                "xc": piores["xc"], "estol_local": pior_estol, "ok_pb2V": bool(math.isfinite(pb2V) and pb2V >= pb2V_min),
                 "ok_tempo": bool(t_inc is not None and t_inc <= t_inclinacao_max)}
 
-    opcoes = {"sobe_desce": um("sobe_desce", sobe_max, desce_max), "so_sobe": um("so_sobe", sobe_max, 0.0)}
+    opcoes = {"sobe_desce": um("sobe_desce", sobe_max, desce_max, True), "so_sobe": um("so_sobe", sobe_max, 0.0, True)}
     graus = list(np.linspace(2.0, max(sobe_max, desce_max), 8))
     curva = {"deflexao": [float(g) for g in graus],
              "sobe_desce": [um("sobe_desce", g, g)["pb2V"] for g in graus],
@@ -114,4 +156,4 @@ def autoridade_rolagem(esq: dict, x_cg: float | None = None, V: float = 15.0, rh
     return {"V": V, "rho": rho, "alpha": alpha, "m": din["m"], "origem_inercia": din["origem_inercia"], "Ixx": Ixx,
             "tau_rolagem_s": tau, "Cl_p": Cl_p, "S_ref": S, "b_ref": b, "criterios": {"pb2V_min": pb2V_min, "t_inclinacao_max": t_inclinacao_max, "inclinacao": inclinacao},
             "ailerons": [{"elemento": n, "nome": c.get("nome"), "y": c["y"], "corda": c.get("corda"), "xc": c.get("xc")} for n, c in ailerons],
-            "opcoes": opcoes, "curva": curva, "avisos": avisos}
+            "estol_sem_comando": sem, "opcoes": opcoes, "curva": curva, "avisos": avisos}

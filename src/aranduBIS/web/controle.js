@@ -43,7 +43,7 @@ const Controle = (() => {
     ["Ixx", "Iyy", "Izz", "Ixz"].forEach(k => { if (d[k] !== null && d[k] !== undefined) I[k] = d[k]; });
     return { esquema: esq, V: v.V, rho: d.rho || 1.1, x_cg: d.x_cg, massa_kg: d.massa_kg > 0 ? d.massa_kg : null, modo_inercia: d.modo,
              raios: { rx: d.rx, ry: d.ry, rz: d.rz }, inercias: Object.keys(I).length ? I : null,
-             sobe_max: v.sobe_max, desce_max: v.desce_max, pb2V_min: v.pb2V_min, t_inclinacao_max: v.t_inclinacao_max, inclinacao: v.inclinacao, beta: v.beta };
+             sobe_max: v.sobe_max, desce_max: v.desce_max, pb2V_min: v.pb2V_min, t_inclinacao_max: v.t_inclinacao_max, inclinacao: v.inclinacao, beta: v.beta, ncrit: +Padroes.get("polares.ncrit_banco") || 4 };
   }
 
   async function calcula() {
@@ -100,10 +100,14 @@ const Controle = (() => {
       + lin("pb/2V em regime", x => `${fmt(x.pb2V, 3)} ${x.ok_pb2V ? "(ok)" : "(FORA)"}`)
       + lin("Taxa de rolagem em regime (°/s)", x => x.p_regime_graus_s === null ? "—" : fmt(x.p_regime_graus_s, 0))
       + lin(`Tempo até ${fmt(res.criterios.inclinacao, 0)}° (s)`, x => x.tempo_inclinacao_s === null ? "—" : `${fmt(x.tempo_inclinacao_s, 2)} ${x.ok_tempo ? "(ok)" : "(FORA)"}`)
+      + lin("Margem de estol local (° de α acima do equilíbrio)", x => !x.estol_local ? "—" : (x.estol_local.ilimitado ? "> " : "") + fmt(x.estol_local.delta_alpha_graus, 1))
+      + lin("cl pedido / cl máx. do perfil, faixa crítica", x => !x.estol_local || x.estol_local.cl_demanda === null ? "—" : `${fmt(x.estol_local.cl_demanda, 2)} / ${fmt(x.estol_local.cl_max_perfil, 2)} (y = ${fmt(Math.abs(x.estol_local.y_critico), 2)} m)`)
       + lin("Guinada adversa Cn/Cl (negativo = adversa)", x => x.guinada_adversa === null ? "—" : fmt(x.guinada_adversa, 2))
       + lin("Charneira (fração da corda)", x => fmt(x.xc, 2));
     C.append(t);
     C.append(el("div", `Constante de tempo da rolagem τ = ${fmt(res.tau_rolagem_s, 2)} s (Ixx = ${fmt(res.Ixx, 2)} kg·m², ${res.origem_inercia}); Clp = ${fmt(res.Cl_p, 3)}. Ailerons: ` + res.ailerons.map(a => `${a.nome} (${a.elemento})`).join(", ") + ".", "nota"));
+    const sem = res.estol_sem_comando;
+    if (sem && sem.superficie) C.append(el("div", `Sem deflexão, o estol local só começa ${fmt(sem.delta_alpha_graus, 1)}° acima do equilíbrio (cl máx. 2D do perfil ${fmt(sem.cl_max_perfil, 2)}, em ${sem.superficie}). Margem = quanto α pode subir, com o aileron todo deflexionado, até o cl pedido pelo VLM igualar o cl máx. 2D do perfil na região do aileron para fora.`, "nota"));
     res.avisos.forEach(a => C.append(el("div", a, "nota")));
     C.append(el("div", "VLM invíscido: a autoridade real é menor, e o aileron para baixo separa antes do que o modelo mostra (é o argumento do só sobe). Critérios são hipóteses de projeto, ajustáveis nas Configurações.", "nota"));
   }

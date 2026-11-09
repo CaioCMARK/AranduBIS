@@ -46,3 +46,10 @@ def test_sem_aileron_avisa(biplano):
 def test_fronteira_devolve_as_opcoes(biplano):
     out = AN.controle({"esquema": biplano, "V": 15, "massa_kg": 15.0, "raios": {}, "sobe_max": 20, "desce_max": 20})
     assert set(out["opcoes"]) == {"sobe_desce", "so_sobe"} and out["opcoes"]["sobe_desce"]["sobe"] == 20
+
+def test_margem_de_estol_local(r):
+    sem = r["estol_sem_comando"]["delta_alpha_graus"]
+    a, b = r["opcoes"]["sobe_desce"]["estol_local"], r["opcoes"]["so_sobe"]["estol_local"]
+    assert 0 < a["delta_alpha_graus"] < sem
+    assert b["delta_alpha_graus"] > a["delta_alpha_graus"]
+    assert a["cl_demanda"] > b["cl_demanda"] > 0 and a["cl_max_perfil"] > 0
