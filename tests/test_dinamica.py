@@ -54,6 +54,7 @@ def test_sem_massa_declarada_pede_massa_e_inercias(gen):
 def test_modelo_com_massa_pequena_avisa_que_faltam_pecas():
     d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    d["elementos"] = [e for e in d["elementos"] if e["nome"] != "massa_equivalente"]
     r = dinamica(d, V=12, massa_kg=12.0)
     assert any("faltam bateria, motor e carga" in a for a in r["avisos"])
     assert inercias(d)["Ixx"] > 0.1

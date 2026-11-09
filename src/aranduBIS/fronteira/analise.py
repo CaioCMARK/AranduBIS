@@ -126,15 +126,19 @@ def equilibrio(p: dict) -> dict:
     esq = p.get("esquema") or {}
     V, rho = _num(p, "V", 15.0, positivo=True), _num(p, "rho", 1.1, positivo=True)
     CL_alvo = _num(p, "CL_alvo", positivo=True) if p.get("CL_alvo") is not None else None
-    x_cg, origem = p.get("x_cg"), "voce"
+    x_cg, origem, z_cg = p.get("x_cg"), "voce", 0.0
     try:
-        if x_cg is None:
+        cg = None
+        if x_cg is None or esq.get("elementos"):
             cg = AG.massa_e_cg(AG.constroi(esq))["cg_m"]
+        if cg:
+            z_cg = float(cg[2])
+        if x_cg is None:
             x_cg, origem = (float(cg[0]), "massas do modelo") if cg else (None, "")
         if x_cg is None:
             base = longitudinal(esq, 0.0, V=V, rho=rho)
             x_cg, origem = base["ponto_neutro"] - 0.15 * base["c_ref"], "estimado"
-        r = longitudinal(esq, float(x_cg), V=V, rho=rho, CL_alvo=CL_alvo, comando=p.get("comando"))
+        r = longitudinal(esq, float(x_cg), V=V, rho=rho, CL_alvo=CL_alvo, comando=p.get("comando"), z_cg=z_cg)
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
     r["cg_origem"] = origem
@@ -192,6 +196,18 @@ def propulsao(p: dict) -> dict:
                         capacidade_Ah=_num(p, "capacidade_Ah", positivo=True) if p.get("capacidade_Ah") else None,
                         taxa_C=_num(p, "taxa_C", positivo=True) if p.get("taxa_C") else None)
     except ValueError as e:
+        return {"erro": _erro(e)}
+
+def envelope_cg(p: dict) -> dict:
+    from ..nucleo.aero.envelope import envelope_cg as env
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    try:
+        return env(p.get("esquema") or {}, V=_num(p, "V", 15.0, positivo=True), rho=_num(p, "rho", 1.1, positivo=True),
+                   massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True),
+                   CL_alvo=None if p.get("CL_alvo") is None else _num(p, "CL_alvo", positivo=True),
+                   margem_minima=_num(p, "margem_minima", 0.05, positivo=True))
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
 def _args_dinamica(p: dict) -> dict:

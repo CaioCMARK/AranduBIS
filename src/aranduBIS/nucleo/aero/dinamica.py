@@ -66,6 +66,10 @@ def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float =
     origem_m = "voce" if massa_kg else "modelo"
     cg = prop["cg"] if x_cg is None else [float(x_cg), prop["cg"][1], prop["cg"][2]]
     z = float(z_cg) if z_cg is not None else float(cg[2])
+    decl = esq.get("inercias") or {}
+    declarada = False
+    if not I and all(decl.get(k) is not None for k in ("Ixx", "Iyy", "Izz")):
+        I, declarada = {k: float(decl.get(k, 0.0)) for k in ("Ixx", "Iyy", "Izz", "Ixz")}, True
     usa_raio = (not I and raios is not None and
                 (modo_inercia == "raio" or (modo_inercia == "auto" and (not com_modelo or prop["m"] < 0.5 * m))))
     if usa_raio:
@@ -75,7 +79,7 @@ def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float =
         avisos.append(f"Inércias estimadas por raio de giro (b = {est['b']:.2f} m, L = {est['L']:.2f} m): são hipótese de projeto, não medida.")
     else:
         Ixx, Iyy, Izz, Ixz = (float((I or {}).get(k, prop[k])) for k in ("Ixx", "Iyy", "Izz", "Ixz"))
-        origem_I = "voce" if I else "modelo"
+        origem_I = "declarada no modelo" if declarada else ("voce" if I else "modelo")
     if min(Ixx, Iyy, Izz) <= 0 or Iyy > Ixx + Izz or Ixx > Iyy + Izz or Izz > Ixx + Iyy:
         avisos.append("As inércias violam a desigualdade triangular (cada uma deve ser ≤ soma das outras duas): "
                       "não descrevem um corpo rígido real; confira os valores e os eixos.")

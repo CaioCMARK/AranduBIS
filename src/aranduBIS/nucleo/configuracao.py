@@ -69,6 +69,8 @@ OPCOES: tuple[Opcao, ...] = (
           "1,225 ao nível do mar; 1,06 a 1330 m de altitude-densidade.", minimo=0.5, maximo=1.4),
     Opcao("analise.CL_alvo", "Padrões da análise", "CL a equilibrar", 0.8,
           "CL em que a aeronave deve voar equilibrada (cruzeiro).", minimo=0.1, maximo=3.0),
+    Opcao("analise.margem_estatica_min", "Padrões da análise", "Margem estática mínima (fração da MAC)", 0.05,
+          "Piso exigido em todo o envelope de CG. 0,05 = 5% da MAC (hipótese de projeto).", minimo=0.0, maximo=0.5),
     Opcao("analise.efeito_solo", "Padrões da análise", "Efeito solo na corrida", True,
           "Considera o chão (imagem do sistema de vórtices) no CL e no CD da corrida e da subida."),
     Opcao("tracao.potencia_w", "Padrões da tração", "Potência na bateria (W)", 600.0,

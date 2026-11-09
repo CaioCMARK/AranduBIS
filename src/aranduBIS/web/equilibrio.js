@@ -8,7 +8,7 @@ const Equilibrio = (() => {
     { k: "CL_alvo", cfg: "analise.CL_alvo", r: "CL a equilibrar", p: 0.8, o: "você", d: "O CL em que a aeronave deve voar equilibrada. Vazio = só estabilidade." },
   ];
   const CHAVE = "aranduBIS.equilibrio";
-  let v = {}, res = null, tempo = null, seq = 0;
+  let v = {}, res = null, env = null, tempo = null, seq = 0;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = c.p === undefined ? null : c.p; });
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
@@ -46,6 +46,18 @@ const Equilibrio = (() => {
       if (meu !== seq) return;
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }
+    mostra();
+    calculaEnvelope(meu);
+  }
+
+  async function calculaEnvelope(meu) {
+    env = null;
+    try {
+      const r = await chama("/api/envelope_cg", { esquema: esq, V: v.V, rho: v.rho, CL_alvo: v.CL_alvo,
+        margem_minima: Padroes.get("analise.margem_estatica_min") || 0.05 });
+      if (meu !== seq) return;
+      env = r.erro ? null : r;
+    } catch (e) { return; }
     mostra();
   }
 
@@ -95,6 +107,13 @@ const Equilibrio = (() => {
       + (res.trim ? lin("α de equilíbrio", fmt(res.trim.alpha, 2), "°") + lin("CL de equilíbrio", fmt(res.trim.CL, 3), "") + lin("CD induzido", fmt(res.trim.CDi, 4), "") : "")
       + res.superficies.map(s => lin("Superfície " + s.nome, s.vertical ? "vertical" : (s.referencia ? "asa (referência)" : "estabilizadora/comando"), "")).join("");
     C.append(t);
+    if (env && env.itens) {
+      const q = document.createElement("table");
+      q.innerHTML = `<tr><th>Envelope de CG (${env.ok ? "aceito" : "FORA do critério"})</th><th>x (m)</th><th>z (m)</th><th>x (% MAC)</th><th>margem estática (% da MAC)</th><th>α de equilíbrio (°)</th><th>comando (°)</th></tr>`
+        + env.itens.map(i => `<tr${i.nome === env.pior ? ' class="pior"' : ""}><td>${i.nome}${i.nome === env.pior ? " (pior)" : ""}</td><td>${fmt(i.x, 3)}</td><td>${fmt(i.z, 3)}</td><td>${i.x_mac === null ? "—" : fmt(100 * i.x_mac, 1)}</td><td>${fmt(100 * i.margem_estatica, 1)} ${i.estavel && i.margem_estatica >= env.margem_minima_exigida ? "" : "(FORA)"}</td><td>${i.alpha === null ? "—" : fmt(i.alpha, 2)}</td><td>${i.deflexao === null ? "—" : fmt(i.deflexao, 2)}</td></tr>`).join("");
+      C.append(q);
+      C.append(el("div", `Envelope declarado no modelo${env.fonte ? ": " + env.fonte : ""}. Margem mínima exigida: ${fmt(100 * env.margem_minima_exigida, 0)} % da MAC (Configurações). Equilíbrio no CL = ${fmt(env.CL, 2)} (sustenta o peso a ${fmt(env.V, 0)} m/s).`, "nota"));
+    }
     (res.avisos || []).forEach(a => C.append(el("div", a, "nota")));
   }
 
