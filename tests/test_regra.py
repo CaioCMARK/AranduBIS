@@ -90,3 +90,10 @@ def test_igual_a_regra_tabelada_do_arandu_em_missoes_sorteadas():
         ref = velha.pontuar(Missao(**kw)).total
         novo = R.avaliar(r, {"CP_bruta": cp, "PV": pv, "t": t, "parada_na_area": float(area)})["total"]
         assert novo == pytest.approx(ref, rel=1e-9, abs=1e-9)
+
+def test_mensagem_de_nome_desconhecido_e_curta():
+    r = _regra()
+    r["itens"].append({"nome": "X", "formula": "ZZ + 1", "quando": "", "descricao": ""})
+    a = R.avaliar(r, {"PV": 5, "CP_bruta": 10})
+    erro = {x["nome"]: x for x in a["itens"]}["X"]["erro"]
+    assert "ZZ" in erro and len(erro) < 160 and "\n" not in erro

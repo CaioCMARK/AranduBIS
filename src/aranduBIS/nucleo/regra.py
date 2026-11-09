@@ -70,7 +70,7 @@ def conferir(regra: dict) -> list[str]:
             if falta:
                 p.append(f"{onde}: usa {', '.join(falta)}, que ainda não existe nesta altura da regra")
         except ErroDeFormula as e:
-            p.append(str(e).split("\n")[0])
+            p.append(_curta(e))
         novo(g.get("nome"), onde)
     if not regra.get("itens"):
         p.append("A regra não tem nenhum item: a pontuação seria sempre zero.")
@@ -88,15 +88,21 @@ def conferir(regra: dict) -> list[str]:
                 if falta:
                     p.append(f"{rot}: usa {', '.join(falta)}, que a regra não define")
             except ErroDeFormula as e:
-                p.append(str(e).split("\n")[0])
+                p.append(_curta(e))
     if regra.get("so_conta_se"):
         try:
             falta = sorted(nomes_usados(regra["so_conta_se"], "condição geral") - vistos)
             if falta:
                 p.append(f"condição geral: usa {', '.join(falta)}, que a regra não define")
         except ErroDeFormula as e:
-            p.append(str(e).split("\n")[0])
+            p.append(_curta(e))
     return p
+
+def _curta(e: Exception) -> str:
+    t = str(e).split("\n")[0]
+    for corte in (" Disponiveis", " Disponíveis", " Disponiv"):
+        t = t.split(corte)[0]
+    return t.rstrip(" .:") + "."
 
 def _num(x):
     return None if x is None or (isinstance(x, float) and not math.isfinite(x)) else float(x)
@@ -113,7 +119,7 @@ def avaliar(regra: dict, valores: dict | None = None) -> dict:
         try:
             return float(_avalia(compilar(txt, onde), ctx, onde)), None
         except ErroDeFormula as e:
-            return None, str(e).split("\n")[0]
+            return None, _curta(e)
         except (ZeroDivisionError, OverflowError, ValueError) as e:
             return None, f"{onde}: {e}"
 

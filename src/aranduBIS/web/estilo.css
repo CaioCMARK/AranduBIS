@@ -72,3 +72,37 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 #arq_corpo td:nth-child(2){color:var(--suave);white-space:nowrap}
 #arq_corpo button{margin:1px 6px}
 dialog .abas div{cursor:pointer}
+.g1-grupo{display:contents}
+body[data-etapa="2"] .g1-grupo{display:none}
+.etapas div[data-etapa]{cursor:pointer}
+.etapas div[data-etapa]:hover{color:var(--tinta)}
+.centro.dois{grid-template-rows:auto 1fr 36%}
+.veredito{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--linha);font-size:13px}
+.veredito.ok{background:rgba(70,160,90,.2);border-left:5px solid #46a05a}
+.veredito.ruim{background:rgba(200,80,80,.2);border-left:5px solid #c85050}
+.veredito.neutro{background:var(--painel)}
+.veredito .nome-regra{font-weight:600;min-width:12em;border:1px solid var(--linha);background:var(--painel);padding:2px 6px}
+.veredito .total{margin-left:auto;font-size:14px}
+.graficos{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);min-height:0;overflow:hidden}
+.graficos.coluna{display:block;overflow:auto;background:var(--painel)}
+.graf{background:var(--painel);min-height:0;min-width:0;overflow:hidden}
+.graf.grande{height:100%;min-height:180px}
+.graf svg{display:block}
+.el.breve{opacity:.45;cursor:default}
+.grupo-par{padding:5px 8px 0;font-weight:600;color:var(--suave);font-size:11.5px}
+.campo-origem{display:flex;gap:4px;align-items:center}
+.campo-origem input{flex:1;min-width:0}
+.campo-origem button{padding:0 5px;min-height:22px}
+.origem{font-size:10px;padding:0 4px;border:1px solid var(--linha);border-radius:8px;white-space:nowrap;color:var(--suave)}
+.o-estimado{border-color:var(--cobre);color:var(--cobre)}
+.o-regulamento{border-color:#4a86c5;color:#4a86c5}
+.o-geometria{border-color:#46a05a;color:#46a05a}
+.res-pont td.formula{text-align:left;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--suave)}
+.res-pont td:first-child{text-align:left;color:var(--tinta)}
+.res-pont tr.apagado{opacity:.5}
+.barra-cel{width:30%;text-align:left}
+.barra{display:inline-block;height:10px;background:var(--marinho);border-radius:2px}
+table.edita td{padding:0}
+table.edita input{text-align:left;padding:2px 5px}
+[hidden]{display:none!important}
+.centro{grid-template-columns:minmax(0,1fr)}
