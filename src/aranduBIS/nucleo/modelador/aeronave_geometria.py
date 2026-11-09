@@ -386,9 +386,16 @@ def constroi(esq: dict) -> Aeronave:
                 if isinstance(mat, dict):
                     v_, c_ = _solido(Vp, Tp); fr = 1.0 - (mat["di"] / mat["de"]) ** 2; itens.append({"nome": f"{nome}.{zp[0]}", "massa": abs(v_) * fr * ES.densidade(mat["material"], esq_), "cg": c_.tolist(), "origem": "tubo da mesa"})
                 else:
-                    v_, c_ = _solido(Vp, Tp); itens.append({"nome": f"{nome}.{zp[0]}", "massa": abs(v_) * ES.densidade(mat, esq_), "cg": c_.tolist(), "origem": f"{mat}: densidade x volume"})
+                    v_, c_ = _solido(Vp, Tp); al = float((cfg.get("nervuras") or {}).get("alivio", 1.0)) if str(zp[0]).startswith("nervuras") else 1.0
+                    itens.append({"nome": f"{nome}.{zp[0]}", "massa": abs(v_) * al * ES.densidade(mat, esq_), "cg": c_.tolist(), "origem": f"{mat}: densidade x volume" + (f" x alivio {al:g}" if al != 1.0 else "")})
             if cfg.get("chapeado"):
                 ch = cfg["chapeado"]; ax = float(ch.get("ate_xc", 0.25)); Az, c_ = _area_casca(V, T, lab, el, esq_, ax); m_ = Az * float(ch.get("espessura", 0.001)) * ES.densidade(ch.get("material", "balsa"), esq_); itens.append({"nome": f"{nome}.chapeado", "massa": m_, "cg": c_.tolist(), "origem": "area ate x/c x espessura x densidade"})
+        if tipo == "asa" and el.get("estrutura", {}).get("cruzadas"):
+            cfg = el["estrutura"]; S_ = sorted((abs(float(q["y"])), float(q.get("xle", 0.0)), float(q["corda"])) for q in el["secoes"]); ps = np.array(el.get("posicao", [0, 0, 0]), float)
+            for k, cz in enumerate(cfg["cruzadas"]):
+                y0, y1 = (abs(float(v)) for v in cz["y"]); ym = 0.5 * (y0 + y1); xle_, c_ = np.interp(ym, [q[0] for q in S_], [q[1] for q in S_]), np.interp(ym, [q[0] for q in S_], [q[2] for q in S_])
+                m_ = int(cz["n"]) * float(cz["area_m2"]) * float(cz.get("espessura", 0.00238)) * ES.densidade(cz.get("material", "balsa"), esq_)
+                itens.append({"nome": f"{nome}.cruzadas{k}", "massa": m_, "cg": [ps[0] + xle_ + float(cz.get("x_c", 0.55)) * c_, 0.0, ps[2]], "origem": f"{cz['n']} nervuras em X x area x espessura x densidade"})
         if tipo == "asa" and el.get("entelagem"):
             ent = el["entelagem"]; de = float(ent.get("de_xc", 0.0)); Az, c_ = _area_casca(V, T, lab, el, esq_, 1.1, de); g_ = float(ES.filme_de(ent, esq_).get("gramatura_g_m2", 40.0)); itens.append({"nome": f"{nome}.entelagem", "massa": Az * g_ * 1e-3, "cg": c_.tolist(), "origem": f"area de filme x {g_:g} g/m2"})
     if not Vs: raise GeometriaInvalida("nenhum elemento com geometria")
