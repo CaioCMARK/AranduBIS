@@ -84,7 +84,7 @@ const Polares = (() => {
     res.avisos.forEach(a => C.append(el("div", a, "nota")));
   }
 
-  function mostra() { if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
+  function mostra() { if (Analise.nome() !== "polares") return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
 
   Analise.registra("polares", { pinta() { parametros(); $("graficos2").className = "graficos"; agenda(); if (res) mostra(); } });
   return { dados: () => ({ v, res }) };

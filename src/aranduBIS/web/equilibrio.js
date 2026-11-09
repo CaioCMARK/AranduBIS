@@ -96,7 +96,7 @@ const Equilibrio = (() => {
     (res.avisos || []).forEach(a => C.append(el("div", a, "nota")));
   }
 
-  function mostra() { if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
+  function mostra() { if (Analise.nome() !== "equilibrio") return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
 
   Analise.registra("equilibrio", {
     pinta() { parametros(); $("graficos2").className = "graficos"; agenda(); if (res) mostra(); },

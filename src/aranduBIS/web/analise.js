@@ -16,7 +16,7 @@ const Etapas = (() => {
 })();
 
 const Analise = (() => {
-  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["polares", "Polares e CL máximo"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
+  const ITENS = [["equilibrio", "Equilíbrio e estabilidade"], ["polares", "Polares e CL máximo"], ["tracao", "Tração do motor e hélice"], ["decolagem", "Decolagem"], ["pontuacao", "Pontuação"]];
   const MODULOS = {};
   let ativo = "equilibrio";
 
@@ -71,7 +71,7 @@ const Decolagem = (() => {
       if (c.g) { P.append(el("div", c.g, "grupo-par")); G = document.createElement("div"); G.className = "prop"; P.append(G); }
       const l = el("label", c.r); l.title = c.d;
       const caixa = document.createElement("div"); caixa.className = "campo-origem";
-      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; if (v.__o) delete v.__o[c.k]; guarda(); agenda(); });
+      const i = entrada("number", v[c.k], x => { if (x === null || !(x > 0 || c.k === "CL_corrida")) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; } v[c.k] = x; if (v.__o) delete v.__o[c.k]; if ((c.k === "T0" || c.k === "V0") && v.__tab) { delete v.__tab; if (v.__o) { delete v.__o.T0; delete v.__o.V0; } parametros(); } guarda(); agenda(); });
       i.title = c.d;
       const o = (v.__o || {})[c.k] || c.o;
       caixa.append(i, el("span", o, "origem o-" + o));
@@ -108,7 +108,7 @@ const Decolagem = (() => {
     const corpo = {
       massa_kg: v.massa_kg,
       aeronave: { S: v.S, CL_max: v.CL_max, CL_corrida: v.CL_corrida, CD_corrida: v.CD_corrida },
-      tracao: { T0: v.T0, V0: v.V0 },
+      tracao: v.__tab ? { v: v.__tab.v, n: v.__tab.n } : { T0: v.T0, V0: v.V0 },
       condicoes: Object.fromEntries(["pista_m", "obstaculo_m", "altitude_densidade_m", "mu", "d_alpha_rotacao", "taxa_rotacao", "margem_rotacao"].map(k => [k, v[k]])),
     };
     try {
@@ -201,6 +201,11 @@ const Decolagem = (() => {
   });
   return {
     dados: () => ({ v, res }),
+    aplicaTracao(vel, tr, rotulo) {
+      v.__tab = { v: vel, n: tr, rotulo }; v.T0 = +tr[0].toFixed(2); v.V0 = +vel[vel.length - 1].toFixed(1);
+      v.__o = Object.assign(v.__o || {}, { T0: "hélice", V0: "hélice" }); guarda();
+      if (Analise.nome() === "decolagem") { parametros(); agenda(); }
+    },
     aplica(k, x, origem) { v[k] = x; (v.__o = v.__o || {})[k] = origem; guarda(); if (Analise.nome() === "decolagem") { parametros(); agenda(); } },
   };
 })();

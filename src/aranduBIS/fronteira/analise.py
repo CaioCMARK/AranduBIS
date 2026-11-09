@@ -159,3 +159,14 @@ def limites(p: dict) -> dict:
         return cl_max(esq, float(x_cg), V=V, rho=rho, ncrit=ncrit)
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
+
+def propulsao(p: dict) -> dict:
+    from ..nucleo.aero import propulsao as PR
+    if p.get("lista"):
+        return PR.lista()
+    try:
+        return PR.curva(str(p.get("motor", "")), str(p.get("helice", "")), P_w=_num(p, "P_w", 600.0, positivo=True),
+                        rho=_num(p, "rho", 1.1, positivo=True), V_max=_num(p, "V_max", 30.0, positivo=True),
+                        realista=bool(p.get("realista", True)))
+    except ValueError as e:
+        return {"erro": _erro(e)}

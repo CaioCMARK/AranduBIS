@@ -72,3 +72,12 @@ def test_limites_devolve_cl_max_com_origem_das_polares():
     assert {p["origem"] for p in r["polares"]} <= {"banco", "aproximado"}
     assert "erro" in AN.limites({"esquema": d, "ncrit": 5})
     assert "erro" in AN.limites({"esquema": {"elementos": []}, "x_cg": 0.1})
+
+def test_propulsao_lista_e_curva():
+    l = AN.propulsao({"lista": True})
+    assert len(l["motores"]) >= 6 and any(h["nome"] == "22x10E" for h in l["helices"])
+    r = AN.propulsao({"motor": "Scorpion SII-4035-330", "helice": "22x10E"})
+    assert 30 < r["T0"] < 55 and r["T"][0] > r["T"][-1]
+    assert r["rpm"][0] > 3000 and r["V"][0] == 0.0
+    assert "erro" in AN.propulsao({"motor": "nao existe", "helice": "22x10E"})
+    assert AN.propulsao({"motor": "Scorpion SII-4035-330", "helice": "22x10E", "P_w": 400})["T0"] < r["T0"]
