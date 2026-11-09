@@ -61,3 +61,16 @@ def test_configuracao_valida_grava_e_persiste(srv):
     assert st == 400
     st, b = pede(porta, "POST", "/api/configuracao", {"polares.fonte": "avl"})
     assert json.loads(b)["problemas"]
+
+def test_arquivos_da_equipe_pelo_http(srv, tmp_path_factory):
+    porta, _ = srv
+    pasta = tmp_path_factory.mktemp("rel")
+    (pasta / "a.txt").write_text("conteudo")
+    assert pede(porta, "GET", "/api/arquivos?pasta=relatorios")[0] == 400
+    st, _ = pede(porta, "POST", "/api/configuracao", {"pastas.relatorios": str(pasta)})
+    assert st == 200
+    st, b = pede(porta, "GET", "/api/arquivos?pasta=relatorios")
+    assert st == 200 and json.loads(b)["itens"][0]["nome"] == "a.txt"
+    st, b = pede(porta, "GET", "/api/arquivo?pasta=relatorios&caminho=a.txt")
+    assert st == 200 and b == b"conteudo"
+    assert pede(porta, "GET", "/api/arquivo?pasta=relatorios&caminho=../x")[0] == 400

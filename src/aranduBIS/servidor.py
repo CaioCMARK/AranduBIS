@@ -9,6 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from .fronteira import arquivos as AQ
 from .fronteira import geometria as G
 from .nucleo import configuracao as C
 
@@ -87,9 +88,17 @@ def fazer_handler(est: Estado):
                 if u.path == "/api/exemplo":
                     nome = parse_qs(u.query).get("nome", [""])[0]
                     return self._json(G.abre_exemplo(nome))
+                if u.path == "/api/arquivos":
+                    q = parse_qs(u.query)
+                    return self._json(AQ.lista(est.cfg, q.get("pasta", [""])[0], q.get("sub", [""])[0]))
+                if u.path == "/api/arquivo":
+                    q = parse_qs(u.query)
+                    return self._arquivo(AQ.caminho_do_arquivo(est.cfg, q.get("pasta", [""])[0], q.get("caminho", [""])[0]))
+                if u.path == "/api/materiais":
+                    return self._json({"materiais": G.materiais()})
                 if u.path == "/api/configuracao":
                     return self._json(_estado_cfg(est))
-            except G.ErroDeGeometria as e:
+            except (G.ErroDeGeometria, AQ.ErroDeArquivo, OSError) as e:
                 return self._json({"erro": str(e)}, 400)
             return self._json({"erro": "não encontrado"}, 404)
 

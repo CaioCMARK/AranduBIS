@@ -37,3 +37,12 @@ def test_grava_so_o_que_mudou_e_volta_igual(tmp_path):
     d = C.Configuracao.ler(tmp_path / "cfg.json")
     assert d.mudancas() == {"polares.ncrit_modo": "fixo"}
     assert C.Configuracao.ler(tmp_path / "nao_existe.json").mudancas() == {}
+
+def test_individuos_da_otimizacao_se_configuram():
+    c = C.Configuracao()
+    assert c.valor("otimizacao.mostrar_individuos") == "alguns" and c.ativa("otimizacao.individuos_max")
+    c.definir("otimizacao.mostrar_individuos", "todos")
+    assert not c.ativa("otimizacao.individuos_max")
+    c.definir("otimizacao.mostrar_individuos", "nenhum")
+    with pytest.raises(C.ConfiguracaoInvalida):
+        c.definir("otimizacao.mostrar_individuos", "alguma")

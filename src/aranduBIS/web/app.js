@@ -95,7 +95,22 @@ function nomeUnico(base) {
   return m;
 }
 
-function muda(fn) { fn(); agenda(); lista(); }
+const passado = [], futuro = [];
+const foto = () => JSON.stringify(esq);
+function guarda() {
+  const f = foto();
+  if (passado[passado.length - 1] === f) return;
+  passado.push(f); if (passado.length > 100) passado.shift();
+  futuro.length = 0;
+}
+function restaura(f) {
+  esq = JSON.parse(f); sel = Math.min(sel, esq.elementos.length - 1);
+  lista(); props(); abaConteudo(); agenda();
+}
+function desfaz() { if (!passado.length) return; futuro.push(foto()); restaura(passado.pop()); }
+function refaz() { if (!futuro.length) return; passado.push(foto()); restaura(futuro.pop()); }
+
+function muda(fn) { guarda(); fn(); agenda(); lista(); }
 
 function linha(P, rotulo, w) {
   const l = document.createElement("label"); l.textContent = rotulo; P.append(l, w);
@@ -146,7 +161,7 @@ function props() {
   const ta = document.createElement("textarea"); ta.value = JSON.stringify(e, null, 2); ta.spellcheck = false;
   const ap = document.createElement("button"); ap.textContent = "Aplicar";
   ap.onclick = () => {
-    try { esq.elementos[sel] = JSON.parse(ta.value); agenda(); lista(); props(); msg("Aplicado."); }
+    try { const novo = JSON.parse(ta.value); guarda(); esq.elementos[sel] = novo; agenda(); lista(); props(); msg("Aplicado."); }
     catch (x) { msg("JSON inválido: " + x.message, true); }
   };
   D.append(ta, ap); P.append(D);
@@ -154,7 +169,7 @@ function props() {
 
 function abas() {
   const A = $("abas"); A.innerHTML = "";
-  ["Seções", "Massa e CG"].forEach(n => {
+  ["Seções", "Estrutura", "Massa e CG"].forEach(n => {
     const d = document.createElement("div"); d.textContent = n; if (n === aba) d.className = "at";
     d.onclick = () => { aba = n; abas(); abaConteudo(); }; A.append(d);
   });
@@ -165,6 +180,7 @@ function abaConteudo() {
   if (aba === "Massa e CG") return abaMassa(C);
   const e = elemento();
   if (!e) return C.append(nota("Selecione um elemento."));
+  if (aba === "Estrutura") return Estrutura.pinta(C, e);
   if (Array.isArray(e.secoes)) return abaSecoes(C, e);
   if (e.secoes_lineares) {
     const s = e.secoes_lineares;
@@ -224,31 +240,31 @@ function rodape() {
 }
 
 function carrega(novo, nome) {
-  esq = novo; ocultos.clear(); sel = esq.elementos.length ? 0 : -1;
+  esq = novo; passado.length = 0; futuro.length = 0; ocultos.clear(); sel = esq.elementos.length ? 0 : -1;
   $("titulo").textContent = `AranduBIS — ${esq.nome || nome || "aeronave"}`;
   lista(); props(); abas(); abaConteudo(); constroi();
 }
 
-function novaAsa() {
-  const nome = nomeUnico("asa");
-  return { nome, tipo: "asa", perfil: "NACA 4412", n_perfil: 40,
-    secoes: [-1, -0.5, 0, 0.5, 1].map(y => ({ y, xle: 0, zle: 0, corda: 0.3 - 0.1 * Math.abs(y), ainc: 0 })) };
-}
-
 $("b_novo").onclick = () => carrega({ versao: 1, nome: "nova_aeronave", unidade: "m", elementos: [], marcas: [] });
-$("b_ins_asa").onclick = () => {
+Object.entries(Modelos.rotulos).forEach(([k, r]) => $("s_inserir").add(new Option(r, k)));
+$("s_inserir").onchange = ev => {
+  const tipo = ev.target.value; ev.target.value = ""; if (!tipo) return;
   if (!esq) $("b_novo").click();
-  esq.elementos.push(novaAsa()); sel = esq.elementos.length - 1; lista(); props(); abaConteudo(); agenda();
-};
-$("b_ins_massa").onclick = () => {
-  if (!esq) $("b_novo").click();
-  esq.elementos.push({ nome: nomeUnico("massa"), tipo: "ponto", massa: 0.1, posicao: [0.2, 0, 0] });
+  guarda();
+  esq.elementos.push(Modelos.novo(tipo, nomeUnico(tipo)));
   sel = esq.elementos.length - 1; lista(); props(); abaConteudo(); agenda();
 };
+$("b_desfaz").onclick = desfaz;
+$("b_refaz").onclick = refaz;
+document.addEventListener("keydown", ev => {
+  if (!(ev.ctrlKey || ev.metaKey) || ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+  if (ev.key === "z") { ev.preventDefault(); desfaz(); }
+  if (ev.key === "y") { ev.preventDefault(); refaz(); }
+});
 $("b_remove").onclick = () => {
   const e = elemento(); if (!e) return;
   if (!confirm(`Remover “${e.nome}”?`)) return;
-  esq.elementos.splice(sel, 1); sel = Math.min(sel, esq.elementos.length - 1); lista(); props(); abaConteudo(); agenda();
+  guarda(); esq.elementos.splice(sel, 1); sel = Math.min(sel, esq.elementos.length - 1); lista(); props(); abaConteudo(); agenda();
 };
 $("b_abrir").onchange = ev => {
   const f = ev.target.files[0]; if (!f) return;
@@ -273,6 +289,8 @@ $("b_baixar").onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 $("b_config").onclick = () => Config.abre();
+$("b_arquivos").onclick = () => Arquivos.abre();
+const carrega_aeronave = carrega;
 
 document.querySelectorAll("[data-vista]").forEach(b => b.onclick = () =>
   b.dataset.vista === "ajusta" ? vista.ajusta() : vista.vista(b.dataset.vista));

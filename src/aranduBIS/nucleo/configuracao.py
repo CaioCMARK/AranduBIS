@@ -57,6 +57,22 @@ OPCOES: tuple[Opcao, ...] = (
     Opcao("avl.n_secoes", "Análise", "Painéis em envergadura (AVL)", 20,
           "Mais painéis, mais fiel e mais lento.", minimo=6, maximo=60,
           habilita="polares.fonte=avl"),
+    Opcao("otimizacao.mostrar_individuos", "Otimização", "Indivíduos mostrados", "alguns",
+          "A otimização é a etapa mais pesada. nenhum: só o resultado final. "
+          "alguns: uma amostra por geração (abaixo). todos: cada indivíduo "
+          "avaliado (lento e usa muita memória).", escolhas=("nenhum", "alguns", "todos")),
+    Opcao("otimizacao.individuos_max", "Otimização", "Quantos por geração", 20,
+          "Número de indivíduos mostrados em cada geração (os melhores primeiro).",
+          minimo=1, maximo=10000, habilita="otimizacao.mostrar_individuos=alguns"),
+    Opcao("otimizacao.a_cada_geracoes", "Otimização", "Mostrar a cada N gerações", 1,
+          "1 mostra todas as gerações; 5 mostra uma em cada cinco.",
+          minimo=1, maximo=1000),
+    Opcao("pastas.base", "Pastas da equipe", "Base de dados", "",
+          "Pasta com os dados da equipe (polares, ensaios, tabelas)."),
+    Opcao("pastas.relatorios", "Pastas da equipe", "Relatórios", "",
+          "Pasta com os relatórios (PDF, texto)."),
+    Opcao("pastas.desenhos", "Pastas da equipe", "Desenhos", "",
+          "Pasta com os desenhos e as aeronaves (.json, imagens, PDF)."),
     Opcao("vista.malha_ao_abrir", "Interface", "Abrir já em modo malha", False,
           "Mostra a triangulação em vez do sólido ao abrir uma aeronave."),
 )

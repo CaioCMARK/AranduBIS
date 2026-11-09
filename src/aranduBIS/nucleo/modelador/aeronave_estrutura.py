@@ -7,9 +7,9 @@ import json
 import numpy as np
 
 MATERIAIS = {
-    "tubo_carbono": (1800.0, "documento de referência, tab. 4.1 (tubo de FC)"),
-    "fibra_carbono": (1800.0, "documento de referência, tab. 4.1"),
-    "aco": (7900.0, "documento de referência, sec. 5.1"),
+    "tubo_carbono": (1800.0, "valor de referencia"),
+    "fibra_carbono": (1800.0, "valor de referencia"),
+    "aco": (7900.0, "valor de referencia"),
     "balsa": (160.0, "tipico; varia de 100 a 250 entre lotes"),
     "nylon": (1140.0, "tipico (nylon 6)"),
     "aluminio": (2700.0, "tipico (6061)"),

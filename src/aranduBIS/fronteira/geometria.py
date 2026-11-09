@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from ..nucleo.modelador import aeronave_estrutura as ES
 from ..nucleo.modelador import aeronave_geometria as AG
 
 RAIZ = Path(__file__).resolve().parents[3]
@@ -69,3 +70,6 @@ def grava(esquema: dict, pasta, nome: str | None = None) -> str:
     alvo = pasta / f"{nome}.json"
     alvo.write_text(json.dumps(limpo, indent=2, ensure_ascii=False), encoding="utf8")
     return str(alvo)
+
+def materiais() -> list[dict]:
+    return [{"nome": n, "densidade": d, "origem": o} for n, (d, o) in ES.MATERIAIS.items()]

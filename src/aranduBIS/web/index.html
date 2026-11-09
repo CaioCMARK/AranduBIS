@@ -15,9 +15,10 @@
   <button id="b_salvar" title="Grava em dados/aeronaves">Salvar</button>
   <button id="b_baixar" title="Baixar o .json">Baixar</button>
   <span class="sep"></span>
-  <button id="b_ins_asa">+ Asa</button>
-  <button id="b_ins_massa">+ Massa</button>
+  <select id="s_inserir" title="Inserir um elemento novo"><option value="">Inserir…</option></select>
   <button id="b_remove" title="Remove o elemento selecionado">Remover</button>
+  <button id="b_desfaz" title="Desfazer (Ctrl+Z)">Desfazer</button>
+  <button id="b_refaz" title="Refazer (Ctrl+Y)">Refazer</button>
   <span class="sep"></span>
   <button data-vista="iso">Iso</button><button data-vista="lateral">Lateral</button>
   <button data-vista="topo">Topo</button><button data-vista="frontal">Frontal</button>
@@ -27,6 +28,7 @@
   <span class="sep"></span>
   <button data-camada="tudo" class="on">Tudo</button><button data-camada="aero">Aero</button><button data-camada="estrutura">Estrutura</button>
   <span class="fim"></span>
+  <button id="b_arquivos" title="Base, relatórios e desenhos da equipe">Arquivos</button>
   <button id="b_config" title="Escolha de polares, Ncrit, caminhos">Configurações</button>
 </div>
 <div class="etapas">
@@ -49,6 +51,12 @@
 </div>
 <div class="rodape"><span id="r_massa">massa —</span><span id="r_cg">CG —</span><span id="r_env">envergadura —</span><span id="r_tri"></span><span class="fim" id="r_msg">Pronto</span></div>
 
+<dialog id="dlg_arquivos">
+  <div class="dlg-topo"><b>Arquivos da equipe</b><button id="arq_fechar">Fechar</button></div>
+  <div class="abas" id="arq_abas"></div>
+  <div id="arq_corpo"></div>
+</dialog>
+
 <dialog id="dlg_config">
   <div class="dlg-topo"><b>Configurações</b><button id="dlg_fechar">Fechar</button></div>
   <div id="cfg_aviso" class="aviso" hidden></div>
@@ -57,6 +65,9 @@
 
 <script src="/web/vista3d.js"></script>
 <script src="/web/configuracao.js"></script>
+<script src="/web/arquivos.js"></script>
+<script src="/web/modelos.js"></script>
+<script src="/web/estrutura.js"></script>
 <script src="/web/app.js"></script>
 </body>
 </html>
