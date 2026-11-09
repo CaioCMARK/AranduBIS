@@ -1,0 +1,63 @@
+import http.client
+import json
+import threading
+from http.server import ThreadingHTTPServer
+
+import pytest
+
+from aranduBIS import servidor as S
+
+@pytest.fixture()
+def srv(tmp_path):
+    s = ThreadingHTTPServer(("127.0.0.1", 0), S.fazer_handler(S.Estado(tmp_path)))
+    threading.Thread(target=s.serve_forever, daemon=True).start()
+    yield s.server_address[1], tmp_path
+    s.shutdown()
+    s.server_close()
+
+def pede(porta, metodo, caminho, corpo=None, host=None):
+    c = http.client.HTTPConnection("127.0.0.1", porta, timeout=30)
+    h = {"Content-Type": "application/json"}
+    if host:
+        h["Host"] = host
+    c.request(metodo, caminho, json.dumps(corpo) if corpo is not None else None, h)
+    r = c.getresponse()
+    b = r.read()
+    c.close()
+    return r.status, b
+
+def test_pagina_e_exemplos(srv):
+    porta, _ = srv
+    st, b = pede(porta, "GET", "/")
+    assert st == 200 and b"AranduBIS" in b
+    st, b = pede(porta, "GET", "/api/exemplos")
+    assert st == 200 and json.loads(b)["exemplos"]
+
+def test_constroi_pelo_http(srv):
+    porta, _ = srv
+    esq = json.loads(pede(porta, "GET", "/api/exemplo?nome=biplano/biplano_2026.json")[1])
+    st, b = pede(porta, "POST", "/api/constroi", esq)
+    assert st == 200 and json.loads(b)["massa_kg"] > 0
+    st, b = pede(porta, "POST", "/api/constroi", {"versao": 1, "elementos": []})
+    assert st == 400 and "sem elementos" in json.loads(b)["erro"]
+
+def test_host_de_fora_e_recusado(srv):
+    porta, _ = srv
+    st, _ = pede(porta, "GET", "/api/exemplos", host="exemplo.com")
+    assert st == 403
+
+def test_arquivo_fora_da_pasta_web_nao_sai(srv):
+    porta, _ = srv
+    assert pede(porta, "GET", "/web/../servidor.py")[0] == 404
+
+def test_configuracao_valida_grava_e_persiste(srv):
+    porta, pasta = srv
+    st, b = pede(porta, "POST", "/api/configuracao", {"polares.ncrit_modo": "fixo", "polares.ncrit": 6})
+    assert st == 200
+    ops = {o["chave"]: o for o in json.loads(b)["opcoes"]}
+    assert ops["polares.ncrit"]["valor"] == 6.0 and ops["polares.ncrit"]["ativa"]
+    assert (pasta / "configuracao.json").is_file()
+    st, b = pede(porta, "POST", "/api/configuracao", {"polares.ncrit": 99})
+    assert st == 400
+    st, b = pede(porta, "POST", "/api/configuracao", {"polares.fonte": "avl"})
+    assert json.loads(b)["problemas"]

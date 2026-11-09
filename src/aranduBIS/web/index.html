@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AranduBIS</title>
+<link rel="stylesheet" href="/web/estilo.css">
+</head>
+<body>
+<div class="titulo" id="titulo">AranduBIS</div>
+<div class="barra" id="barra">
+  <button id="b_novo" title="Aeronave vazia">Novo</button>
+  <label class="botao" title="Abrir um arquivo .json de aeronave">Abrir<input type="file" id="b_abrir" accept=".json,application/json" hidden></label>
+  <select id="s_exemplos" title="Aeronaves que acompanham o programa"><option value="">Exemplos…</option></select>
+  <button id="b_salvar" title="Grava em dados/aeronaves">Salvar</button>
+  <button id="b_baixar" title="Baixar o .json">Baixar</button>
+  <span class="sep"></span>
+  <button id="b_ins_asa">+ Asa</button>
+  <button id="b_ins_massa">+ Massa</button>
+  <button id="b_remove" title="Remove o elemento selecionado">Remover</button>
+  <span class="sep"></span>
+  <button data-vista="iso">Iso</button><button data-vista="lateral">Lateral</button>
+  <button data-vista="topo">Topo</button><button data-vista="frontal">Frontal</button>
+  <button data-vista="ajusta">Ajustar</button>
+  <span class="sep"></span>
+  <button data-modo="solido" class="on">Sólido</button><button data-modo="malha">Malha</button>
+  <span class="sep"></span>
+  <button data-camada="tudo" class="on">Tudo</button><button data-camada="aero">Aero</button><button data-camada="estrutura">Estrutura</button>
+  <span class="fim"></span>
+  <button id="b_config" title="Escolha de polares, Ncrit, caminhos">Configurações</button>
+</div>
+<div class="etapas">
+  <div class="at">1 Geometria</div>
+  <div class="bloq" title="Próxima etapa a construir">2 Análise</div>
+  <div class="bloq">3 Estrutura</div>
+  <div class="bloq">4 Otimizar</div>
+  <div class="bloq">5 Resultados</div>
+</div>
+<div class="corpo">
+  <aside class="col"><h4>Elementos</h4><div id="lista"></div></aside>
+  <section class="centro">
+    <div class="vista"><canvas id="cv"></canvas></div>
+    <div class="baixo">
+      <div class="abas" id="abas"></div>
+      <div class="conteudo" id="aba_conteudo"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_props">Propriedades</h4><div id="props"></div></aside>
+</div>
+<div class="rodape"><span id="r_massa">massa —</span><span id="r_cg">CG —</span><span id="r_env">envergadura —</span><span id="r_tri"></span><span class="fim" id="r_msg">Pronto</span></div>
+
+<dialog id="dlg_config">
+  <div class="dlg-topo"><b>Configurações</b><button id="dlg_fechar">Fechar</button></div>
+  <div id="cfg_aviso" class="aviso" hidden></div>
+  <div id="cfg_corpo"></div>
+</dialog>
+
+<script src="/web/vista3d.js"></script>
+<script src="/web/configuracao.js"></script>
+<script src="/web/app.js"></script>
+</body>
+</html>
