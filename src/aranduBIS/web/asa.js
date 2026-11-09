@@ -124,5 +124,5 @@ const Asa3 = (() => {
   function mostra() { if (!ativa()) return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
 
   Etapa3.registra("asa", { pinta() { parametros(); agenda(); if (res) mostra(); } });
-  return { materiais, dados: () => ({ v, res }) };
+  return { materiais, corpo, dados: () => ({ v, res }) };
 })();

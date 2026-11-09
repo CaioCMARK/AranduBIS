@@ -4,7 +4,7 @@ const Cauda3 = (() => {
   const CAMPOS = [
     { g: "Apoio e cargas", k: "x_apoio", cfg: "estrutura.x_apoio", r: "Apoio: nós com x até (m)", d: "Região da fuselagem onde a treliça é engastada.", zero: true },
     { k: "CL_max_h", cfg: "estrutura.CL_max_h", r: "CL máx. da horizontal", d: "Profundor a fundo em Vd." },
-    { k: "tailstrike_peso", cfg: "estrutura.tailstrike_peso", r: "Tailstrike (× peso)", d: "HIPÓTESE: reação vertical na ponta do boom." },
+    { k: "tailstrike_peso", cfg: "estrutura.tailstrike_peso", r: "Tailstrike (× peso, 0 = não)", d: "Sem dado da equipe: 0 não verifica. Reação vertical na ponta do boom.", zero: true },
     { g: "Barras", k: "K_flambagem", cfg: "estrutura.K_flambagem", r: "K de flambagem", d: "0,5 engastada, 1,0 articulada; 0,8 no Arandu 0.2.0." },
   ];
   const CHAVE = "aranduBIS.cauda";
@@ -98,7 +98,7 @@ const Cauda3 = (() => {
     const curtas = res.casos.flatMap(c => c.curtas.map(b => Object.assign({ caso: c.caso }, b))).sort((a, b) => a.margem - b.margem).slice(0, 3);
     if (curtas.length && curtas[0].margem < 0) C.append(el("div", `Barras curtas (comprimento menor que 10 diâmetros) com margem negativa, tratadas à parte porque a viga de Euler-Bernoulli perde validade nelas: ${curtas.map(b => `${b.elemento} ${b.tubo} ${fmt(1000 * b.L, 0)} mm, ${pc(b.margem)}, ${nome(b.caso)}`).join("; ")}.`, "nota"));
     res.avisos.forEach(a => C.append(el("div", a, "nota")));
-    C.append(el("div", "Elementos finitos de viga com nós rígidos (juntas coladas sem folga nem flexibilidade), fuselagem como apoio rígido. O tailstrike é hipótese sem medida; o documento de referência e a equipe devem calibrar. A torção em voo é a da deriva em rajada lateral e a do profundor a fundo; flutter fica fora.", "nota"));
+    C.append(el("div", "Elementos finitos de viga com nós rígidos (juntas coladas sem folga nem flexibilidade), fuselagem como apoio rígido. O tailstrike só entra se você informar um valor (a equipe não tem dado). A torção em voo é a da deriva em rajada lateral e a do profundor a fundo; flutter fica fora.", "nota"));
   }
 
   function mostra() { if (!ativa()) return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
