@@ -206,6 +206,8 @@ def dinamica(p: dict) -> dict:
     try:
         return din(esq, x_cg=None if p.get("x_cg") is None else _num(p, "x_cg"),
                    V=_num(p, "V", 15.0, positivo=True), rho=_num(p, "rho", 1.1, positivo=True),
-                   massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True), I=I)
+                   massa_kg=None if p.get("massa_kg") is None else _num(p, "massa_kg", positivo=True), I=I,
+                   raios={k: _num(p["raios"], k, positivo=True) for k in ("rx", "ry", "rz") if (p.get("raios") or {}).get(k) is not None}
+                   if p.get("raios") is not None else None, modo_inercia=str(p.get("modo_inercia") or "auto"))
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}

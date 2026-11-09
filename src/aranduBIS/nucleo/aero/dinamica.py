@@ -38,26 +38,48 @@ def inercias(esq: dict) -> dict:
             Izz += m * (2 * s) ** 2 / 12.0
     return {"m": float(r["massa_kg"]), "cg": cg.tolist(), "Ixx": Ixx, "Iyy": Iyy, "Izz": Izz, "Ixz": Ixz}
 
+RAIOS_PADRAO = {"rx": 0.25, "ry": 0.38, "rz": 0.39}
+
+def inercias_por_raio(esq: dict, m: float, raios: dict | None = None) -> dict:
+    r = {**RAIOS_PADRAO, **(raios or {})}
+    V = AG.constroi(esq).so_camada("aero").V
+    b = float(V[:, 1].max() - V[:, 1].min())
+    L = float(V[:, 0].max() - V[:, 0].min())
+    e = 0.5 * (b + L)
+    return {"Ixx": m * (r["rx"] * b) ** 2, "Iyy": m * (r["ry"] * L) ** 2, "Izz": m * (r["rz"] * e) ** 2, "Ixz": 0.0, "b": b, "L": L}
+
 def _modos(A: np.ndarray) -> list[complex]:
     return list(np.linalg.eigvals(A))
 
 def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float = 1.1, massa_kg: float | None = None,
-             I: dict | None = None, z_cg: float | None = None) -> dict:
+             I: dict | None = None, z_cg: float | None = None,
+             raios: dict | None = None, modo_inercia: str = "auto") -> dict:
     avisos = avisos_de_ignoradas(esq)
     try:
         prop = inercias(esq)
         com_modelo = True
     except ValueError:
-        if massa_kg is None or not I or x_cg is None:
+        if massa_kg is None or x_cg is None or not (I or raios is not None):
             raise
-        prop, com_modelo = {"m": massa_kg, "cg": [x_cg, 0.0, 0.0], **I}, False
+        prop, com_modelo = {"m": massa_kg, "cg": [x_cg, 0.0, 0.0], "Ixx": 0, "Iyy": 0, "Izz": 0, "Ixz": 0, **(I or {})}, False
     m = float(massa_kg) if massa_kg else prop["m"]
     origem_m = "voce" if massa_kg else "modelo"
     cg = prop["cg"] if x_cg is None else [float(x_cg), prop["cg"][1], prop["cg"][2]]
     z = float(z_cg) if z_cg is not None else float(cg[2])
-    Ixx, Iyy, Izz, Ixz = (float((I or {}).get(k, prop[k])) for k in ("Ixx", "Iyy", "Izz", "Ixz"))
-    origem_I = "voce" if I else "modelo"
-    if com_modelo and prop["m"] < 0.5 * m:
+    usa_raio = (not I and raios is not None and
+                (modo_inercia == "raio" or (modo_inercia == "auto" and (not com_modelo or prop["m"] < 0.5 * m))))
+    if usa_raio:
+        est = inercias_por_raio(esq, m, raios)
+        Ixx, Iyy, Izz, Ixz = est["Ixx"], est["Iyy"], est["Izz"], 0.0
+        origem_I = "estimada por raio de giro"
+        avisos.append(f"Inércias estimadas por raio de giro (b = {est['b']:.2f} m, L = {est['L']:.2f} m): são hipótese de projeto, não medida.")
+    else:
+        Ixx, Iyy, Izz, Ixz = (float((I or {}).get(k, prop[k])) for k in ("Ixx", "Iyy", "Izz", "Ixz"))
+        origem_I = "voce" if I else "modelo"
+    if min(Ixx, Iyy, Izz) <= 0 or Iyy > Ixx + Izz or Ixx > Iyy + Izz or Izz > Ixx + Iyy:
+        avisos.append("As inércias violam a desigualdade triangular (cada uma deve ser ≤ soma das outras duas): "
+                      "não descrevem um corpo rígido real; confira os valores e os eixos.")
+    if com_modelo and prop["m"] < 0.5 * m and not (raios is not None and not I and modo_inercia != "modelo"):
         avisos.append(f"O modelo declara so {prop['m']:.2f} kg de {m:.2f} kg: faltam bateria, motor e carga no modelo "
                       "(use elementos de massa) ou informe as inercias; CG e inercias do modelo NAO valem.")
     vlm = monta(esq, cg[0], z)

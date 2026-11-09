@@ -61,3 +61,12 @@ def test_modelo_com_massa_pequena_avisa_que_faltam_pecas():
 def test_inercias_incompletas_sao_recusadas(gen):
     r = AN.dinamica({"esquema": gen, "V": 12, "massa_kg": 8.0, "inercias": {"Ixx": 1.0}})
     assert "erro" in r
+
+def test_inercia_por_raio_de_giro():
+    from aranduBIS.nucleo.aero.dinamica import inercias_por_raio
+    from aranduBIS.nucleo.modelador import aeronave_geometria as AG
+    e = AG.exemplo_biplano_demo()
+    r = inercias_por_raio(e, 10.0)
+    assert r["Ixx"] > 0 and r["Iyy"] > 0 and r["Izz"] > 0
+    r2 = inercias_por_raio(e, 10.0, {"rx": 0.5})
+    assert abs(r2["Ixx"] / r["Ixx"] - 4.0) < 1e-9

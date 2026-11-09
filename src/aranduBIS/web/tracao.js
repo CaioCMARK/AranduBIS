@@ -2,10 +2,11 @@
 
 const Tracao = (() => {
   const CHAVE = "aranduBIS.tracao";
-  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 18, realista: true, celulas: "", v_celula: 3.6, capacidade_Ah: null, taxa_C: null };
+  let v = { motor: "Scorpion SII-4035-330", helice: "22x10E", P_w: 600, rho: 1.1, V_max: 18, realista: true, celulas: "6", v_celula: 3.6, capacidade_Ah: 1.5, taxa_C: 20 };
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
+  if (!v.celulas) v.celulas = "0";
   const PADROES = [["motor", "tracao.motor"], ["helice", "tracao.helice"], ["P_w", "tracao.potencia_w"], ["rho", "analise.rho"],
-    ["V_max", "tracao.V_max"], ["v_celula", "tracao.v_celula"], ["realista", "tracao.perdas_realistas"]].map(([k, cfg]) => ({ k, cfg }));
+    ["V_max", "tracao.V_max"], ["v_celula", "tracao.v_celula"], ["celulas", "tracao.celulas"], ["capacidade_Ah", "tracao.capacidade_Ah"], ["taxa_C", "tracao.taxa_C"], ["realista", "tracao.perdas_realistas"]].map(([k, cfg]) => ({ k, cfg }));
   Padroes.aplica(v, PADROES);
   Padroes.aoMudar(() => { Padroes.aplica(v, PADROES); if (Analise.nome() === "tracao" && cat) { parametros(); agenda(); } });
   let cat = null, res = null, tempo = null, seq = 0;
@@ -32,7 +33,7 @@ const Tracao = (() => {
     });
     const g2 = el("div", "Pack de bateria", "grupo-par"); P.append(g2);
     const H = document.createElement("div"); H.className = "prop"; P.append(H);
-    H.append(...escolha("Células em série", "celulas", [["", "sem limite"], ["4", "4S"], ["5", "5S"], ["6", "6S"]], "A tensão do pack (células × V por célula) limita a rotação do motor."));
+    H.append(...escolha("Células em série", "celulas", [["0", "sem limite"], ["4", "4S"], ["5", "5S"], ["6", "6S"]], "A tensão do pack (células × V por célula) limita a rotação do motor."));
     [["v_celula", "V por célula sob carga", "3,6 V é hipótese; sob 40 A uma célula pequena cai bem abaixo da nominal."],
      ["capacidade_Ah", "Capacidade (Ah)", "Com a taxa C dá a corrente máxima do pack. Vazio = sem limite de corrente."],
      ["taxa_C", "Taxa de descarga (C)", "Vazio = sem limite de corrente."]].forEach(([k, r, d]) => {
@@ -51,7 +52,7 @@ const Tracao = (() => {
   async function calcula() {
     const meu = ++seq;
     try {
-      const r = await chama("/api/propulsao", Object.assign({}, v, { celulas: v.celulas ? +v.celulas : null }));
+      const r = await chama("/api/propulsao", Object.assign({}, v, { celulas: +v.celulas > 0 ? +v.celulas : null }));
       if (meu !== seq) return;
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }

@@ -5,7 +5,11 @@ const Dinamica = (() => {
     { g: "Condição", k: "V", cfg: "analise.velocidade_cruzeiro", r: "Velocidade (m/s)", p: 15, d: "Velocidade da condição de voo equilibrado." },
     { k: "rho", cfg: "analise.rho", r: "Densidade do ar (kg/m³)", p: 1.1, d: "" },
     { k: "x_cg", r: "Posição do CG x (m)", d: "Vazio = soma das massas do modelo.", nulo: true },
-    { g: "Massa e inércias", k: "massa_kg", r: "Massa total (kg)", d: "Vazio = soma das massas declaradas no modelo.", nulo: true },
+    { g: "Massa e inércias", k: "massa_kg", cfg: "dinamica.massa_kg", r: "Massa total (kg)", d: "0 ou vazio = soma das massas declaradas no modelo.", nulo: true },
+    { k: "modo", cfg: "dinamica.modo_inercia", r: "Origem das inércias", d: "auto, modelo ou raio de giro.", escolha: ["auto", "modelo", "raio"] },
+    { k: "rx", cfg: "dinamica.raio_x", r: "Raio de giro Rx/b", d: "Fração da envergadura (estimativa por raio de giro)." },
+    { k: "ry", cfg: "dinamica.raio_y", r: "Raio de giro Ry/L", d: "Fração do comprimento." },
+    { k: "rz", cfg: "dinamica.raio_z", r: "Raio de giro Rz/média(b, L)", d: "Fração da média entre envergadura e comprimento." },
     { k: "Ixx", r: "Ixx (kg·m²)", d: "Inércia em rolagem. Vazio = do modelo.", nulo: true },
     { k: "Iyy", r: "Iyy (kg·m²)", d: "Inércia em arfagem.", nulo: true },
     { k: "Izz", r: "Izz (kg·m²)", d: "Inércia em guinada.", nulo: true },
@@ -20,19 +24,26 @@ const Dinamica = (() => {
   const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(v)); } catch (e) {  } };
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
 
+  function seletor(ops, atual, aoMudar) {
+    const s = document.createElement("select");
+    ops.forEach(o => { const e = el("option", o); e.value = o; s.append(e); });
+    s.value = atual; s.onchange = () => aoMudar(s.value);
+    return s;
+  }
+
   function parametros() {
     const P = $("par2"); P.innerHTML = ""; $("tit_par2").textContent = "Dinâmica de voo";
     let G = null;
     CAMPOS.forEach(c => {
       if (c.g) { P.append(el("div", c.g, "grupo-par")); G = document.createElement("div"); G.className = "prop"; P.append(G); }
       const l = el("label", c.r); l.title = c.d;
-      const i = entrada("number", v[c.k], x => {
+      const i = c.escolha ? seletor(c.escolha, v[c.k], x => { v[c.k] = x; Padroes.toca(v, c.k); guarda(); agenda(); }) : entrada("number", v[c.k], x => {
         if (x === null && c.nulo) v[c.k] = null;
         else if (x === null || (c.k !== "x_cg" && c.k !== "Ixz" && !(x > 0))) { msg("Valor inválido em “" + c.r + "”.", true); parametros(); return; }
         else v[c.k] = x;
         Padroes.toca(v, c.k); guarda(); agenda();
       });
-      i.title = c.d; if (c.nulo && v[c.k] === null) i.placeholder = "do modelo";
+      i.title = c.d; if (!c.escolha && c.nulo && v[c.k] === null) i.placeholder = "do modelo";
       G.append(l, i);
     });
   }
@@ -44,7 +55,7 @@ const Dinamica = (() => {
     if (!esq || !esq.elementos.length) { res = null; msg("Abra ou desenhe uma aeronave na etapa 1.", true); mostra(); return; }
     const I = {}; ["Ixx", "Iyy", "Izz", "Ixz"].forEach(k => { if (v[k] !== null) I[k] = v[k]; });
     try {
-      const r = await chama("/api/dinamica", { esquema: esq, V: v.V, rho: v.rho, x_cg: v.x_cg, massa_kg: v.massa_kg, inercias: Object.keys(I).length ? I : null });
+      const r = await chama("/api/dinamica", { esquema: esq, V: v.V, rho: v.rho, x_cg: v.x_cg, massa_kg: v.massa_kg > 0 ? v.massa_kg : null, modo_inercia: v.modo, raios: { rx: v.rx, ry: v.ry, rz: v.rz }, inercias: Object.keys(I).length ? I : null });
       if (meu !== seq) return;
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }
