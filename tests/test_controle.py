@@ -53,3 +53,11 @@ def test_margem_de_estol_local(r):
     assert 0 < a["delta_alpha_graus"] < sem
     assert b["delta_alpha_graus"] > a["delta_alpha_graus"]
     assert a["cl_demanda"] > b["cl_demanda"] > 0 and a["cl_max_perfil"] > 0
+
+def test_momento_de_charneira_cresce_com_v2(biplano):
+    from aranduBIS.fronteira import analise as AN
+    a = AN.controle({"esquema": biplano, "V": 15, "massa_kg": 15.0, "raios": {}, "V_servo": 12})["servo"]["itens"]
+    b = AN.controle({"esquema": biplano, "V": 15, "massa_kg": 15.0, "raios": {}, "V_servo": 24})["servo"]["itens"]
+    assert len(a) == 4 and all(i["momento_Nm"] > 0 and i["torque_kgfcm"] > 0 for i in a)
+    for x, y in zip(a, b):
+        assert 2.5 < y["momento_Nm"] / x["momento_Nm"] < 5.5

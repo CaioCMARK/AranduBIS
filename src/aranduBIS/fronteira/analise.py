@@ -225,6 +225,6 @@ def controle(p: dict) -> dict:
                                   pb2V_min=_num(p, "pb2V_min", 0.05, positivo=True),
                                   t_inclinacao_max=_num(p, "t_inclinacao_max", 1.5, positivo=True),
                                   inclinacao=_num(p, "inclinacao", 30.0, positivo=True), beta=_num(p, "beta", 0.0),
-                                  ncrit=int(_num(p, "ncrit", 4.0, positivo=True)))
+                                  ncrit=int(_num(p, "ncrit", 4.0, positivo=True)), V_servo=_num(p, "V_servo", 18.0, positivo=True))
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}

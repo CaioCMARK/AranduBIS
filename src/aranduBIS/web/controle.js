@@ -9,6 +9,7 @@ const Controle = (() => {
     { g: "Critérios", k: "pb2V_min", cfg: "controle.pb2V_min", r: "pb/2V mínimo", d: "Hipótese de projeto: use o requisito da equipe." },
     { k: "t_inclinacao_max", cfg: "controle.t_inclinacao_max", r: "Tempo máx. (s)", d: "Tempo para atingir a inclinação do critério." },
     { k: "inclinacao", cfg: "controle.inclinacao", r: "Inclinação (°)", d: "Ângulo de rolagem do critério de tempo." },
+    { g: "Servo", k: "V_servo", cfg: "controle.V_servo", r: "Velocidade do servo (m/s)", d: "Velocidade máxima para o momento de charneira." },
   ];
   const CHAVE = "aranduBIS.controle";
   const NOMES = { sobe_desce: "Sobe e desce", so_sobe: "Só sobe" };
@@ -43,7 +44,7 @@ const Controle = (() => {
     ["Ixx", "Iyy", "Izz", "Ixz"].forEach(k => { if (d[k] !== null && d[k] !== undefined) I[k] = d[k]; });
     return { esquema: esq, V: v.V, rho: d.rho || 1.1, x_cg: d.x_cg, massa_kg: d.massa_kg > 0 ? d.massa_kg : null, modo_inercia: d.modo,
              raios: { rx: d.rx, ry: d.ry, rz: d.rz }, inercias: Object.keys(I).length ? I : null,
-             sobe_max: v.sobe_max, desce_max: v.desce_max, pb2V_min: v.pb2V_min, t_inclinacao_max: v.t_inclinacao_max, inclinacao: v.inclinacao, beta: v.beta, ncrit: +Padroes.get("polares.ncrit_banco") || 4 };
+             sobe_max: v.sobe_max, desce_max: v.desce_max, pb2V_min: v.pb2V_min, t_inclinacao_max: v.t_inclinacao_max, inclinacao: v.inclinacao, beta: v.beta, V_servo: v.V_servo, ncrit: +Padroes.get("polares.ncrit_banco") || 4 };
   }
 
   async function calcula() {
@@ -108,6 +109,13 @@ const Controle = (() => {
     C.append(el("div", `Constante de tempo da rolagem τ = ${fmt(res.tau_rolagem_s, 2)} s (Ixx = ${fmt(res.Ixx, 2)} kg·m², ${res.origem_inercia}); Clp = ${fmt(res.Cl_p, 3)}. Ailerons: ` + res.ailerons.map(a => `${a.nome} (${a.elemento})`).join(", ") + ".", "nota"));
     const sem = res.estol_sem_comando;
     if (sem && sem.superficie) C.append(el("div", `Sem deflexão, o estol local só começa ${fmt(sem.delta_alpha_graus, 1)}° acima do equilíbrio (cl máx. 2D do perfil ${fmt(sem.cl_max_perfil, 2)}, em ${sem.superficie}). Margem = quanto α pode subir, com o aileron todo deflexionado, até o cl pedido pelo VLM igualar o cl máx. 2D do perfil na região do aileron para fora.`, "nota"));
+    if (res.servo && res.servo.itens.length) {
+      const sv = document.createElement("table");
+      sv.innerHTML = `<tr><th>Momento de charneira a ${fmt(res.servo.V, 0)} m/s (um aileron)</th><th>sentido</th><th>deflexão (°)</th><th>momento (N·m)</th><th>torque (kgf·cm)</th></tr>`
+        + res.servo.itens.map(i => `<tr><td>${i.aileron}</td><td>${i.sentido}</td><td>${fmt(i.deflexao, 0)}</td><td>${fmt(i.momento_Nm, 3)}</td><td>${fmt(i.torque_kgfcm, 2)}</td></tr>`).join("");
+      C.append(sv);
+      C.append(el("div", "Limite superior: o VLM é invíscido, e o valor real costuma ficar 20 a 40 % abaixo; não inclui balanceamento aerodinâmico nem folga ou atrito da articulação. Escolha o servo com margem sobre o maior torque.", "nota"));
+    }
     res.avisos.forEach(a => C.append(el("div", a, "nota")));
     C.append(el("div", "VLM invíscido: a autoridade real é menor, e o aileron para baixo separa antes do que o modelo mostra (é o argumento do só sobe). Critérios são hipóteses de projeto, ajustáveis nas Configurações.", "nota"));
   }

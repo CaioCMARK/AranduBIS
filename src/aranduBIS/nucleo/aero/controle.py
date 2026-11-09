@@ -7,6 +7,7 @@ import numpy as np
 from .aeronave_vlm import avisos_de_ignoradas
 from .dinamica import dinamica
 from .equilibrio import monta
+from .estabilidade import momento_charneira
 from .limites import polares_da_aeronave
 from .polares import reynolds
 
@@ -83,6 +84,21 @@ def margem_de_estol(vlm, polares: dict, ailerons, alpha: float, dflap: dict, xc:
     return melhor or {"delta_alpha_graus": float("nan"), "ilimitado": False, "superficie": None, "y_critico": None,
                       "cl_demanda": None, "cl_max_perfil": None}
 
+def momentos_de_charneira(vlm, ailerons, alpha: float, V: float, rho: float, sobe: float, desce: float) -> list[dict]:
+    sai = []
+    for nome, c in ailerons:
+        info = vlm._fatias.get(nome)
+        if info is None:
+            continue
+        m, xc = _faixas(info, c)
+        lado = m & (np.asarray(info["y"], float) > 0)
+        for sentido, graus in (("para baixo", desce), ("para cima", -sobe)):
+            h = momento_charneira(vlm, nome, graus, alpha, V, faixas=lado, x_charneira=xc, rho=rho)
+            sai.append({"aileron": c.get("nome"), "elemento": nome, "sentido": sentido, "deflexao": abs(graus),
+                        "momento_Nm": float(h.momento_Nm), "torque_kgfcm": float(h.torque_kgfcm), "Ch": float(h.Ch),
+                        "area_m2": float(h.area_m2), "corda_m": float(h.corda_m)})
+    return sai
+
 def _tempo_ate(phi_graus: float, p_ss: float, tau: float) -> float | None:
     alvo = math.radians(phi_graus)
     if p_ss <= 0 or alvo <= 0:
@@ -102,7 +118,7 @@ def autoridade_rolagem(esq: dict, x_cg: float | None = None, V: float = 15.0, rh
                        massa_kg: float | None = None, I: dict | None = None, raios: dict | None = None,
                        modo_inercia: str = "auto", sobe_max: float = 30.0, desce_max: float = 25.0,
                        pb2V_min: float = 0.05, t_inclinacao_max: float = 1.5, inclinacao: float = 30.0,
-                       beta: float = 0.0, ncrit: int = 4) -> dict:
+                       beta: float = 0.0, ncrit: int = 4, V_servo: float = 18.0) -> dict:
     ailerons = comandos_de_rolagem(esq)
     if not ailerons:
         raise ValueError("o modelo nao tem ailerons: declare um comando com \"modo\": \"anti\" em uma asa")
@@ -156,4 +172,5 @@ def autoridade_rolagem(esq: dict, x_cg: float | None = None, V: float = 15.0, rh
     return {"V": V, "rho": rho, "alpha": alpha, "m": din["m"], "origem_inercia": din["origem_inercia"], "Ixx": Ixx,
             "tau_rolagem_s": tau, "Cl_p": Cl_p, "S_ref": S, "b_ref": b, "criterios": {"pb2V_min": pb2V_min, "t_inclinacao_max": t_inclinacao_max, "inclinacao": inclinacao},
             "ailerons": [{"elemento": n, "nome": c.get("nome"), "y": c["y"], "corda": c.get("corda"), "xc": c.get("xc")} for n, c in ailerons],
+            "servo": {"V": V_servo, "itens": momentos_de_charneira(vlm, ailerons, alpha, V_servo, rho, sobe_max, desce_max)},
             "estol_sem_comando": sem, "opcoes": opcoes, "curva": curva, "avisos": avisos}
