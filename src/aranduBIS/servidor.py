@@ -130,6 +130,8 @@ def fazer_handler(est: Estado):
                     return self._json(AN.dinamica(d))
                 if self.path == "/api/envelope_cg":
                     return self._json(AN.envelope_cg(d))
+                if self.path == "/api/cargas":
+                    return self._json(AN.cargas(d))
                 if self.path == "/api/controle":
                     return self._json(AN.controle(d))
                 if self.path == "/api/propulsao":

@@ -1,7 +1,7 @@
 "use strict";
 
 const Etapas = (() => {
-  const vistas = { 1: $("et1"), 2: $("et2") };
+  const vistas = { 1: $("et1"), 2: $("et2"), 3: $("et3") };
   let atual = 1;
   function vai(n) {
     if (!vistas[n] || n === atual) return;
@@ -9,7 +9,7 @@ const Etapas = (() => {
     Object.entries(vistas).forEach(([k, el]) => { el.hidden = +k !== n; });
     document.querySelectorAll(".etapas div[data-etapa]").forEach(d => d.classList.toggle("at", +d.dataset.etapa === n));
     document.body.dataset.etapa = n;
-    if (n === 1) vista.desenha(); else Analise.entra();
+    if (n === 1) vista.desenha(); else if (n === 2) Analise.entra(); else Cargas3.entra();
   }
   document.querySelectorAll(".etapas div[data-etapa]").forEach(d => { d.onclick = () => vai(+d.dataset.etapa); });
   return { vai };
