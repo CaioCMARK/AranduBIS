@@ -70,7 +70,7 @@ const Pontuacao = (() => {
       const tr = document.createElement("tr"); if (!i.conta) tr.className = "apagado";
       const estado = i.erro ? `<span class="erro">${i.erro}</span>` : i.aplica ? "" : "não se aplica";
       tr.innerHTML = `<td>${i.nome}</td><td>${i.valor === null ? "—" : fmt(i.valor, 3)}</td>`
-        + `<td class="barra-cel">${i.conta && i.valor > 0 ? `<span class="barra" style="width:${Math.max(2, 100 * i.valor / maior)}%"></span>` : estado}</td>`
+        + `<td class="barra-cel">${i.conta && i.valor > 0 ? `<span class="barra-valor" style="width:${Math.max(2, 100 * i.valor / maior)}%"></span>` : estado}</td>`
         + `<td class="formula">${i.formula}${i.quando ? ` <i>quando ${i.quando}</i>` : ""}</td>`;
       t.append(tr);
     });

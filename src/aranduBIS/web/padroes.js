@@ -4,6 +4,7 @@ const Padroes = (() => {
   const val = {}, ouvintes = [];
   function atualiza(d) {
     (d.opcoes || []).forEach(o => { val[o.chave] = o.valor; });
+    if (val["aparencia.tema"] !== undefined) Tema.escolhe(val["aparencia.tema"]);
     ouvintes.forEach(f => f());
   }
   fetch("/api/configuracao").then(r => r.json()).then(atualiza).catch(() => {  });

@@ -15,6 +15,7 @@ class Vista3D {
     this.cg = null;
     this._liga();
     new ResizeObserver(() => this.desenha()).observe(canvas.parentElement);
+    Tema.aoMudar(() => this.desenha());
   }
 
   defineMalha(m, cores) {
@@ -72,7 +73,7 @@ class Vista3D {
     }
     const g = this.ctx;
     g.setTransform(d, 0, 0, d, 0, 0);
-    g.fillStyle = "#0f1722"; g.fillRect(0, 0, W, H);
+    g.fillStyle = Tema.cor("--vista") || "#0f1722"; g.fillRect(0, 0, W, H);
     if (!this.malha) {
       g.fillStyle = "#7f8da1"; g.font = "13px Segoe UI, sans-serif"; g.textAlign = "center";
       g.fillText("Abra uma aeronave ou insira um elemento", W / 2, H / 2);

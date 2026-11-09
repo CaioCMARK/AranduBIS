@@ -28,6 +28,9 @@ class Opcao:
         return "texto" if isinstance(self.padrao, str) else "numero"
 
 OPCOES: tuple[Opcao, ...] = (
+    Opcao("aparencia.tema", "Aparência", "Tema da interface", "auto",
+          "auto: segue o claro/escuro do sistema. escuro: preto azulado. cinza: cinza médio, menos contraste e menos cansativo. claro: fundo claro.",
+          escolhas=("auto", "escuro", "cinza", "claro")),
     Opcao("polares.fonte", "Polares", "De onde vêm as polares", "banco",
           "banco: usa as polares já calculadas (rápido, funciona sem instalar nada). "
           "xfoil: calcula cada perfil na hora. avl: roda o AVL na aeronave inteira "
