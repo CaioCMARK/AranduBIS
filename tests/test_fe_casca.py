@@ -54,3 +54,31 @@ def test_placa_engastada_em_flexao_fecha_com_viga():
     w = np.mean([u[idn(nx, j)][2] for j in range(ny + 1)])
     I = b * t ** 3 / 12
     assert w == pytest.approx(P * L ** 3 / (3 * E * I), rel=0.06)
+
+def _biplano():
+    import json
+    from pathlib import Path
+    raiz = Path(__file__).resolve().parents[1]
+    e = json.loads((raiz / "cases" / "geometria" / "biplano" / "biplano_2025.json").read_text(encoding="utf8"))
+    e["_pasta"] = str(raiz / "cases" / "geometria" / "biplano")
+    return e
+
+def test_torcao_da_asa_em_cascas_fecha_com_o_modelo_analitico_na_caixa_fechada():
+    from aranduBIS.nucleo.estrutura import torcao as TO
+    from aranduBIS.nucleo.fe import asa_casca as FC
+    e = _biplano()
+    an = TO.analisa(e, "asa_inferior")
+    fe = FC.torcao_fe(e, "asa_inferior", n_corda=10, dy_max=0.04)
+    assert fe["K_theta"] == pytest.approx(an["K_theta"], rel=0.05)
+
+def test_nervuras_em_x_enrijecem_a_secao_aberta_e_quase_nada_a_fechada():
+    import copy
+    from aranduBIS.nucleo.fe import asa_casca as FC
+    e = _biplano()
+    fechada = [FC.torcao_fe(e, "asa_inferior", cruzadas=c)["K_theta"] for c in (False, True)]
+    assert fechada[1] / fechada[0] < 1.05
+    a = copy.deepcopy(e)
+    ch = next(el for el in a["elementos"] if el["nome"] == "asa_inferior")["estrutura"]["chapeado"]
+    ch["ate_xc_y"] = [[p[0], 0.12] for p in ch["ate_xc_y"]]; ch["ate_xc"] = 0.12
+    aberta = [FC.torcao_fe(a, "asa_inferior", cruzadas=c)["K_theta"] for c in (False, True)]
+    assert aberta[1] / aberta[0] > 1.5

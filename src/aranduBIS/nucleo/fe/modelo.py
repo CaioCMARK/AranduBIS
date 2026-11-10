@@ -19,8 +19,11 @@ class Modelo:
     def no(self, i, x, y, z):
         self.nos[int(i)] = (float(x), float(y), float(z))
 
-    def material(self, i, E, G=None, nu=0.3, rho=0.0):
-        self.materiais[int(i)] = {"E": float(E), "G": float(G) if G else float(E) / (2 * (1 + nu)), "rho": float(rho)}
+    def material(self, i, E, G=None, nu=0.3, rho=0.0, E2=None):
+        d = {"E": float(E), "G": float(G) if G else float(E) / (2 * (1 + nu)), "rho": float(rho), "nu": float(nu)}
+        if E2 is not None:
+            d["E2"] = float(E2)
+        self.materiais[int(i)] = d
 
     def prop(self, i, mat, A, I1, I2, J, nsm=0.0):
         self.props[int(i)] = {"mat": int(mat), "A": float(A), "I1": float(I1), "I2": float(I2), "J": float(J), "nsm": float(nsm)}
