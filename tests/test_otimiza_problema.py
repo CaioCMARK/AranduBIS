@@ -57,3 +57,16 @@ def test_avaliacao_encadeada_mede_restricoes_e_nunca_levanta():
     quebrado = dict(prob, base={"versao": 1, "nome": "x", "elementos": [dict(_base()["elementos"][0], material=None)]}, ligacoes=[], restricoes=[])
     f = P.avalia(quebrado, {})
     assert f["falha"]["etapa"] == "geometria e massa" and f["violacao"] > 10 and f["objetivo"] is None
+
+def test_malha_grossa_da_triagem_ordena_como_a_completa():
+    prob = _prob()
+    grossa = dict(prob, analise=dict(prob["analise"], malha={"n_span": 12, "n_chord": 2, "n_perfil": 16, "n_por_baia": 2}))
+    bs = (1.8, 2.4, 3.2)
+    cheia = [P.avalia(prob, {"b": b, "afil": 1.0, "perfil": 0}) for b in bs]
+    rapida = [P.avalia(grossa, {"b": b, "afil": 1.0, "perfil": 0}) for b in bs]
+    assert all(r["falha"] is None for r in cheia + rapida)
+    for a, c in zip(cheia, rapida):
+        assert c["resultados"]["PV"] == pytest.approx(a["resultados"]["PV"], rel=0.02)
+        assert c["resultados"]["CL_max"] == pytest.approx(a["resultados"]["CL_max"], rel=0.06)
+    ordem = lambda L: sorted(range(len(L)), key=lambda i: L[i]["pontuacao"])
+    assert ordem(cheia) == ordem(rapida)
