@@ -18,7 +18,7 @@ _CAMPOS_ARANDU = {
 
 def vazia(nome: str = "Nova regra") -> dict:
     return {"versao": 1, "nome": nome, "ano": 0, "classe": "", "fonte": "", "constantes": {},
-            "entradas": [], "grandezas": [], "itens": [], "so_conta_se": ""}
+            "entradas": [], "grandezas": [], "itens": [], "restricoes": [], "so_conta_se": ""}
 
 def normaliza(d: dict) -> dict:
     r = vazia(d.get("nome", "Regra"))
@@ -46,6 +46,8 @@ def normaliza(d: dict) -> dict:
                        "descricao": g.get("descricao", "")} for g in d.get("grandezas", [])]
     r["itens"] = [{"nome": i["nome"], "formula": i["formula"], "quando": i.get("quando", ""),
                    "descricao": i.get("descricao", "")} for i in d.get("itens", [])]
+    r["restricoes"] = [{"nome": c["nome"], "formula": str(c["formula"]), "limite": str(c.get("limite", 0)),
+                        "tipo": c.get("tipo", "max"), "descricao": c.get("descricao", "")} for c in d.get("restricoes", [])]
     return r
 
 def conferir(regra: dict) -> list[str]:
@@ -83,6 +85,21 @@ def conferir(regra: dict) -> list[str]:
         for txt, rot in ((i.get("formula", ""), onde), (i.get("quando", ""), onde + " (condição)")):
             if not txt:
                 continue
+            try:
+                falta = sorted(nomes_usados(txt, rot) - vistos)
+                if falta:
+                    p.append(f"{rot}: usa {', '.join(falta)}, que a regra não define")
+            except ErroDeFormula as e:
+                p.append(_curta(e))
+    nomes_rest = set()
+    for c in regra.get("restricoes", []):
+        onde = f"restrição {c.get('nome')}"
+        if c.get("nome") in nomes_rest:
+            p.append(f"{onde}: restrição repetida")
+        nomes_rest.add(c.get("nome"))
+        if c.get("tipo", "max") not in ("max", "min"):
+            p.append(f"{onde}: tipo precisa ser “max” (fórmula <= limite) ou “min” (fórmula >= limite)")
+        for txt, rot in ((str(c.get("formula", "")), onde), (str(c.get("limite", "")), onde + " (limite)")):
             try:
                 falta = sorted(nomes_usados(txt, rot) - vistos)
                 if falta:
@@ -147,8 +164,23 @@ def avaliar(regra: dict, valores: dict | None = None) -> dict:
         itens.append({"nome": i["nome"], "valor": _num(v), "aplica": aplica, "erro": erro,
                       "formula": i["formula"], "quando": i.get("quando", ""),
                       "conta": conta_o_item})
+    rest, violacao = [], 0.0
+    for c in regra.get("restricoes", []):
+        onde = f"restrição {c['nome']}"
+        v, erro = calc(str(c["formula"]), onde)
+        lim = None
+        if erro is None:
+            lim, erro = calc(str(c.get("limite", 0)), onde + " (limite)")
+        folga = viol = None
+        if erro is None:
+            folga = (lim - v) if c.get("tipo", "max") == "max" else (v - lim)
+            viol = max(0.0, -folga) / max(abs(lim), 1e-9)
+            violacao += viol
+        rest.append({"nome": c["nome"], "valor": _num(v), "limite": _num(lim), "tipo": c.get("tipo", "max"), "folga": _num(folga),
+                     "violacao": _num(viol), "ok": erro is None and folga >= 0, "erro": erro, "descricao": c.get("descricao", "")})
     return {"contexto": {k: _num(v) for k, v in ctx.items()}, "grandezas": grand, "itens": itens,
-            "total": total if conta else 0.0, "conta": conta, "problemas": conferir(regra)}
+            "total": total if conta else 0.0, "conta": conta, "restricoes": rest, "viavel": all(c["ok"] for c in rest),
+            "violacao": violacao, "problemas": conferir(regra)}
 
 def copia(regra: dict) -> dict:
     return copy.deepcopy(regra)

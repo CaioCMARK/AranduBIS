@@ -116,6 +116,8 @@ def fazer_handler(est: Estado):
                 d = self._corpo()
                 if self.path == "/api/constroi":
                     return self._json(G.constroi(d))
+                if self.path == "/api/medidas":
+                    return self._json(G.medidas(d))
                 if self.path == "/api/aero/resumo":
                     return self._json(AN.resumo_aero(d))
                 if self.path == "/api/regra/avalia":

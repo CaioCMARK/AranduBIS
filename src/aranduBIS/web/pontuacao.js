@@ -75,6 +75,18 @@ const Pontuacao = (() => {
       t.append(tr);
     });
     C.append(t);
+    if (out.restricoes && out.restricoes.length) {
+      const r = document.createElement("table"); r.className = "res-pont";
+      r.innerHTML = "<tr><th>restrição</th><th>valor</th><th>limite</th><th>folga</th><th></th><th>descrição</th></tr>";
+      out.restricoes.forEach(c => {
+        const tr = document.createElement("tr");
+        const estado = c.erro ? `<span class="erro">${c.erro}</span>` : c.ok ? "atende" : `<span class="erro">excede em ${fmt(100 * c.violacao, 1)} %</span>`;
+        tr.innerHTML = `<td>${c.nome}</td><td>${c.valor === null ? "—" : fmt(c.valor, 3)}</td><td>${c.tipo === "min" ? "≥ " : "≤ "}${c.limite === null ? "—" : fmt(c.limite, 3)}</td>`
+          + `<td>${c.folga === null ? "—" : fmt(c.folga, 3)}</td><td>${estado}</td><td class="formula">${c.descricao || ""}</td>`;
+        r.append(tr);
+      });
+      C.append(el("div", out.viavel ? "Restrições: todas atendidas" : "Restrições: há limite excedido", "nota"), r);
+    }
     if (out.problemas.length) { const p = el("div", "", "aviso"); p.innerHTML = "<b>Problemas na regra</b><br>" + out.problemas.map(x => "• " + x).join("<br>"); C.append(p); }
   }
 
@@ -99,7 +111,22 @@ const Pontuacao = (() => {
       if (!R.entradas.some(e => e.nome === "CP_bruta")) { msg("Esta regra não tem a entrada CP_bruta.", true); return; }
       valores.CP_bruta = +Math.max(0, d.massa_maxima.massa_kg - (valores.PV || 0)).toFixed(3); entradas(); agenda();
     };
-    dica.append(b1, b2); P.append(dica);
+    const b3 = el("button", "Medidas da geometria");
+    b3.title = "Preenche envergadura, comprimento, altura, n_superficies e raio_cone (as que a regra tiver) com as medidas da aeronave desenhada";
+    b3.onclick = async () => {
+      if (!esq || !esq.elementos.length) { msg("Construa uma aeronave na etapa 1.", true); return; }
+      try {
+        const hc = R.constantes && (R.constantes.H_CONE || R.constantes.cone_altura);
+        const m = await chama("/api/medidas", { esquema: esq, cone_altura: hc || null });
+        const postos = [];
+        ["envergadura", "comprimento", "altura", "n_superficies", "raio_cone"].forEach(k => {
+          if (R.entradas.some(e => e.nome === k) && m[k] !== undefined && m[k] !== null) { valores[k] = +(+m[k]).toFixed(4); postos.push(k); }
+        });
+        if (!postos.length) { msg("Esta regra não usa medidas da geometria (envergadura, comprimento, altura, n_superficies, raio_cone).", true); return; }
+        entradas(); agenda(); msg("Medidas preenchidas: " + postos.join(", "));
+      } catch (e) { msg(e.message, true); }
+    };
+    dica.append(b1, b2, b3); P.append(dica);
   }
 
   const celula = (valor, ao, tipo = "text", larg) => { const i = entrada(tipo, valor, ao); if (larg) i.style.minWidth = larg; i.style.textAlign = "left"; return i; };
@@ -117,7 +144,7 @@ const Pontuacao = (() => {
 
   function baixo() {
     const A = $("abas2"); A.innerHTML = "";
-    ["Itens", "Grandezas", "Entradas", "Constantes", "Regra"].forEach(n => {
+    ["Itens", "Restrições", "Grandezas", "Entradas", "Constantes", "Regra"].forEach(n => {
       const d = el("div", n, n === aba ? "at" : ""); d.onclick = () => { aba = n; baixo(); }; A.append(d);
     });
     const C = $("conteudo2"); C.innerHTML = "";
@@ -130,6 +157,15 @@ const Pontuacao = (() => {
         celula(i.quando, v => { i.quando = v; mexeu(); }, "text", "9em"), celula(i.descricao, v => { i.descricao = v; agenda(); }, "text", "16em")]),
         k => { R.itens.splice(k, 1); mexeu(); baixo(); }));
       const b = el("button", "+ item"); b.onclick = () => { R.itens.push({ nome: novoNome(R.itens, "item"), formula: "0", quando: "", descricao: "" }); mexeu(); baixo(); }; C.append(b);
+    } else if (aba === "Restrições") {
+      R.restricoes = R.restricoes || [];
+      C.append(el("div", "Limites que o projeto precisa respeitar. “máx.” exige fórmula ≤ limite; “mín.” exige fórmula ≥ limite. O limite pode ser um número, uma constante ou uma fórmula. Restrições não mudam a pontuação: mostram a folga e quanto excede.", "nota"));
+      C.append(tab(["nome", "fórmula", "tipo", "limite", "descrição"], R.restricoes.map(c => {
+        const tp = document.createElement("select"); [["max", "máx. (≤)"], ["min", "mín. (≥)"]].forEach(([k, r]) => tp.add(new Option(r, k))); tp.value = c.tipo || "max"; tp.onchange = () => { c.tipo = tp.value; mexeu(); };
+        return [celula(c.nome, v => { c.nome = v; mexeu(); }, "text", "8em"), celula(c.formula, v => { c.formula = v; mexeu(); }, "text", "16em"), tp,
+          celula(c.limite, v => { c.limite = v; mexeu(); }, "text", "7em"), celula(c.descricao || "", v => { c.descricao = v; agenda(); }, "text", "16em")]; }),
+        k => { R.restricoes.splice(k, 1); mexeu(); baixo(); }));
+      const b = el("button", "+ restrição"); b.onclick = () => { R.restricoes.push({ nome: novoNome(R.restricoes, "r"), formula: "0", limite: "0", tipo: "max", descricao: "" }); mexeu(); baixo(); }; C.append(b);
     } else if (aba === "Grandezas") {
       C.append(el("div", "Valores intermediários, em ordem: cada um só enxerga as entradas, as constantes e as grandezas acima dele.", "nota"));
       C.append(tab(["nome", "fórmula", "un.", "descrição"], R.grandezas.map(g => [
