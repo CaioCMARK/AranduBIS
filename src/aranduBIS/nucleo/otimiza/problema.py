@@ -103,7 +103,12 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
     for g in prob.get("grandezas", []):
         ctx[g["nome"]] = _f(g["formula"], ctx, f"grandeza {g['nome']}")
     esq = copy.deepcopy(prob["base"])
+    if prob.get("retira"):
+        esq["elementos"] = [e for e in esq.get("elementos", []) if e.get("nome") not in set(prob["retira"])]
     for lg in prob.get("ligacoes", []):
+        if lg.get("estica"):
+            _estica(esq, lg["estica"], ctx)
+            continue
         alvos = lg.get("alvos") or [lg["alvo"]]
         val = _f(lg["formula"], ctx, f"ligacao {alvos[0]}")
         if lg.get("valores"):
@@ -114,6 +119,23 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
         for a in alvos:
             poe(esq, a, val)
     return esq, ctx
+
+def _estica(esq: dict, cfg: dict, ctx: dict) -> None:
+    i = {"x": 0, "y": 1, "z": 2}[cfg.get("eixo", "x")]
+    de = float(cfg["de"]); fim = _f(cfg["fim"], ctx, "estica.fim")
+    for nome in cfg["elementos"]:
+        el = next((e for e in esq.get("elementos", []) if e.get("nome") == nome), None)
+        if el is None or not el.get("nos"):
+            raise ProblemaInvalido(f"estica: elemento {nome!r} sem nos (precisa ser uma trelica)")
+        f_ = max(n[i] for n in el["nos"])
+        if f_ <= de:
+            raise ProblemaInvalido(f"estica: {nome!r} nao tem nos alem de {de:g}")
+        k = (fim - de) / (f_ - de)
+        if k <= 0:
+            raise ProblemaInvalido(f"estica: fim {fim:g} antes do inicio {de:g}")
+        for n in el["nos"]:
+            if n[i] > de:
+                n[i] = de + (n[i] - de) * k
 
 def _afina_geometria(esq: dict, malha: dict | None) -> None:
     if not malha:

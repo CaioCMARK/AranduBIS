@@ -98,3 +98,17 @@ def test_dimensionamento_reforca_ate_a_margem_alvo_e_pesa_mais():
     assert dl["atingiu"] and df["atingiu"] and dl["margem"] >= -1e-3 and df["margem"] >= 0.5 - 1e-3
     assert df["valor"] > dl["valor"] and forte["resultados"]["PV"] > leve["resultados"]["PV"]
     assert forte["resultados"]["margem_estrutural"] == pytest.approx(df["margem"])
+
+def test_retira_e_estica_alongam_o_boom_e_pesam_mais():
+    from aranduBIS.nucleo.modelador import aeronave_geometria as AG
+    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_2025.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
+    prob = {"base": base, "retira": ["massa_equivalente"], "variaveis": [{"nome": "lb", "minimo": 0.8, "maximo": 2.0, "padrao": 1.3}], "grandezas": [],
+            "ligacoes": [{"estica": {"elementos": ["boom_tubos"], "de": 0.30, "fim": "lb"}}, {"alvos": ["empenagem_h.posicao[0]", "deriva.posicao[0]"], "formula": "lb"}]}
+    def boom(lb):
+        esq, _ = P.monta(prob, {"lb": lb})
+        assert all(e["nome"] != "massa_equivalente" for e in esq["elementos"])
+        mc = AG.massa_e_cg(AG.constroi(esq))
+        return sum(q["massa"] for q in mc["itens"] if str(q["nome"]).startswith("boom")), max(n[0] for e in esq["elementos"] if e["nome"] == "boom_tubos" for n in e["nos"])
+    (m1, x1), (m2, x2) = boom(1.0), boom(1.8)
+    assert x1 == pytest.approx(1.0) and x2 == pytest.approx(1.8) and m2 > 1.5 * m1
