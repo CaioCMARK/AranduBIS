@@ -91,7 +91,7 @@ const Estrutura = (() => {
     linha(g, "material", selecao(ch.material || "balsa", MATERIAIS, v => muda(() => { ch.material = v; })));
   }
 
-  const DOBRADICAS = { "": "— (não declarada)", fita: "Fita adesiva ou filme", flexivel: "Charneira viva (pele ou filme)", pino: "Dobradiça de nylon com pino", pivo: "Pivô (tubo e mancal, all-moving)" };
+  const DOBRADICAS = { "": "— (não declarada)", fita: "Fita adesiva ou filme", chanfro: "Fita com chanfro triangular", batente: "Chapeado rolando sobre o batente (chapa vertical)", flexivel: "Charneira viva (pele ou filme)", pino: "Dobradiça de nylon com pino", pivo: "Pivô: a longarina é o tubo-eixo (all-moving)" };
 
   function selecaoRotulos(valor, mapa, ao) {
     const s = document.createElement("select");

@@ -8,6 +8,8 @@ MODOS = ("sim", "anti", "lado")
 CHARNEIRAS = ("meio", "extradorso", "intradorso")
 DOBRADICAS = {
     "fita": {"rotulo": "Fita adesiva ou filme", "massa_g_m": 2.0},
+    "chanfro": {"rotulo": "Fita com chanfro triangular (a ponta chanfrada da superficie libera o giro)", "massa_g_m": 3.0},
+    "batente": {"rotulo": "Chapeado que rola sobre o batente (chapa vertical reta)", "massa_g_m": 4.0},
     "flexivel": {"rotulo": "Charneira viva (pele ou filme fino)", "massa_g_m": 1.0},
     "pino": {"rotulo": "Dobradica de nylon com pino", "massa_g_m": 10.0},
     "pivo": {"rotulo": "Pivo (tubo e mancal, all-moving): a massa esta nos tubos declarados", "massa_g_m": 0.0},
