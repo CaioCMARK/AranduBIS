@@ -109,6 +109,9 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
         if lg.get("estica"):
             _estica(esq, lg["estica"], ctx)
             continue
+        if lg.get("escala_y"):
+            _escala_y(esq, lg["escala_y"], ctx)
+            continue
         alvos = lg.get("alvos") or [lg["alvo"]]
         val = _f(lg["formula"], ctx, f"ligacao {alvos[0]}")
         if lg.get("valores"):
@@ -119,6 +122,38 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
         for a in alvos:
             poe(esq, a, val)
     return esq, ctx
+
+_CHAVES_Y = ("y",)
+_CHAVES_PAR = ("xc_y", "ate_xc_y")
+
+def _escala_no(no, k: float) -> None:
+    if isinstance(no, dict):
+        for ch, v in no.items():
+            if ch in _CHAVES_Y and isinstance(v, (int, float)):
+                no[ch] = v * k
+            elif ch in _CHAVES_Y and isinstance(v, list) and all(isinstance(u, (int, float)) for u in v):
+                no[ch] = [u * k for u in v]
+            elif ch in _CHAVES_PAR and isinstance(v, list):
+                for p in v:
+                    p[0] = p[0] * k
+            elif isinstance(v, (dict, list)):
+                _escala_no(v, k)
+    elif isinstance(no, list):
+        for v in no:
+            if isinstance(v, (dict, list)):
+                _escala_no(v, k)
+
+def _escala_y(esq: dict, cfg: dict, ctx: dict) -> None:
+    k = _f(cfg["fator"], ctx, "escala_y.fator")
+    if k <= 0:
+        raise ProblemaInvalido("escala_y: fator precisa ser positivo")
+    for nome in cfg["elementos"]:
+        el = next((e for e in esq.get("elementos", []) if e.get("nome") == nome), None)
+        if el is None:
+            raise ProblemaInvalido(f"escala_y: o modelo nao tem o elemento {nome!r}")
+        for parte in ("secoes", "estrutura", "controles"):
+            if el.get(parte) is not None:
+                _escala_no(el[parte], k)
 
 def _estica(esq: dict, cfg: dict, ctx: dict) -> None:
     i = {"x": 0, "y": 1, "z": 2}[cfg.get("eixo", "x")]
@@ -199,7 +234,13 @@ def avalia(prob: dict, x: dict) -> dict:
 
         etapa = "estabilidade"
         rho, V = float(an.get("rho", 1.1)), float(an.get("V", 12.0))
-        x_cg = _f(an["x_cg"], {**ctx, **q}, "analise.x_cg") if an.get("x_cg") is not None else q["x_cg_vazio"]
+        if an.get("x_cg") is not None:
+            x_cg = _f(an["x_cg"], {**ctx, **q}, "analise.x_cg")
+        elif an.get("carga_ref_kg"):
+            mc_, xc_ = float(an["carga_ref_kg"]), float(an.get("carga_x", q["x_cg_vazio"]))
+            x_cg = (q["PV"] * q["x_cg_vazio"] + mc_ * xc_) / (q["PV"] + mc_)
+        else:
+            x_cg = q["x_cg_vazio"]
         q["x_cg"] = x_cg
         malha = an.get("malha") or {}
         ns, nc = (int(malha["n_span"]) if malha.get("n_span") else None), int(malha.get("n_chord", 4))
