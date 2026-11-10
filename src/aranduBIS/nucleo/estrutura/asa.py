@@ -51,8 +51,8 @@ def secao(cfg: dict, x: np.ndarray, zs: np.ndarray, zi: np.ndarray, c: float, y:
             continue
         de, di = float(tb["de"]), float(tb.get("di", 0.0))
         xt = ES.posicao_x(tb, c, y)
-        sup = tb.get("lado", "extradorso") == "extradorso"
-        z = float(np.interp(xt / c, x, zs if sup else zi)) * c + (-0.5 * de if sup else 0.5 * de)
+        lado = tb.get("lado", "extradorso"); sup = lado == "extradorso"
+        z = 0.5 * float(np.interp(xt / c, x, zs) + np.interp(xt / c, x, zi)) * c if lado == "meio" else float(np.interp(xt / c, x, zs if sup else zi)) * c + (-0.5 * de if sup else 0.5 * de)
         mt = mats[tb.get("material", "tubo_carbono")] if tb.get("material", "tubo_carbono") in mats else mats["tubo_carbono"]
         partes.append(("tubo_sup" if sup else "tubo_inf", mt["E"], 0.25 * np.pi * (de * de - di * di), z))
         if h > 0 and de > h:
