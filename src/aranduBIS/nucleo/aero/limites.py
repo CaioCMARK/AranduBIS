@@ -93,6 +93,8 @@ def altura_do_solo(esq: dict, alpha: float, x_ref: float, z_ref: float = 0.0) ->
 ALTURAS_SOLO = (0.3, 0.6, 1.2)
 H_LIVRE = 5.0
 
+PISO_K_SOLO = 0.30
+
 def _tabela_solo(esq: dict, x_cg: float, h0: float, alpha: float, V: float, rho: float, n_span=None, n_chord: int = 4) -> list[dict]:
     sup = superficies(esq, n_span, n_chord)
     pts = []
@@ -101,6 +103,10 @@ def _tabela_solo(esq: dict, x_cg: float, h0: float, alpha: float, V: float, rho:
         pts.append({"h": float(hh), "CL": float(q.CL), "CDi": float(q.CDi), "K": float(q.CDi / q.CL ** 2) if abs(q.CL) > 1e-6 else 0.0})
     q = VLM(sup, x_ref=x_cg).resolver(alpha, V=V, rho=rho)[0]
     pts.append({"h": H_LIVRE, "CL": float(q.CL), "CDi": float(q.CDi), "K": float(q.CDi / q.CL ** 2) if abs(q.CL) > 1e-6 else 0.0})
+    piso = PISO_K_SOLO * pts[-1]["K"]
+    for p in pts[:-1]:
+        if p["K"] < piso:
+            p["K"], p["piso"] = float(piso), True
     return pts
 
 def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int = 4,
@@ -140,6 +146,8 @@ def cl_max(esq: dict, x_cg: float, V: float = 12.0, rho: float = 1.1, ncrit: int
             vs = VLM(superficies(esq, n_span, n_chord), x_ref=float(x_cg), altura_solo=float(h))
             rs = TeoriaDeFaixas(vs, polares, rho=rho).resolver(float(alpha_solo), V)
             solo_tab = _tabela_solo(esq, float(x_cg), float(h), float(alpha_solo), V, rho, n_span, n_chord)
+    if any(p.get("piso") for p in solo_tab or []):
+        avisos.append("Efeito solo: o VLM com imagem deu induzido quase nulo ou negativo perto do chao; K foi limitado a %.0f%% do voo livre." % (100 * PISO_K_SOLO))
     avisos += sorted({str(x.message).split(" Acima")[0] for x in w if "ESTOL" in str(x.message)})
     if not r.convergiu:
         avisos.append(f"a iteracao nao fechou no pico ({r.motivo}): CL_max com incerteza maior")
