@@ -91,20 +91,44 @@ const Estrutura = (() => {
     linha(g, "material", selecao(ch.material || "balsa", MATERIAIS, v => muda(() => { ch.material = v; })));
   }
 
+  const DOBRADICAS = { "": "— (não declarada)", fita: "Fita adesiva ou filme", flexivel: "Charneira viva (pele ou filme)", pino: "Dobradiça de nylon com pino", pivo: "Pivô (tubo e mancal, all-moving)" };
+
+  function selecaoRotulos(valor, mapa, ao) {
+    const s = document.createElement("select");
+    Object.entries(mapa).forEach(([k, r]) => s.add(new Option(r, k)));
+    s.value = valor; s.onchange = () => ao(s.value); return s;
+  }
+
   function comandos(C, e) {
     const B = bloco(C, "Superfícies de comando"), L = e.controles || [];
-    tabela(B, ["nome", "y de", "y até", "corda (m)", "deflexão (°)", "modo"], L.map(c => [
-      entrada("text", c.nome, v => muda(() => { c.nome = v; })),
-      entrada("number", c.y[0], v => muda(() => { c.y = [v, c.y[1]]; })),
-      entrada("number", c.y[1], v => muda(() => { c.y = [c.y[0], v]; })),
-      entrada("number", c.corda ?? "", v => muda(() => { c.corda = v; })),
-      entrada("number", c.deflexao || 0, v => muda(() => { c.deflexao = v; })),
-      selecao(c.modo || "sim", ["sim", "anti", "esq", "dir"], v => muda(() => { c.modo = v; }))]),
-      i => { muda(() => { L.splice(i, 1); if (!L.length) delete e.controles; }); abaConteudo(); });
+    B.append(el("div", "Cada comando é um trecho da envergadura com eixo (charneira). Para um estabilizador inteiro móvel (all-moving) marque “gira inteira”; para um pedaço que age como aileron, deixe desmarcado e defina o trecho. Valores sem dado do desenho são hipóteses.", "nota"));
+    L.forEach((c, i) => {
+      const card = el("div", "", "bloco"), g = el("div", "", "prop"); card.append(g);
+      const l = (r, w, dica) => { const a = el("label", r); if (dica) a.title = dica; g.append(a, w); };
+      const eixo = "x" in c ? "x" : "corda" in c ? "corda" : "xc";
+      const rm = el("button", "✕ remover"); rm.onclick = () => { muda(() => { L.splice(i, 1); if (!L.length) delete e.controles; }); abaConteudo(); };
+      const cab = el("div"); cab.append(el("b", c.nome + "  "), rm); card.prepend(cab);
+      l("nome", entrada("text", c.nome, v => muda(() => { c.nome = v; })));
+      l("y de (m)", entrada("number", c.y[0], v => muda(() => { c.y = [v ?? 0, c.y[1]]; })), "Em |y|: vale para os dois lados");
+      l("y até (m)", entrada("number", c.y[1], v => muda(() => { c.y = [c.y[0], v ?? 0]; })));
+      l("eixo definido por", selecaoRotulos(eixo, { corda: "corda da superfície (m)", x: "x da charneira (m), reto", xc: "fração da corda" }, v => muda(() => {
+        const val = c.x ?? c.corda ?? c.xc ?? 0.75; delete c.x; delete c.corda; delete c.xc;
+        c[v] = v === "xc" ? 0.75 : v === "x" ? +(val > 1 ? val : 0.2).toFixed(4) : 0.06; }) ), "x: eixo reto e paralelo à longarina (corda varia). corda: eixo paralelo ao bordo de fuga.");
+      l("valor do eixo", entrada("number", c[eixo], v => muda(() => { c[eixo] = v; })));
+      l("modo", selecaoRotulos(c.modo || "sim", { sim: "simétrico (profundor, flape)", anti: "diferencial (aileron)", lado: "só um lado (leme de meia deriva)" }, v => muda(() => { c.modo = v; })));
+      l("deflexão (°)", entrada("number", c.deflexao || 0, v => muda(() => { c.deflexao = v ?? 0; })), "Positivo desce o bordo de fuga");
+      l("batente (°)", entrada("number", c.limite ?? "", v => muda(() => { if (v === null) delete c.limite; else c.limite = v; })));
+      l("altura do eixo", selecaoRotulos(c.charneira || "meio", { meio: "meio do perfil", extradorso: "extradorso", intradorso: "intradorso" }, v => muda(() => { c.charneira = v; })));
+      const mv = document.createElement("input"); mv.type = "checkbox"; mv.checked = !!c.movel; mv.onchange = () => muda(() => { if (mv.checked) c.movel = true; else delete c.movel; });
+      l("gira inteira", mv, "All-moving: a seção inteira gira em torno do eixo");
+      l("dobradiça", selecaoRotulos(c.dobradica || "", DOBRADICAS, v => muda(() => { if (v) c.dobradica = v; else delete c.dobradica; })), "Entra na massa (g por metro de charneira, hipótese do catálogo)");
+      if (c.dobradica) l("massa (g/m)", entrada("number", c.massa_g_m ?? "", v => muda(() => { if (v === null) delete c.massa_g_m; else c.massa_g_m = v; })), "Vazio: usa o valor do catálogo");
+      B.append(card);
+    });
     const b = el("button", "+ comando");
     b.onclick = () => {
-      const ymax = Math.max(...(e.secoes || [{ y: 1 }]).map(s => s.y));
-      muda(() => { e.controles = L; L.push({ nome: nomeUnicoComando(e), y: [0.6 * ymax, 0.95 * ymax], corda: 0.06, deflexao: 0, modo: "anti", charneira: "meio" }); }); abaConteudo();
+      const ymax = Math.max(...(e.secoes || [{ y: 1 }]).map(s => Math.abs(s.y)));
+      muda(() => { e.controles = L; L.push({ nome: nomeUnicoComando(e), y: [+(0.6 * ymax).toFixed(3), +(0.95 * ymax).toFixed(3)], corda: 0.06, deflexao: 0, modo: "anti", charneira: "meio" }); }); abaConteudo();
     };
     B.append(b);
   }
