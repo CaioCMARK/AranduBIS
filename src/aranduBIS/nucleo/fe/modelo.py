@@ -12,6 +12,7 @@ class Modelo:
     barras: list = field(default_factory=list)
     massas: list = field(default_factory=list)
     rigidos: list = field(default_factory=list)
+    cascas: list = field(default_factory=list)
     spc: dict = field(default_factory=dict)
     cargas: dict = field(default_factory=dict)
 
@@ -26,6 +27,9 @@ class Modelo:
 
     def barra(self, eid, pid, ga, gb, v):
         self.barras.append((int(eid), int(pid), int(ga), int(gb), tuple(float(a) for a in v)))
+
+    def casca(self, eid, mat, t, nos):
+        self.cascas.append((int(eid), int(mat), float(t), tuple(int(n) for n in nos)))
 
     def massa(self, eid, no, m):
         self.massas.append((int(eid), int(no), float(m)))
@@ -50,4 +54,6 @@ class Modelo:
         for _, pid, ga, gb, _v in self.barras:
             p = self.props[pid]; L = float(np.linalg.norm(np.array(self.nos[gb]) - np.array(self.nos[ga])))
             m += (self.materiais[p["mat"]]["rho"] * p["A"] + p["nsm"]) * L
+        for _eid, mat, t, ns in self.cascas:
+            P = np.array([self.nos[n] for n in ns]); m += self.materiais[mat]["rho"] * t * 0.5 * np.linalg.norm(np.cross(P[2] - P[0], P[3] - P[1]))
         return m
