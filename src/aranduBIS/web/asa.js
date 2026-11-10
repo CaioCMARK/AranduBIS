@@ -3,8 +3,8 @@
 const Asa3 = (() => {
   const ITENS = [["tubo_comp", "Tubo de carbono, compressão", "#4a86c5"], ["tubo_tr", "Tubo de carbono, tração", "#6aa84f"],
                  ["pele_comp", "Chapeado, compressão", "#d98a3d"], ["pele_tr", "Chapeado, tração", "#a278c8"], ["alma_cis", "Alma de balsa, cisalhamento", "#c85a5a"]];
-  const CAMPOS = [{ k: "qualidade_balsa", cfg: "estrutura.qualidade_balsa", r: "Qualidade da balsa (×)", d: "Multiplica as tensões admissíveis da balsa. 1 = relatório." },
-                  { k: "qualidade_carbono", cfg: "estrutura.qualidade_carbono", r: "Qualidade do carbono (×)", d: "Multiplica as tensões admissíveis do tubo. 1 = relatório." }];
+  const CAMPOS = [{ k: "qualidade_balsa", cfg: "estrutura.qualidade_balsa", r: "Qualidade da balsa (×)", d: "Multiplica as tensões admissíveis da balsa. 1 = valor de referência." },
+                  { k: "qualidade_carbono", cfg: "estrutura.qualidade_carbono", r: "Qualidade do carbono (×)", d: "Multiplica as tensões admissíveis do tubo. 1 = valor de referência." }];
   const CHAVE = "aranduBIS.asa";
   const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8", "#5aaaaa"];
   let v = {}, res = null, tempo = null, seq = 0, sel = null, caso = null;
@@ -116,7 +116,7 @@ const Asa3 = (() => {
       const e = a.estacoes;
       C.append(el("div", `${a.nome}: altura da longarina ${fmt(1000 * e.h[0], 1)} mm na raiz e ${fmt(1000 * e.h[e.h.length - 1], 1)} mm na ponta; longarina a ${fmt(100 * e.x_longarina_c[0], 0)} % da corda na raiz; chapeado até ${fmt(100 * e.x_chapeado_c[0], 0)} % na raiz e ${fmt(100 * e.x_chapeado_c[e.x_chapeado_c.length - 1], 0)} % na ponta; EI na raiz ${fmt(e.EI[0], 0)} N·m²; flecha máx. ${fmt(a.flecha_max_pct, 1)} % (${a.flecha_max_caso.replace("_", " ")}).`, "nota"));
     });
-    C.append(el("div", `Materiais: ${res.asas[0].fontes.balsa}. ${res.asas[0].fontes.tubo_carbono}. O documento de referência dá, para a asa que ensaiou, margem 444 % nos tubos e flecha de 4,1 % da envergadura (RPe.5: abaixo de 6 %); a sua asa vale o que o modelo declara.`, "nota"));
+    C.append(el("div", `Materiais: ${res.asas[0].fontes.balsa}. ${res.asas[0].fontes.tubo_carbono}.`, "nota"));
     C.append(el("div", "Flexão de viga composta com a rigidez de cada parte (alma, tubos, chapeado) e cisalhamento médio na alma. Ainda não entram: flambagem do chapeado e das almas, torção e divergência, juntas coladas, montantes entre as asas. Não conta como atestado estrutural.", "nota"));
     res.avisos.forEach(x => C.append(el("div", x, "nota")));
   }

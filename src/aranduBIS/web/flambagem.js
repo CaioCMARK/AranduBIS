@@ -2,8 +2,8 @@
 
 const Flamb3 = (() => {
   const CAMPOS = [
-    { g: "Chapeado de balsa", k: "knockdown_pele", cfg: "estrutura.knockdown_pele", r: "Imperfeição (× teoria)", d: "HIPÓTESE. Ajuste até reproduzir o autovalor do FEM da sua asa." },
-    { k: "balsa_E_transv", cfg: "estrutura.balsa_E_transv", r: "E transversal (GPa)", d: "HIPÓTESE: balsa, 3 a 5 % do E na fibra." },
+    { g: "Chapeado de balsa", k: "knockdown_pele", cfg: "estrutura.knockdown_pele", r: "Imperfeição (× teoria)", d: "Estimativa. Ajuste até reproduzir o autovalor do FEM da sua asa." },
+    { k: "balsa_E_transv", cfg: "estrutura.balsa_E_transv", r: "E transversal (GPa)", d: "Estimativa: balsa, 3 a 5 % do E na fibra." },
   ];
   const CHAVE = "aranduBIS.flamb";
   const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
@@ -97,7 +97,7 @@ const Flamb3 = (() => {
     C.append(t);
     C.append(el("div", `${a.nome}: nervuras em y = ${a.nervuras.map(x => fmt(x, 2)).join(", ")} m. Chapeado de balsa ${fmt(1000 * a.espessura_chapeado, 1)} mm, fibra na envergadura; E transversal ${fmt(a.E_transv_GPa, 2)} GPa, imperfeição ${fmt(a.knockdown, 2)}.`
       + (a.n_nervuras_falsas ? ` Para fechar a margem onde as nervuras falsas resolvem: ${a.n_nervuras_falsas} nervuras falsas nas duas semi-asas, cerca de ${fmt(a.massa_falsas_g, 0)} g.` : ""), "nota"));
-    if (a.paineis_sem_solucao.length) C.append(el("div", `Em ${a.paineis_sem_solucao.length} painéis nenhuma nervura falsa viável (vão ≥ 40 mm) fecha a margem neste modelo: a casca teórica quase não depende do vão. O documento de referência, com FEM, achou ganho de 0,92 para 1,26 com nervura falsa; este modelo não reproduz esse ganho, então confira o autovalor do FEM antes de decidir.`, "nota"));
+    if (a.paineis_sem_solucao.length) C.append(el("div", `Em ${a.paineis_sem_solucao.length} painéis nenhuma nervura falsa viável (vão ≥ 40 mm) fecha a margem neste modelo: a casca teórica quase não depende do vão. Um FEM de casca de referência mostrou ganho de 0,92 para 1,26 com nervura falsa; este modelo não reproduz esse ganho, então confira o autovalor do FEM antes de decidir.`, "nota"));
     C.append(el("div", "Estimativa analítica (casca cilíndrica de Donnell com redutor de imperfeição), não substitui o FEM de casca nem o ensaio. Alma da longarina: placa plana em cisalhamento com E efetivo médio geométrico. Fora daqui: flambagem global da caixa, das nervuras e da cauda.", "nota"));
     res.avisos.forEach(x => C.append(el("div", x, "nota")));
   }

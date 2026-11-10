@@ -50,10 +50,10 @@ const Decolagem = (() => {
     { g: "Pista e ar", k: "pista_m", cfg: "decolagem.pista_m", r: "Distância até o obstáculo (m)", p: 55, o: "regulamento", d: "Muda de ano para ano e de regulamento." },
     { k: "obstaculo_m", cfg: "decolagem.obstaculo_m", r: "Altura do obstáculo (m)", p: 0.9, o: "regulamento", d: "Quanto a aeronave precisa estar acima do chão nessa distância." },
     { k: "altitude_densidade_m", cfg: "decolagem.altitude_densidade_m", r: "Altitude-densidade (m)", p: 1330, o: "regulamento", d: "Define a densidade do ar (atmosfera padrão)." },
-    { k: "mu", cfg: "decolagem.mu", r: "Atrito de rolagem μ", p: 0.062, o: "hipótese", d: "Depende da pista e das rodas. Meça o da sua." },
-    { g: "Rotação", k: "d_alpha_rotacao", cfg: "decolagem.d_alpha_rotacao", r: "Giro até sair do solo (°)", p: 6, o: "hipótese", d: "Quanto a atitude muda da corrida até a saída." },
-    { k: "taxa_rotacao", cfg: "decolagem.taxa_rotacao", r: "Taxa de rotação (°/s)", p: 20, o: "hipótese", d: "Velocidade com que o piloto levanta o nariz." },
-    { k: "margem_rotacao", cfg: "decolagem.margem_rotacao", r: "Início da rotação (× V de estol)", p: 1.02, o: "hipótese", d: "Fração da velocidade de estol em que começa a puxar." },
+    { k: "mu", cfg: "decolagem.mu", r: "Atrito de rolagem μ", p: 0.062, o: "estimativa", d: "Depende da pista e das rodas. Meça o da sua." },
+    { g: "Rotação", k: "d_alpha_rotacao", cfg: "decolagem.d_alpha_rotacao", r: "Giro até sair do solo (°)", p: 6, o: "estimativa", d: "Quanto a atitude muda da corrida até a saída." },
+    { k: "taxa_rotacao", cfg: "decolagem.taxa_rotacao", r: "Taxa de rotação (°/s)", p: 20, o: "estimativa", d: "Velocidade com que o piloto levanta o nariz." },
+    { k: "margem_rotacao", cfg: "decolagem.margem_rotacao", r: "Início da rotação (× V de estol)", p: 1.02, o: "estimativa", d: "Fração da velocidade de estol em que começa a puxar." },
   ];
   const CHAVE = "aranduBIS.decolagem";
   let v = {}, res = null, aba = "Resumo", tempo = null, seq = 0;

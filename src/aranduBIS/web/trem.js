@@ -3,11 +3,11 @@
 const Trem3 = (() => {
   const CAMPOS = [
     { g: "Pouso", k: "fator_pouso", cfg: "estrutura.fator_pouso", r: "Fator de pouso (× peso)", d: "Reação vertical do solo = fator × peso." },
-    { k: "atrito_pouso", cfg: "estrutura.atrito_pouso", r: "Spin-up (× reação)", d: "HIPÓTESE: força para trás nas principais.", zero: true },
-    { g: "Taxi", k: "fator_taxi_z", cfg: "estrutura.fator_taxi_z", r: "Vertical (× peso)", d: "Documento de referência: 1,0." },
-    { k: "fator_taxi_y", cfg: "estrutura.fator_taxi_y", r: "Lateral (× peso)", d: "Documento de referência: 0,5.", zero: true },
-    { g: "Modelo", k: "raio_solda", cfg: "estrutura.raio_solda", r: "Solda do eixo (m)", d: "HIPÓTESE: meio-comprimento rígido da união de fibras e epóxi em cada pé; 0 = junta pontual.", zero: true },
-    { k: "raio_inercia", cfg: "estrutura.raio_inercia", r: "Raio da massa (m)", d: "HIPÓTESE: a massa se espalha igual nos nós da treliça a menos deste raio do CG." },
+    { k: "atrito_pouso", cfg: "estrutura.atrito_pouso", r: "Spin-up (× reação)", d: "Estimativa: força para trás nas principais.", zero: true },
+    { g: "Taxi", k: "fator_taxi_z", cfg: "estrutura.fator_taxi_z", r: "Vertical (× peso)", d: "Valor de referência: 1,0." },
+    { k: "fator_taxi_y", cfg: "estrutura.fator_taxi_y", r: "Lateral (× peso)", d: "Valor de referência: 0,5.", zero: true },
+    { g: "Modelo", k: "raio_solda", cfg: "estrutura.raio_solda", r: "Solda do eixo (m)", d: "Estimativa: meio-comprimento rígido da união de fibras e epóxi em cada pé; 0 = junta pontual.", zero: true },
+    { k: "raio_inercia", cfg: "estrutura.raio_inercia", r: "Raio da massa (m)", d: "Estimativa: a massa se espalha igual nos nós da treliça a menos deste raio do CG." },
   ];
   const CHAVE = "aranduBIS.trem";
   const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
