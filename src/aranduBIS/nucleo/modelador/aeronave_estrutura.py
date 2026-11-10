@@ -230,3 +230,10 @@ def barras_prisma(N, B, raios, faces=8):
         tb += [(0, k + 1, k), (faces, faces + k, faces + k + 1)]
     tb = np.array(tb); of = 2 * faces * np.arange(nb)[:, None, None]; T = (tb[None, :, :] + of).reshape(-1, 3)
     return V, T, np.repeat(np.arange(nb), len(tb))
+
+def posicao_x(item: dict, c: float, y: float) -> float:
+    par = item.get("xc_y")
+    if par:
+        par = sorted((abs(float(a)), float(b)) for a, b in par)
+        return float(np.interp(abs(y), [q[0] for q in par], [q[1] for q in par])) * c
+    return float(item["x"]) if "x" in item else float(item["xc"]) * c

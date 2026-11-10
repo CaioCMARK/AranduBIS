@@ -34,7 +34,7 @@ def secao(cfg: dict, x: np.ndarray, zs: np.ndarray, zi: np.ndarray, c: float, y:
     lg = (cfg.get("longarinas") or [None])[0]
     if lg is None:
         raise ValueError("a asa nao declara longarina (estrutura.longarinas)")
-    xs = float(lg["x"]) if "x" in lg else float(lg["xc"]) * c
+    xs = ES.posicao_x(lg, c, y)
     tw = float(lg.get("largura", 0.00238))
     zu, zl = float(np.interp(xs / c, x, zs)) * c, float(np.interp(xs / c, x, zi)) * c
     h = zu - zl
@@ -50,7 +50,7 @@ def secao(cfg: dict, x: np.ndarray, zs: np.ndarray, zi: np.ndarray, c: float, y:
         if not (min(y0, y1) - 1e-9 <= y <= max(y0, y1) + 1e-9):
             continue
         de, di = float(tb["de"]), float(tb.get("di", 0.0))
-        xt = float(tb["x"]) if "x" in tb else float(tb["xc"]) * c
+        xt = ES.posicao_x(tb, c, y)
         sup = tb.get("lado", "extradorso") == "extradorso"
         z = float(np.interp(xt / c, x, zs if sup else zi)) * c + (-0.5 * de if sup else 0.5 * de)
         mt = mats[tb.get("material", "tubo_carbono")] if tb.get("material", "tubo_carbono") in mats else mats["tubo_carbono"]
