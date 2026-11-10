@@ -112,3 +112,14 @@ def test_retira_e_estica_alongam_o_boom_e_pesam_mais():
         return sum(q["massa"] for q in mc["itens"] if str(q["nome"]).startswith("boom")), max(n[0] for e in esq["elementos"] if e["nome"] == "boom_tubos" for n in e["nos"])
     (m1, x1), (m2, x2) = boom(1.0), boom(1.8)
     assert x1 == pytest.approx(1.0) and x2 == pytest.approx(1.8) and m2 > 1.5 * m1
+
+def test_pecas_com_catalogo_trocam_massa_e_custo_pela_escolha():
+    prob = _prob()
+    prob["variaveis"].append({"nome": "servo", "minimo": 0, "maximo": 1, "padrao": 0, "valores": ["padrao", "leve"]})
+    sistema = json.loads((RAIZ / "cases" / "otimiza" / "massas_sistema_convencional.json").read_text(encoding="utf8"))
+    sistema["massas"][0]["escolha"] = "servo"
+    prob.update(grandezas=prob["grandezas"] + sistema["grandezas"], massas=sistema["massas"])
+    a = P.avalia(prob, {"b": 2.4, "afil": 1.0, "perfil": 0, "servo": 0})["resultados"]
+    b = P.avalia(prob, {"b": 2.4, "afil": 1.0, "perfil": 0, "servo": 1})["resultados"]
+    assert b["massas_sistema_kg"] < a["massas_sistema_kg"] and b["custo_pecas"] > a["custo_pecas"]
+    assert {p["opcao"] for p in a["pecas"] if p["opcao"]} == {"servo padrao"} and b["pecas"][0]["opcao"] == "servo leve"

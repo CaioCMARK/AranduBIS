@@ -9,12 +9,22 @@ PADRAO_CARGAS = {"Vc": 13.0, "Vd": 15.9, "n_max": 1.8, "n_min": 0.0, "U_c": 4.0,
 def insere_massas(esq: dict, lista: list, ctx: dict) -> list[dict]:
     entrou = []
     for m in lista or []:
-        kg = _f(m["formula"], ctx, f"massa {m['nome']}")
+        onde = f"peca {m['nome']}"
+        custo, opcao = 0.0, None
+        if m.get("opcoes"):
+            i = int(round(_f(m.get("escolha", 0), ctx, onde + " (escolha)"))) if not isinstance(m.get("escolha", 0), (int, float)) else int(m.get("escolha", 0))
+            if not 0 <= i < len(m["opcoes"]):
+                raise ProblemaInvalido(f"{onde}: opcao {i} fora do catalogo de {len(m['opcoes'])}")
+            o = m["opcoes"][i]; qtd = _f(m.get("quantidade", 1), ctx, onde + " (quantidade)") if isinstance(m.get("quantidade", 1), str) else float(m.get("quantidade", 1))
+            kg, custo, opcao = float(o["kg"]) * qtd, float(o.get("custo", 0.0)) * qtd, o.get("nome")
+        else:
+            kg = _f(m["formula"], ctx, onde)
+            custo = _f(m["custo"], ctx, onde + " (custo)") if isinstance(m.get("custo"), str) else float(m.get("custo", 0.0))
         if kg <= 0:
             continue
         pos = [_f(p, ctx, f"posicao de {m['nome']}") if isinstance(p, str) else float(p) for p in m.get("posicao", [0.0, 0.0, 0.0])]
         esq.setdefault("elementos", []).append({"nome": m["nome"], "tipo": "ponto", "massa": float(kg), "posicao": pos})
-        entrou.append({"nome": m["nome"], "kg": float(kg)})
+        entrou.append({"nome": m["nome"], "kg": float(kg), "custo": float(custo), "opcao": opcao})
     return entrou
 
 def _aplica(esq: dict, d: dict, t: float, ctx: dict) -> None:

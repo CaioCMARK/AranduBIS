@@ -183,7 +183,9 @@ def avalia(prob: dict, x: dict) -> dict:
         etapa = "geometria e massa"
         if prob.get("massas"):
             from . import dimensiona as DM
-            q["massas_sistema_kg"] = float(sum(m["kg"] for m in DM.insere_massas(esq, prob["massas"], ctx)))
+            pecas = DM.insere_massas(esq, prob["massas"], ctx)
+            q["massas_sistema_kg"] = float(sum(m["kg"] for m in pecas)); q["custo_pecas"] = float(sum(m["custo"] for m in pecas))
+            q["pecas"] = pecas
         _afina_geometria(esq, an.get("malha"))
         A = AG.constroi(esq)
         mc = AG.massa_e_cg(A)
