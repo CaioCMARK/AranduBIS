@@ -77,11 +77,24 @@ class Sistema:
             r, c = np.meshgrid(gl, gl, indexing="ij")
             I.append(r.ravel()); J.append(c.ravel()); Vk.append(kg.ravel()); Vm.append(mg.ravel())
             self.locais.append((eid, gl, T, kl, L))
+        from .casca import rigidez_global as _cascag
+        self._massa_casca = []
+        for eid, mat, t, ns in mod.cascas:
+            m = mod.materiais[mat]; nu = m["E"] / (2 * m["G"]) - 1
+            P = np.array([mod.nos[k] for k in ns])
+            kg, Tc = _cascag(P, m["E"], nu, t)
+            gl = np.concatenate([self._gl(k) for k in ns])
+            r, c = np.meshgrid(gl, gl, indexing="ij")
+            I.append(r.ravel()); J.append(c.ravel()); Vk.append(kg.ravel()); Vm.append(np.zeros(kg.size))
+            area = 0.5 * np.linalg.norm(np.cross(P[2] - P[0], P[3] - P[1]))
+            self._massa_casca += [(k, m["rho"] * t * area / 4.0) for k in ns]
         n = self.n
         self.K = sp.coo_matrix((np.concatenate(Vk), (np.concatenate(I), np.concatenate(J))), shape=(n, n)).tocsr() if I else sp.csr_matrix((n, n))
         self.M = sp.coo_matrix((np.concatenate(Vm), (np.concatenate(I), np.concatenate(J))), shape=(n, n)).tocsr() if I else sp.csr_matrix((n, n))
         d = np.zeros(n)
         for _, no, m in mod.massas:
+            d[self._gl(no)[:3]] += m
+        for no, m in self._massa_casca:
             d[self._gl(no)[:3]] += m
         self.M = self.M + sp.diags(d)
 
