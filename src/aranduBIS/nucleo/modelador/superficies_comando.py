@@ -6,6 +6,12 @@ FAIXA_CORDA = 0.02
 FAIXA_ENVERGADURA = 0.012
 MODOS = ("sim", "anti", "lado")
 CHARNEIRAS = ("meio", "extradorso", "intradorso")
+DOBRADICAS = {
+    "fita": {"rotulo": "Fita adesiva ou filme", "massa_g_m": 2.0},
+    "flexivel": {"rotulo": "Charneira viva (pele ou filme fino)", "massa_g_m": 1.0},
+    "pino": {"rotulo": "Dobradica de nylon com pino", "massa_g_m": 10.0},
+    "pivo": {"rotulo": "Pivo (tubo e mancal, all-moving): a massa esta nos tubos declarados", "massa_g_m": 0.0},
+}
 
 class ControleInvalido(ValueError):
     pass
@@ -26,10 +32,20 @@ def valida(controles, nome_elemento):
             raise ControleInvalido(f"{rotulo}: 'charneira' precisa ser uma de {CHARNEIRAS}")
         if "limite" in c and abs(float(c.get("deflexao", 0.0))) > float(c["limite"]):
             raise ControleInvalido(f"{rotulo}: deflexao acima do batente de {c['limite']} graus")
+        if "dobradica" in c and c["dobradica"] not in DOBRADICAS:
+            raise ControleInvalido(f"{rotulo}: 'dobradica' precisa ser uma de {tuple(DOBRADICAS)}")
         if c.get("modo", "sim") not in MODOS:
             raise ControleInvalido(f"{rotulo}: 'modo' precisa ser um de {MODOS}")
         if abs(float(c.get("deflexao", 0.0))) > 45.0:
             raise ControleInvalido(f"{rotulo}: deflexao acima de 45 graus")
+
+def massa_dobradica(controle, y_ponta):
+    tipo = controle.get("dobradica")
+    if not tipo:
+        return 0.0
+    gm = float(controle.get("massa_g_m", DOBRADICAS[tipo]["massa_g_m"]))
+    y0, y1 = controle["y"]
+    return gm * 1e-3 * (min(y1, y_ponta) - y0) * (1 if controle.get("modo") == "lado" else 2)
 
 def suave(t):
     t = np.clip(t, 0.0, 1.0)

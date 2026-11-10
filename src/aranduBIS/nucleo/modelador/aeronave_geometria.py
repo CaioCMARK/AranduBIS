@@ -396,6 +396,13 @@ def constroi(esq: dict) -> Aeronave:
                 y0, y1 = (abs(float(v)) for v in cz["y"]); ym = 0.5 * (y0 + y1); xle_, c_ = np.interp(ym, [q[0] for q in S_], [q[1] for q in S_]), np.interp(ym, [q[0] for q in S_], [q[2] for q in S_])
                 m_ = int(cz["n"]) * float(cz["area_m2"]) * float(cz.get("espessura", 0.00238)) * ES.densidade(cz.get("material", "balsa"), esq_)
                 itens.append({"nome": f"{nome}.cruzadas{k}", "massa": m_, "cg": [ps[0] + xle_ + float(cz.get("x_c", 0.55)) * c_, 0.0, ps[2]], "origem": f"{cz['n']} nervuras em X x area x espessura x densidade"})
+        if tipo == "asa" and el.get("controles"):
+            S_ = sorted((abs(float(q["y"])), float(q.get("xle", 0.0)), float(q["corda"])) for q in el["secoes"]); ps = np.array(el.get("posicao", [0, 0, 0]), float)
+            for cmd in el["controles"]:
+                m_ = SC.massa_dobradica(cmd, S_[-1][0])
+                if m_ > 0:
+                    ym = 0.5 * (cmd["y"][0] + min(cmd["y"][1], S_[-1][0])); xle_, c_ = np.interp(ym, [q[0] for q in S_], [q[1] for q in S_]), np.interp(ym, [q[0] for q in S_], [q[2] for q in S_])
+                    itens.append({"nome": f"{nome}.{cmd['nome']}.dobradica", "massa": m_, "cg": [ps[0] + xle_ + SC.charneira_em(cmd, c_, xle_) * c_, 0.0, ps[2]], "origem": f"dobradica {cmd['dobradica']}: g/m x comprimento (hipotese)"})
         if tipo == "asa" and el.get("entelagem"):
             ent = el["entelagem"]; de = float(ent.get("de_xc", 0.0)); Az, c_ = _area_casca(V, T, lab, el, esq_, 1.1, de); g_ = float(ES.filme_de(ent, esq_).get("gramatura_g_m2", 40.0)); itens.append({"nome": f"{nome}.entelagem", "massa": Az * g_ * 1e-3, "cg": c_.tolist(), "origem": f"area de filme x {g_:g} g/m2"})
     if not Vs: raise GeometriaInvalida("nenhum elemento com geometria")
