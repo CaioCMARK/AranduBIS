@@ -80,9 +80,12 @@ class Sistema:
         from .casca import rigidez_global as _cascag
         self._massa_casca = []
         for eid, mat, t, ns in mod.cascas:
-            m = mod.materiais[mat]; nu = m["E"] / (2 * m["G"]) - 1
+            m = mod.materiais[mat]
             P = np.array([mod.nos[k] for k in ns])
-            kg, Tc = _cascag(P, m["E"], nu, t)
+            if "E2" in m:
+                kg, Tc = _cascag(P, m["E"], m["nu"], t, E2=m["E2"], G12=m["G"])
+            else:
+                kg, Tc = _cascag(P, m["E"], m["E"] / (2 * m["G"]) - 1, t)
             gl = np.concatenate([self._gl(k) for k in ns])
             r, c = np.meshgrid(gl, gl, indexing="ij")
             I.append(r.ravel()); J.append(c.ravel()); Vk.append(kg.ravel()); Vm.append(np.zeros(kg.size))
