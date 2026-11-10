@@ -115,6 +115,17 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
             poe(esq, a, val)
     return esq, ctx
 
+def _afina_geometria(esq: dict, malha: dict | None) -> None:
+    if not malha:
+        return
+    for el in esq.get("elementos", []):
+        if el.get("tipo") != "asa":
+            continue
+        if malha.get("n_perfil") and el.get("n_perfil"):
+            el["n_perfil"] = min(int(el["n_perfil"]), int(malha["n_perfil"]))
+        if malha.get("n_por_baia") and isinstance(el.get("entelagem"), dict):
+            el["entelagem"]["n_por_baia"] = min(int(el["entelagem"].get("n_por_baia", 6)), int(malha["n_por_baia"]))
+
 def _restricoes(lista, ctx):
     out, viol = [], 0.0
     for c in lista:
@@ -137,6 +148,8 @@ def avalia(prob: dict, x: dict) -> dict:
 
     t0 = time.perf_counter()
     an = prob.get("analise") or {}
+    import warnings
+    warnings.filterwarnings("ignore", message=".*pede n_span.*")
     res = {"x": dict(x), "objetivo": None, "pontuacao": None, "viavel": False, "violacao": 10.0, "falha": None, "restricoes": [], "resultados": {}, "avisos": []}
     q = res["resultados"]
     etapa = "variaveis e ligacoes"
@@ -146,6 +159,7 @@ def avalia(prob: dict, x: dict) -> dict:
         q.update({k: v for k, v in ctx.items() if k not in res["x"]})
 
         etapa = "geometria e massa"
+        _afina_geometria(esq, an.get("malha"))
         A = AG.constroi(esq)
         mc = AG.massa_e_cg(A)
         if not mc["massa_kg"] or not mc["cg_m"]:
@@ -160,12 +174,14 @@ def avalia(prob: dict, x: dict) -> dict:
         rho, V = float(an.get("rho", 1.1)), float(an.get("V", 12.0))
         x_cg = _f(an["x_cg"], {**ctx, **q}, "analise.x_cg") if an.get("x_cg") is not None else q["x_cg_vazio"]
         q["x_cg"] = x_cg
-        lo = longitudinal(esq, x_cg, V=V, rho=rho, z_cg=q["z_cg"])
+        malha = an.get("malha") or {}
+        ns, nc = (int(malha["n_span"]) if malha.get("n_span") else None), int(malha.get("n_chord", 4))
+        lo = longitudinal(esq, x_cg, V=V, rho=rho, z_cg=q["z_cg"], n_span=ns, n_chord=nc)
         q.update({"S_ref": lo["S_ref"], "c_ref": lo["c_ref"], "margem_estatica": lo["margem_estatica"], "ponto_neutro": lo["ponto_neutro"], "CL_alpha": lo["CL_alpha"]})
 
         etapa = "sustentacao e arrasto"
         cl = LM.cl_max(esq, x_cg, V=V, rho=rho, ncrit=int(an.get("ncrit", 4)), passo=float(an.get("passo_alpha", 1.0)),
-                       alpha_solo=an.get("alpha_solo"), CdA_proprio=an.get("CdA"))
+                       alpha_solo=an.get("alpha_solo"), CdA_proprio=an.get("CdA"), n_span=ns, n_chord=nc)
         k = cl["corrida"]
         q.update({"CL_max": cl["CL_max"], "alpha_estol": cl["alpha_estol"], "CL_corrida": k["CL"], "CD_corrida": k["CD"]})
 

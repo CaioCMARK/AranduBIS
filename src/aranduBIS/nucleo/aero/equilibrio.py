@@ -14,15 +14,15 @@ def comando_automatico(S: list[Superficie], x_cg: float) -> str | None:
     braco = lambda s: abs(s.x_le + 0.25 * s.planform.corda_raiz - x_cg) * s.planform.area
     return max(cand, key=braco).nome
 
-def monta(esq: dict, x_cg: float, z_cg: float = 0.0, n_chord: int = 4) -> VLM:
-    return VLM(superficies(esq, n_chord=n_chord), x_ref=float(x_cg), z_ref=float(z_cg))
+def monta(esq: dict, x_cg: float, z_cg: float = 0.0, n_chord: int = 4, n_span: int | None = None) -> VLM:
+    return VLM(superficies(esq, n_span=n_span, n_chord=n_chord), x_ref=float(x_cg), z_ref=float(z_cg))
 
 def _lista(a) -> list:
     return [float(v) for v in a]
 
 def longitudinal(esq: dict, x_cg: float, V: float = 15.0, rho: float = 1.1, CL_alvo: float | None = None,
-                 comando: str | None = None, alphas=None, z_cg: float = 0.0) -> dict:
-    vlm = monta(esq, x_cg, z_cg)
+                 comando: str | None = None, alphas=None, z_cg: float = 0.0, n_span: int | None = None, n_chord: int = 4) -> dict:
+    vlm = monta(esq, x_cg, z_cg, n_chord=n_chord, n_span=n_span)
     S = vlm.superficies
     avisos: list[str] = avisos_de_ignoradas(esq)
     d = derivadas(vlm, 3.0, V=V, rho=rho, laterais=False)
