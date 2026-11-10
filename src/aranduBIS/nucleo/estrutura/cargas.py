@@ -111,10 +111,10 @@ def distribuicao(esq: dict, x_cg: float, z_cg: float, V: float, n: float, massa_
 
 def casos_de_carga(esq: dict, x_cg: float, z_cg: float, massa_kg: float, rho: float, CL_max: float, CL_alpha: float,
                    c_med: float, S: float, Vc: float, Vd: float, n_max: float = 1.8, n_min: float = 0.0, U_c: float = 4.0,
-                   U_d: float = 2.0, fator_seguranca: float = 1.2, cl_min_rel: float = 0.5, comando: str | None = None) -> dict:
+                   U_d: float = 2.0, fator_seguranca: float = 1.2, cl_min_rel: float = 0.5, comando: str | None = None, n_span: int | None = None, n_chord: int = 4) -> dict:
     vn = envelope_vn(massa_kg, S, CL_max, CL_alpha, c_med, rho, Vc, Vd, n_max, n_min, U_c, U_d, cl_min_rel)
     massas = {}
-    vlm = monta(esq, x_cg, z_cg)
+    vlm = monta(esq, x_cg, z_cg, n_chord=n_chord, n_span=n_span)
     casos, avisos = [], list(vn["avisos"])
     for p in vn["pontos"]:
         d = distribuicao(esq, x_cg, z_cg, p["V"], p["n"], massa_kg, rho, comando, massas, vlm)
