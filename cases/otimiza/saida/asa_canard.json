@@ -1,0 +1,1261 @@
+{
+ "historico": [
+  {
+   "geracao": 0,
+   "melhor_objetivo": 110.21411874593161,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 88.60069540194874,
+   "n_viaveis": 4,
+   "diversidade": 0.2635921399553428,
+   "avaliacoes": 16,
+   "tempo_s": 19.468200200004503,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.710654489555407,
+    "ct": 0.22380856391567394,
+    "sw": 0.8005489409119243,
+    "wo": -5.2532380049071215,
+    "ai": 3.667952305368517,
+    "cc": 0.12253896910785621,
+    "bc": 0.356996710405033,
+    "ac": 1.8551990276971075,
+    "xc": 0.48649119707695476
+   }
+  },
+  {
+   "geracao": 1,
+   "melhor_objetivo": 118.95335862680642,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 101.3263871791368,
+   "n_viaveis": 5,
+   "diversidade": 0.25298181941899955,
+   "avaliacoes": 32,
+   "tempo_s": 35.20126479997998,
+   "melhor_x": {
+    "b": 2.7038219921906377,
+    "cr": 0.885873841443577,
+    "ct": 0.3316184025780926,
+    "sw": 0.5952161506923173,
+    "wo": -4.652116842904499,
+    "ai": 3.8861756350711807,
+    "cc": 0.1786318788574415,
+    "bc": 0.46723743437990695,
+    "ac": 2.2704519115530486,
+    "xc": 0.27565355824092086
+   }
+  },
+  {
+   "geracao": 2,
+   "melhor_objetivo": 118.95335862680642,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 103.27985838486865,
+   "n_viaveis": 8,
+   "diversidade": 0.22629683029514527,
+   "avaliacoes": 48,
+   "tempo_s": 49.99719239998376,
+   "melhor_x": {
+    "b": 2.7038219921906377,
+    "cr": 0.885873841443577,
+    "ct": 0.3316184025780926,
+    "sw": 0.5952161506923173,
+    "wo": -4.652116842904499,
+    "ai": 3.8861756350711807,
+    "cc": 0.1786318788574415,
+    "bc": 0.46723743437990695,
+    "ac": 2.2704519115530486,
+    "xc": 0.27565355824092086
+   }
+  },
+  {
+   "geracao": 3,
+   "melhor_objetivo": 118.95335862680642,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 103.61576490221879,
+   "n_viaveis": 11,
+   "diversidade": 0.22264598737434294,
+   "avaliacoes": 64,
+   "tempo_s": 65.23528999998234,
+   "melhor_x": {
+    "b": 2.7038219921906377,
+    "cr": 0.885873841443577,
+    "ct": 0.3316184025780926,
+    "sw": 0.5952161506923173,
+    "wo": -4.652116842904499,
+    "ai": 3.8861756350711807,
+    "cc": 0.1786318788574415,
+    "bc": 0.46723743437990695,
+    "ac": 2.2704519115530486,
+    "xc": 0.27565355824092086
+   }
+  },
+  {
+   "geracao": 4,
+   "melhor_objetivo": 119.97715209973411,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 104.78485885449156,
+   "n_viaveis": 13,
+   "diversidade": 0.2125308207142779,
+   "avaliacoes": 80,
+   "tempo_s": 82.40268800000194,
+   "melhor_x": {
+    "b": 2.573316325261285,
+    "cr": 0.9496963690245711,
+    "ct": 0.39792581642642905,
+    "sw": 0.388749183159068,
+    "wo": -2.852732865760517,
+    "ai": 2.6896393367895715,
+    "cc": 0.19496411617372364,
+    "bc": 0.45502844175976354,
+    "ac": 2.8896485064942636,
+    "xc": 0.20532408676313885
+   }
+  },
+  {
+   "geracao": 5,
+   "melhor_objetivo": 124.50666889582297,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 108.05679874087801,
+   "n_viaveis": 13,
+   "diversidade": 0.21524427646146999,
+   "avaliacoes": 96,
+   "tempo_s": 99.03024339998956,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.8076511312206788,
+    "ct": 0.3809381487082922,
+    "sw": 0.5429447583201841,
+    "wo": -5.2532380049071215,
+    "ai": 3.8762655693536217,
+    "cc": 0.18335801987814204,
+    "bc": 0.537550457775499,
+    "ac": 0.009070286497445235,
+    "xc": 0.2989007207348237
+   }
+  },
+  {
+   "geracao": 6,
+   "melhor_objetivo": 124.50666889582297,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 110.19365240747986,
+   "n_viaveis": 15,
+   "diversidade": 0.20749948059994786,
+   "avaliacoes": 112,
+   "tempo_s": 113.65994509999291,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.8076511312206788,
+    "ct": 0.3809381487082922,
+    "sw": 0.5429447583201841,
+    "wo": -5.2532380049071215,
+    "ai": 3.8762655693536217,
+    "cc": 0.18335801987814204,
+    "bc": 0.537550457775499,
+    "ac": 0.009070286497445235,
+    "xc": 0.2989007207348237
+   }
+  },
+  {
+   "geracao": 7,
+   "melhor_objetivo": 124.50666889582297,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 113.79278338480192,
+   "n_viaveis": 16,
+   "diversidade": 0.20310117882815043,
+   "avaliacoes": 128,
+   "tempo_s": 129.3745562999975,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.8076511312206788,
+    "ct": 0.3809381487082922,
+    "sw": 0.5429447583201841,
+    "wo": -5.2532380049071215,
+    "ai": 3.8762655693536217,
+    "cc": 0.18335801987814204,
+    "bc": 0.537550457775499,
+    "ac": 0.009070286497445235,
+    "xc": 0.2989007207348237
+   }
+  },
+  {
+   "geracao": 8,
+   "melhor_objetivo": 124.50666889582297,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 115.57630101499333,
+   "n_viaveis": 16,
+   "diversidade": 0.19244492671018823,
+   "avaliacoes": 144,
+   "tempo_s": 143.88642139997683,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.8076511312206788,
+    "ct": 0.3809381487082922,
+    "sw": 0.5429447583201841,
+    "wo": -5.2532380049071215,
+    "ai": 3.8762655693536217,
+    "cc": 0.18335801987814204,
+    "bc": 0.537550457775499,
+    "ac": 0.009070286497445235,
+    "xc": 0.2989007207348237
+   }
+  },
+  {
+   "geracao": 9,
+   "melhor_objetivo": 124.50666889582297,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 116.1575471747399,
+   "n_viaveis": 16,
+   "diversidade": 0.2020105485490032,
+   "avaliacoes": 160,
+   "tempo_s": 159.00765240000328,
+   "melhor_x": {
+    "b": 3.157961292775683,
+    "cr": 0.8076511312206788,
+    "ct": 0.3809381487082922,
+    "sw": 0.5429447583201841,
+    "wo": -5.2532380049071215,
+    "ai": 3.8762655693536217,
+    "cc": 0.18335801987814204,
+    "bc": 0.537550457775499,
+    "ac": 0.009070286497445235,
+    "xc": 0.2989007207348237
+   }
+  },
+  {
+   "geracao": 10,
+   "melhor_objetivo": 125.46398151336687,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 119.1106081567589,
+   "n_viaveis": 16,
+   "diversidade": 0.1999055061476685,
+   "avaliacoes": 176,
+   "tempo_s": 174.01313720000326,
+   "melhor_x": {
+    "b": 3.18078849188168,
+    "cr": 0.9308996491828928,
+    "ct": 0.33704746791099266,
+    "sw": 0.734249233672555,
+    "wo": -4.734885075834615,
+    "ai": 4.3975279377519705,
+    "cc": 0.20376126660961344,
+    "bc": 0.5865125201413525,
+    "ac": 0.7376992108797599,
+    "xc": 0.29807307267444694
+   }
+  },
+  {
+   "geracao": 11,
+   "melhor_objetivo": 125.46398151336687,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 119.38198535532294,
+   "n_viaveis": 16,
+   "diversidade": 0.20148902171981703,
+   "avaliacoes": 192,
+   "tempo_s": 188.9285566000035,
+   "melhor_x": {
+    "b": 3.18078849188168,
+    "cr": 0.9308996491828928,
+    "ct": 0.33704746791099266,
+    "sw": 0.734249233672555,
+    "wo": -4.734885075834615,
+    "ai": 4.3975279377519705,
+    "cc": 0.20376126660961344,
+    "bc": 0.5865125201413525,
+    "ac": 0.7376992108797599,
+    "xc": 0.29807307267444694
+   }
+  },
+  {
+   "geracao": 12,
+   "melhor_objetivo": 125.69575483323356,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 120.73391020517485,
+   "n_viaveis": 16,
+   "diversidade": 0.19382669601943897,
+   "avaliacoes": 208,
+   "tempo_s": 204.00846719997935,
+   "melhor_x": {
+    "b": 3.1748300491368675,
+    "cr": 0.87447351512719,
+    "ct": 0.35053665138302303,
+    "sw": 0.8785345267818094,
+    "wo": -5.443766457345285,
+    "ai": 4.782201994579702,
+    "cc": 0.15091365534703688,
+    "bc": 0.5196856356402032,
+    "ac": 6.560558746570698,
+    "xc": 0.4564906379791418
+   }
+  },
+  {
+   "geracao": 13,
+   "melhor_objetivo": 125.69575483323356,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 122.38218655320631,
+   "n_viaveis": 16,
+   "diversidade": 0.1869863718901303,
+   "avaliacoes": 224,
+   "tempo_s": 219.20882969998638,
+   "melhor_x": {
+    "b": 3.1748300491368675,
+    "cr": 0.87447351512719,
+    "ct": 0.35053665138302303,
+    "sw": 0.8785345267818094,
+    "wo": -5.443766457345285,
+    "ai": 4.782201994579702,
+    "cc": 0.15091365534703688,
+    "bc": 0.5196856356402032,
+    "ac": 6.560558746570698,
+    "xc": 0.4564906379791418
+   }
+  },
+  {
+   "geracao": 14,
+   "melhor_objetivo": 125.69575483323356,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 123.20769661891005,
+   "n_viaveis": 16,
+   "diversidade": 0.1724449833701595,
+   "avaliacoes": 240,
+   "tempo_s": 234.2649010999885,
+   "melhor_x": {
+    "b": 3.1748300491368675,
+    "cr": 0.87447351512719,
+    "ct": 0.35053665138302303,
+    "sw": 0.8785345267818094,
+    "wo": -5.443766457345285,
+    "ai": 4.782201994579702,
+    "cc": 0.15091365534703688,
+    "bc": 0.5196856356402032,
+    "ac": 6.560558746570698,
+    "xc": 0.4564906379791418
+   }
+  },
+  {
+   "geracao": 15,
+   "melhor_objetivo": 125.69575483323356,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 123.4522515611993,
+   "n_viaveis": 16,
+   "diversidade": 0.16754573710769788,
+   "avaliacoes": 256,
+   "tempo_s": 250.00780150000355,
+   "melhor_x": {
+    "b": 3.1748300491368675,
+    "cr": 0.87447351512719,
+    "ct": 0.35053665138302303,
+    "sw": 0.8785345267818094,
+    "wo": -5.443766457345285,
+    "ai": 4.782201994579702,
+    "cc": 0.15091365534703688,
+    "bc": 0.5196856356402032,
+    "ac": 6.560558746570698,
+    "xc": 0.4564906379791418
+   }
+  },
+  {
+   "geracao": 16,
+   "melhor_objetivo": 126.70336894620561,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 123.96418668794229,
+   "n_viaveis": 16,
+   "diversidade": 0.1641352300080093,
+   "avaliacoes": 272,
+   "tempo_s": 265.065912799997,
+   "melhor_x": {
+    "b": 3.137292767409857,
+    "cr": 0.8347165788504698,
+    "ct": 0.366477327209457,
+    "sw": 0.6490622706074529,
+    "wo": -3.9121291931433846,
+    "ai": 4.779068365069275,
+    "cc": 0.19098772392256166,
+    "bc": 0.5239006906499641,
+    "ac": 1.839082981296742,
+    "xc": 0.36739499835768885
+   }
+  },
+  {
+   "geracao": 17,
+   "melhor_objetivo": 126.70336894620561,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 124.22349160981975,
+   "n_viaveis": 16,
+   "diversidade": 0.16264093034704757,
+   "avaliacoes": 288,
+   "tempo_s": 280.4095616999839,
+   "melhor_x": {
+    "b": 3.137292767409857,
+    "cr": 0.8347165788504698,
+    "ct": 0.366477327209457,
+    "sw": 0.6490622706074529,
+    "wo": -3.9121291931433846,
+    "ai": 4.779068365069275,
+    "cc": 0.19098772392256166,
+    "bc": 0.5239006906499641,
+    "ac": 1.839082981296742,
+    "xc": 0.36739499835768885
+   }
+  },
+  {
+   "geracao": 18,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 124.68619612863128,
+   "n_viaveis": 16,
+   "diversidade": 0.15911380225816132,
+   "avaliacoes": 304,
+   "tempo_s": 294.93114999998943,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 19,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 125.0501136417217,
+   "n_viaveis": 16,
+   "diversidade": 0.15094171564655326,
+   "avaliacoes": 320,
+   "tempo_s": 309.5367611999973,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 20,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 125.37394698923714,
+   "n_viaveis": 16,
+   "diversidade": 0.1488959382818129,
+   "avaliacoes": 336,
+   "tempo_s": 326.9616787999985,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 21,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 125.51302288677664,
+   "n_viaveis": 16,
+   "diversidade": 0.1469126927676356,
+   "avaliacoes": 352,
+   "tempo_s": 342.31096740000066,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 22,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 125.75093717743712,
+   "n_viaveis": 16,
+   "diversidade": 0.14038659454774477,
+   "avaliacoes": 368,
+   "tempo_s": 357.56633209998836,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 23,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 126.00176666323554,
+   "n_viaveis": 16,
+   "diversidade": 0.1308703439314892,
+   "avaliacoes": 384,
+   "tempo_s": 372.55111639999086,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 24,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 126.228451880232,
+   "n_viaveis": 16,
+   "diversidade": 0.12246706397669944,
+   "avaliacoes": 400,
+   "tempo_s": 387.6077477999788,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  },
+  {
+   "geracao": 25,
+   "melhor_objetivo": 128.06388514134824,
+   "melhor_viavel": true,
+   "melhor_violacao": 0.0,
+   "media_objetivo": 126.26749686955102,
+   "n_viaveis": 16,
+   "diversidade": 0.12098316523199708,
+   "avaliacoes": 416,
+   "tempo_s": 401.99468949998845,
+   "melhor_x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   }
+  }
+ ],
+ "refino": [
+  {
+   "x": {
+    "b": 3.1406657907167514,
+    "cr": 0.8908423591085189,
+    "ct": 0.3617483447057115,
+    "sw": 0.7610695968807782,
+    "wo": -0.18187195754891938,
+    "ai": 4.471931994201843,
+    "cc": 0.21135587034539816,
+    "bc": 0.565321357200406,
+    "ac": 4.7737858650800895,
+    "xc": 0.35298637663784527
+   },
+   "objetivo": 122.97633612835219,
+   "pontuacao": 122.97633612835219,
+   "viavel": true,
+   "violacao": 0.0,
+   "falha": null,
+   "restricoes": [
+    {
+     "nome": "envergadura",
+     "valor": 3.1449761630731565,
+     "limite": 4.0,
+     "tipo": "max",
+     "folga": 0.8550238369268435,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: B <= 4,0 m",
+     "origem": "regra"
+    },
+    {
+     "nome": "potencia",
+     "valor": 600.0,
+     "limite": 600.0,
+     "tipo": "max",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: P <= 600 W, pico medido em voo",
+     "origem": "regra"
+    },
+    {
+     "nome": "peso_total",
+     "valor": 14.96099853515625,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 5.03900146484375,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.6.0.1]: peso vazio + carga <= 20 kg (o excesso de carga nao pontua)",
+     "origem": "regra"
+    },
+    {
+     "nome": "margem_estatica",
+     "valor": 0.12125719752182165,
+     "limite": 0.05,
+     "tipo": "min",
+     "folga": 0.07125719752182165,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "margem_estrutural",
+     "valor": 1.5355985286401292,
+     "limite": 0.0,
+     "tipo": "min",
+     "folga": 1.5355985286401292,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "defl_canard",
+     "valor": 9.4287293273644,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 10.5712706726356,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "trim_fecha",
+     "valor": 1.0,
+     "limite": 1.0,
+     "tipo": "min",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    }
+   ],
+   "resultados": {
+    "n_ev": 1.0,
+    "comp_cauda": 1.3,
+    "massas_sistema_kg": 3.2937834303010507,
+    "custo_pecas": 360.0,
+    "pecas": [
+     {
+      "nome": "servos_de_comando",
+      "kg": 0.0756,
+      "custo": 360.0,
+      "opcao": "servo padrao"
+     },
+     {
+      "nome": "eletronica_de_bordo",
+      "kg": 0.1321,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_controle",
+      "kg": 0.55,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "cablagem",
+      "kg": 0.011283430301050482,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "encaixes_desmontavel",
+      "kg": 0.06,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "adesivo_e_acabamento",
+      "kg": 0.05,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "motopropulsor",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "servos_leme_e_elevon",
+      "kg": 0.0588,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_potencia",
+      "kg": 0.9,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "fuselagem_e_trem",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     }
+    ],
+    "PV": 4.09447231678673,
+    "x_cg_vazio": 0.24687206442096216,
+    "z_cg": -0.006879002460143977,
+    "envergadura": 3.1449761630731565,
+    "comprimento": 1.5618043683808427,
+    "altura": 0.7248000000000001,
+    "n_superficies": 2,
+    "x_cg": 0.3251316279731872,
+    "S_ref": 1.8773843866195858,
+    "c_ref": 0.6219386004324614,
+    "margem_estatica": 0.12125719752182165,
+    "ponto_neutro": 0.4005461596922715,
+    "CL_alpha": 4.1311612726565,
+    "defl_trim_decolagem": 9.4287293273644,
+    "trim_decolagem_fecha": 1.0,
+    "comando_arfagem": "canard",
+    "CL_max": 1.1764033261164462,
+    "alpha_estol": 22.0,
+    "CL_corrida": 0.2777660926996003,
+    "CD_corrida": 0.0263315573439356,
+    "dimensionamento": [
+     {
+      "nome": "parede",
+      "valor": 0.0002,
+      "margem": 1.5355985286401292,
+      "alvo": 0.1,
+      "atingiu": true
+     }
+    ],
+    "margem_estrutural": 1.5355985286401292,
+    "dim_parede": 0.0002,
+    "massa_projeto": 18.0,
+    "potencia": 600.0,
+    "T0": 45.0,
+    "massa_decolagem": 14.96099853515625,
+    "CP_bruta": 10.86652621836952,
+    "carga_alar": 7.969065174817497,
+    "pontuacao": 122.97633612835219,
+    "CP_util": 15.90552768321327,
+    "CP": 10.86652621836952,
+    "EE": 2.6539503451564133,
+    "PV_prev": 4.09447231678673,
+    "CP_prev": 10.86652621836952,
+    "erro_PV": 0.0,
+    "erro_CP": 0.0,
+    "FPV": 1.1,
+    "FPR": 1.0,
+    "N": 2.0,
+    "fator_N": 0.9998999999999999,
+    "P_EE": 66.34875862891033
+   },
+   "avisos": [],
+   "tempo_s": 39.49752000000444
+  },
+  {
+   "x": {
+    "b": 2.9769664828031233,
+    "cr": 0.9068057844734452,
+    "ct": 0.39621252479708324,
+    "sw": 0.6259944041044473,
+    "wo": -2.7877737220430596,
+    "ai": 3.5901564488751,
+    "cc": 0.21459626972254975,
+    "bc": 0.489917528723866,
+    "ac": 7.213790473107929,
+    "xc": 0.33238100459769354
+   },
+   "objetivo": 122.53093201864606,
+   "pontuacao": 122.53093201864606,
+   "viavel": true,
+   "violacao": 0.0,
+   "falha": null,
+   "restricoes": [
+    {
+     "nome": "envergadura",
+     "valor": 2.980612067376839,
+     "limite": 4.0,
+     "tipo": "max",
+     "folga": 1.019387932623161,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: B <= 4,0 m",
+     "origem": "regra"
+    },
+    {
+     "nome": "potencia",
+     "valor": 600.0,
+     "limite": 600.0,
+     "tipo": "max",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: P <= 600 W, pico medido em voo",
+     "origem": "regra"
+    },
+    {
+     "nome": "peso_total",
+     "valor": 14.64141845703125,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 5.35858154296875,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.6.0.1]: peso vazio + carga <= 20 kg (o excesso de carga nao pontua)",
+     "origem": "regra"
+    },
+    {
+     "nome": "margem_estatica",
+     "valor": 0.07852543531597464,
+     "limite": 0.05,
+     "tipo": "min",
+     "folga": 0.028525435315974637,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "margem_estrutural",
+     "valor": 1.4024164764131468,
+     "limite": 0.0,
+     "tipo": "min",
+     "folga": 1.4024164764131468,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "defl_canard",
+     "valor": 1.7381191933454896,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 18.26188080665451,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "trim_fecha",
+     "valor": 1.0,
+     "limite": 1.0,
+     "tipo": "min",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    }
+   ],
+   "resultados": {
+    "n_ev": 1.0,
+    "comp_cauda": 1.3,
+    "massas_sistema_kg": 3.2335785547240214,
+    "custo_pecas": 360.0,
+    "pecas": [
+     {
+      "nome": "servos_de_comando",
+      "kg": 0.0756,
+      "custo": 360.0,
+      "opcao": "servo padrao"
+     },
+     {
+      "nome": "eletronica_de_bordo",
+      "kg": 0.1321,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_controle",
+      "kg": 0.55,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "cablagem",
+      "kg": 0.011078554724021491,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "adesivo_e_acabamento",
+      "kg": 0.05,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "motopropulsor",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "servos_leme_e_elevon",
+      "kg": 0.0588,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_potencia",
+      "kg": 0.9,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "fuselagem_e_trem",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     }
+    ],
+    "PV": 4.024853151810306,
+    "x_cg_vazio": 0.2402813902711928,
+    "z_cg": -0.006139104581127417,
+    "envergadura": 2.980612067376839,
+    "comprimento": 1.462168077294836,
+    "altura": 0.7248000000000001,
+    "n_superficies": 2,
+    "x_cg": 0.3079824659695352,
+    "S_ref": 1.8499209165885784,
+    "c_ref": 0.6422133238662691,
+    "margem_estatica": 0.07852543531597464,
+    "ponto_neutro": 0.35841254679185297,
+    "CL_alpha": 4.012011371327894,
+    "defl_trim_decolagem": 1.7381191933454896,
+    "trim_decolagem_fecha": 1.0,
+    "comando_arfagem": "canard",
+    "CL_max": 1.2213334505205795,
+    "alpha_estol": 24.0,
+    "CL_corrida": 0.11005577113649748,
+    "CD_corrida": 0.024159672367254477,
+    "dimensionamento": [
+     {
+      "nome": "parede",
+      "valor": 0.0002,
+      "margem": 1.4024164764131468,
+      "alvo": 0.1,
+      "atingiu": true
+     }
+    ],
+    "margem_estrutural": 1.4024164764131468,
+    "dim_parede": 0.0002,
+    "massa_projeto": 18.0,
+    "potencia": 600.0,
+    "T0": 45.0,
+    "massa_decolagem": 14.64141845703125,
+    "CP_bruta": 10.616565305220945,
+    "carga_alar": 7.91461857949655,
+    "pontuacao": 122.53093201864606,
+    "CP_util": 15.975146848189695,
+    "CP": 10.616565305220945,
+    "EE": 2.6377522122629014,
+    "PV_prev": 4.024853151810306,
+    "CP_prev": 10.616565305220945,
+    "erro_PV": 0.0,
+    "erro_CP": 0.0,
+    "FPV": 1.1,
+    "FPR": 1.0,
+    "N": 2.0,
+    "fator_N": 0.9998999999999999,
+    "P_EE": 65.94380530657253
+   },
+   "avisos": [],
+   "tempo_s": 35.940086400019936
+  },
+  {
+   "x": {
+    "b": 3.0395145179644754,
+    "cr": 0.8566827112444004,
+    "ct": 0.39061641917558754,
+    "sw": 0.7604238449490114,
+    "wo": -5.8219909119847175,
+    "ai": 4.3975279377519705,
+    "cc": 0.2197182142907084,
+    "bc": 0.5081114992511264,
+    "ac": 5.604532748596735,
+    "xc": 0.40445874489677425
+   },
+   "objetivo": 113.96030795315173,
+   "pontuacao": 113.96030795315173,
+   "viavel": true,
+   "violacao": 0.0,
+   "falha": null,
+   "restricoes": [
+    {
+     "nome": "envergadura",
+     "valor": 3.044064991854459,
+     "limite": 4.0,
+     "tipo": "max",
+     "folga": 0.9559350081455409,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: B <= 4,0 m",
+     "origem": "regra"
+    },
+    {
+     "nome": "potencia",
+     "valor": 600.0,
+     "limite": 600.0,
+     "tipo": "max",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.2.0.1]: P <= 600 W, pico medido em voo",
+     "origem": "regra"
+    },
+    {
+     "nome": "peso_total",
+     "valor": 13.541046142578125,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 6.458953857421875,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "descricao": "R[7.6.0.1]: peso vazio + carga <= 20 kg (o excesso de carga nao pontua)",
+     "origem": "regra"
+    },
+    {
+     "nome": "margem_estatica",
+     "valor": 0.0777901607805807,
+     "limite": 0.05,
+     "tipo": "min",
+     "folga": 0.02779016078058069,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "margem_estrutural",
+     "valor": 1.2261292337214087,
+     "limite": 0.0,
+     "tipo": "min",
+     "folga": 1.2261292337214087,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "defl_canard",
+     "valor": 0.4560181005262018,
+     "limite": 20.0,
+     "tipo": "max",
+     "folga": 19.5439818994738,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    },
+    {
+     "nome": "trim_fecha",
+     "valor": 1.0,
+     "limite": 1.0,
+     "tipo": "min",
+     "folga": 0.0,
+     "violacao": 0.0,
+     "ok": true,
+     "erro": null,
+     "origem": "projeto"
+    }
+   ],
+   "resultados": {
+    "n_ev": 1.0,
+    "comp_cauda": 1.3,
+    "massas_sistema_kg": 3.2936568358417553,
+    "custo_pecas": 360.0,
+    "pecas": [
+     {
+      "nome": "servos_de_comando",
+      "kg": 0.0756,
+      "custo": 360.0,
+      "opcao": "servo padrao"
+     },
+     {
+      "nome": "eletronica_de_bordo",
+      "kg": 0.1321,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_controle",
+      "kg": 0.55,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "cablagem",
+      "kg": 0.01115683584175519,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "encaixes_desmontavel",
+      "kg": 0.06,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "adesivo_e_acabamento",
+      "kg": 0.05,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "motopropulsor",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "servos_leme_e_elevon",
+      "kg": 0.0588,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "bateria_de_potencia",
+      "kg": 0.9,
+      "custo": 0.0,
+      "opcao": null
+     },
+     {
+      "nome": "fuselagem_e_trem",
+      "kg": 0.728,
+      "custo": 0.0,
+      "opcao": null
+     }
+    ],
+    "PV": 4.071194763747517,
+    "x_cg_vazio": 0.24634839860051252,
+    "z_cg": -0.005712908836241427,
+    "envergadura": 3.044064991854459,
+    "comprimento": 1.5909195508080272,
+    "altura": 0.7248000000000001,
+    "n_superficies": 2,
+    "x_cg": 0.35961125548331596,
+    "S_ref": 1.8059919075780098,
+    "c_ref": 0.611794727789941,
+    "margem_estatica": 0.0777901607805807,
+    "ponto_neutro": 0.40720286572280706,
+    "CL_alpha": 4.034901874109169,
+    "defl_trim_decolagem": 0.4560181005262018,
+    "trim_decolagem_fecha": 1.0,
+    "comando_arfagem": "canard",
+    "CL_max": 1.1760168175172545,
+    "alpha_estol": 21.0,
+    "CL_corrida": 0.06683557454702416,
+    "CD_corrida": 0.024453187013711297,
+    "dimensionamento": [
+     {
+      "nome": "parede",
+      "valor": 0.0002,
+      "margem": 1.2261292337214087,
+      "alvo": 0.1,
+      "atingiu": true
+     }
+    ],
+    "margem_estrutural": 1.2261292337214087,
+    "dim_parede": 0.0002,
+    "massa_projeto": 18.0,
+    "potencia": 600.0,
+    "T0": 45.0,
+    "massa_decolagem": 13.541046142578125,
+    "CP_bruta": 9.469851378830608,
+    "carga_alar": 7.497844306920418,
+    "pontuacao": 113.96030795315173,
+    "CP_util": 15.928805236252483,
+    "CP": 9.469851378830608,
+    "EE": 2.3260619863132392,
+    "PV_prev": 4.071194763747517,
+    "CP_prev": 9.469851378830608,
+    "erro_PV": 0.0,
+    "erro_CP": 0.0,
+    "FPV": 1.1,
+    "FPR": 1.0,
+    "N": 2.0,
+    "fator_N": 0.9998999999999999,
+    "P_EE": 58.151549657830984
+   },
+   "avisos": [],
+   "tempo_s": 34.553733800014015
+  }
+ ]
+}

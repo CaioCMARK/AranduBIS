@@ -237,7 +237,7 @@ def avalia(prob: dict, x: dict) -> dict:
         if an.get("x_cg") is not None:
             x_cg = _f(an["x_cg"], {**ctx, **q}, "analise.x_cg")
         elif an.get("carga_ref_kg"):
-            mc_, xc_ = float(an["carga_ref_kg"]), float(an.get("carga_x", q["x_cg_vazio"]))
+            mc_, xc_ = float(an["carga_ref_kg"]), (_f(an["carga_x"], {**ctx, **q}, "analise.carga_x") if isinstance(an.get("carga_x"), str) else float(an.get("carga_x", q["x_cg_vazio"])))
             x_cg = (q["PV"] * q["x_cg_vazio"] + mc_ * xc_) / (q["PV"] + mc_)
         else:
             x_cg = q["x_cg_vazio"]
@@ -251,6 +251,13 @@ def avalia(prob: dict, x: dict) -> dict:
         cl = LM.cl_max(esq, x_cg, V=V, rho=rho, ncrit=int(an.get("ncrit", 4)), passo=float(an.get("passo_alpha", 1.0)),
                        alpha_solo=an.get("alpha_solo"), CdA_proprio=an.get("CdA"), n_span=ns, n_chord=nc)
         k = cl["corrida"]
+        if an.get("trim_decolagem"):
+            td = an["trim_decolagem"] if isinstance(an["trim_decolagem"], dict) else {}
+            r2 = longitudinal(esq, x_cg, V=V, rho=rho, z_cg=q["z_cg"], CL_alvo=cl["CL_max"] / float(td.get("fator_v", 1.2)) ** 2, comando=td.get("comando"), n_span=ns, n_chord=nc)
+            tr_ = r2.get("trim")
+            q["defl_trim_decolagem"] = abs(float(tr_["deflexao"])) if tr_ else 99.0
+            q["trim_decolagem_fecha"] = 1.0 if tr_ and tr_["atinge_CL_alvo"] else 0.0
+            q["comando_arfagem"] = r2.get("comando")
         q.update({"CL_max": cl["CL_max"], "alpha_estol": cl["alpha_estol"], "CL_corrida": k["CL"], "CD_corrida": k["CD"]})
 
         if prob.get("dimensionamento"):
