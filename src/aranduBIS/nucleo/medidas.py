@@ -37,8 +37,8 @@ def raio_do_cone(P, altura):
             passo *= 0.5
     return melhor
 
-def medidas(esq: dict, excluir=(), cone_altura: float | None = None) -> dict:
-    A = AG.constroi(esq)
+def medidas(esq: dict, excluir=(), cone_altura: float | None = None, A=None) -> dict:
+    A = A if A is not None else AG.constroi(esq)
     P = _pontos(A, esq, excluir)
     lo, hi = P.min(0), P.max(0)
     sup = [el["nome"] for el in esq.get("elementos", []) if _sustenta(el) and el["nome"] not in excluir]
