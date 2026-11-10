@@ -262,7 +262,7 @@ def avalia(prob: dict, x: dict) -> dict:
             cc = casos_de_carga(esq, x_cg, q["z_cg"], mproj, rho, cl["CL_max"], lo["CL_alpha"], lo["c_ref"], lo["S_ref"], float(pc["Vc"]), float(pc["Vd"]),
                                 n_max=float(pc["n_max"]), n_min=float(pc["n_min"]), U_c=float(pc["U_c"]), U_d=float(pc["U_d"]),
                                 fator_seguranca=float(pc["fator_seguranca"]), n_span=ns, n_chord=nc)
-            dd = DM.dimensiona(esq, prob["dimensionamento"], cc["casos"], ctx, float(pc["fator_seguranca"]))
+            dd = DM.dimensiona(esq, prob["dimensionamento"], cc["casos"], ctx, float(pc["fator_seguranca"]), {"rho": rho, "Vd": float(pc["Vd"])})
             q["dimensionamento"] = dd
             q["margem_estrutural"] = min(d["margem"] for d in dd)
             for d in dd:

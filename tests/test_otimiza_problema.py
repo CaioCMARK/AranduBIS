@@ -123,3 +123,20 @@ def test_pecas_com_catalogo_trocam_massa_e_custo_pela_escolha():
     b = P.avalia(prob, {"b": 2.4, "afil": 1.0, "perfil": 0, "servo": 1})["resultados"]
     assert b["massas_sistema_kg"] < a["massas_sistema_kg"] and b["custo_pecas"] > a["custo_pecas"]
     assert {p["opcao"] for p in a["pecas"] if p["opcao"]} == {"servo padrao"} and b["pecas"][0]["opcao"] == "servo leve"
+
+def test_dimensionamento_de_reversao_com_fe_reforca_a_secao_aberta_com_x():
+    import copy
+    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_2025.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
+    el = next(e for e in base["elementos"] if e["nome"] == "asa_inferior")
+    ch = el["estrutura"]["chapeado"]; ch["ate_xc_y"] = [[p[0], 0.12] for p in ch["ate_xc_y"]]; ch["ate_xc"] = 0.12
+    esq = copy.deepcopy(base)
+    d = {"nome": "x", "tipo": "reversao", "fe": True, "elementos": ["asa_inferior"], "ajuste": {"nome": "a", "minimo": 0.0005, "maximo": 0.02}, "margem_alvo": -0.4,
+         "iteracoes": 6, "ligacoes": [{"alvos": [f"asa_inferior.estrutura.cruzadas[{i}].area_m2" for i in range(2)], "formula": "a"}]}
+    from aranduBIS.nucleo.otimiza import dimensiona as DM
+    sem = DM.margem(esq, dict(d, fe=False), [], 1.2)
+    com = DM.margem(esq, d, [], 1.2)
+    assert com > sem
+    r = DM.dimensiona(esq, [d], [], {}, 1.2)[0]
+    assert r["atingiu"] and r["margem"] >= -0.4 - 1e-3 and 0.0005 < r["valor"] < 0.02
+    assert DM.dimensiona(copy.deepcopy(base), [dict(d, margem_alvo=0.5)], [], {}, 1.2)[0]["atingiu"] is False
