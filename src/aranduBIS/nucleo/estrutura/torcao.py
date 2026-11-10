@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from ..modelador import aeronave_estrutura as ES
 from ..modelador import aeronave_geometria as AG
 from .asa import _perfis, secao
 from .materiais import propriedades
@@ -79,7 +80,7 @@ def _aberta(sec, x, zs, zi, c, mats, tw, ts, cfg, y):
         mt = mats["tubo_carbono"]
         GJ += mt["G"] * np.pi / 32.0 * (de ** 4 - di ** 4)
         A = 0.25 * np.pi * (de * de - di * di)
-        xt = float(tb["x"]) if "x" in tb else float(tb["xc"]) * c
+        xt = ES.posicao_x(tb, c, y)
         EAx += mt["E"] * A * xt
         EA += mt["E"] * A
     return GJ, EAx / EA / c
