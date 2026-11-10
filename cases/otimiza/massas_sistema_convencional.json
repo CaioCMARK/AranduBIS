@@ -1,0 +1,15 @@
+{
+  "descricao": "Massas de sistema de uma aeronave convencional eletrica, estimadas por componente (kg). Modelo para o bloco `massas` de um problema: ajuste valores e posicoes ao seu projeto e apague o que ja esta modelado como elemento.",
+  "grandezas": [
+    {"nome": "n_ev", "formula": "1"},
+    {"nome": "comp_cauda", "formula": "1.3"}
+  ],
+  "massas": [
+    {"nome": "servos", "formula": "0.0294 + (3 + n_ev) * 0.0189", "posicao": [0.2, 0.0, 0.0]},
+    {"nome": "eletronica_de_bordo", "formula": "0.0082 + 0.0061 + 0.0148 + 0.043 + 0.060", "posicao": [0.1, 0.0, 0.0]},
+    {"nome": "bateria_de_controle", "formula": "0.550", "posicao": [0.1, 0.0, 0.0]},
+    {"nome": "cablagem", "formula": "(0.3 + 0.6 + 2 * (0.8 * b / 2 + 0.4) + 2 * (0.2 + comp_cauda)) * 1.2034e-3 * 1.3", "posicao": [0.5, 0.0, 0.0]},
+    {"nome": "encaixes_desmontavel", "formula": "(b > 3.0) * 0.060", "posicao": [0.2, 0.0, 0.0]},
+    {"nome": "adesivo_e_acabamento", "formula": "0.050", "posicao": [0.2, 0.0, 0.0]}
+  ]
+}

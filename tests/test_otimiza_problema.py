@@ -70,3 +70,31 @@ def test_malha_grossa_da_triagem_ordena_como_a_completa():
         assert c["resultados"]["CL_max"] == pytest.approx(a["resultados"]["CL_max"], rel=0.06)
     ordem = lambda L: sorted(range(len(L)), key=lambda i: L[i]["pontuacao"])
     assert ordem(cheia) == ordem(rapida)
+
+def test_massas_de_sistema_entram_por_formula_e_pesam_no_vazio():
+    prob = _prob()
+    sistema = json.loads((RAIZ / "cases" / "otimiza" / "massas_sistema_convencional.json").read_text(encoding="utf8"))
+    com = dict(prob, grandezas=prob["grandezas"] + sistema["grandezas"], massas=sistema["massas"])
+    a = P.avalia(prob, {"b": 2.4, "afil": 1.0, "perfil": 0})["resultados"]
+    b = P.avalia(com, {"b": 2.4, "afil": 1.0, "perfil": 0})["resultados"]
+    assert b["massas_sistema_kg"] > 0.7 and b["PV"] == pytest.approx(a["PV"] + b["massas_sistema_kg"], rel=1e-6)
+    grande = P.avalia(com, {"b": 3.4, "afil": 1.0, "perfil": 0})["resultados"]
+    assert grande["massas_sistema_kg"] > b["massas_sistema_kg"] + 0.05
+
+def test_dimensionamento_reforca_ate_a_margem_alvo_e_pesa_mais():
+    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_2025.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
+    A = ["asa_inferior", "asa_superior"]; nt = len(base["elementos"][0]["estrutura"]["tubos"])
+    prob = _prob()
+    prob.update(base=base, grandezas=[], restricoes=[], variaveis=[{"nome": "b", "minimo": 2.4, "maximo": 4.0, "padrao": 3.6}],
+                ligacoes=[{"alvos": [f"{a}.secoes[0].y" for a in A], "formula": "-b / 2"}, {"alvos": [f"{a}.secoes[4].y" for a in A], "formula": "b / 2"}])
+    prob["analise"] = {"T0": 45.0, "V0": 28.0, "pista_m": 55.0, "obstaculo_m": 0.9, "massa_projeto": 17.0, "malha": {"n_span": 12, "n_chord": 2, "n_perfil": 16, "n_por_baia": 1}}
+    dim = lambda alvo: [{"nome": "parede", "elementos": A, "ajuste": {"nome": "t", "minimo": 0.0001, "maximo": 0.0018}, "margem_alvo": alvo,
+                         "ligacoes": [{"alvos": [f"{a}.estrutura.tubos[{i}].di" for a in A for i in range(nt)], "formula": "0.004 - 2*t"}]}]
+    leve = P.avalia(dict(prob, dimensionamento=dim(0.0)), {"b": 3.6})
+    forte = P.avalia(dict(prob, dimensionamento=dim(0.5)), {"b": 3.6})
+    assert leve["falha"] is None and forte["falha"] is None
+    dl, df = leve["resultados"]["dimensionamento"][0], forte["resultados"]["dimensionamento"][0]
+    assert dl["atingiu"] and df["atingiu"] and dl["margem"] >= -1e-3 and df["margem"] >= 0.5 - 1e-3
+    assert df["valor"] > dl["valor"] and forte["resultados"]["PV"] > leve["resultados"]["PV"]
+    assert forte["resultados"]["margem_estrutural"] == pytest.approx(df["margem"])

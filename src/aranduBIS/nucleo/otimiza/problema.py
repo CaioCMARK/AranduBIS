@@ -159,6 +159,9 @@ def avalia(prob: dict, x: dict) -> dict:
         q.update({k: v for k, v in ctx.items() if k not in res["x"]})
 
         etapa = "geometria e massa"
+        if prob.get("massas"):
+            from . import dimensiona as DM
+            q["massas_sistema_kg"] = float(sum(m["kg"] for m in DM.insere_massas(esq, prob["massas"], ctx)))
         _afina_geometria(esq, an.get("malha"))
         A = AG.constroi(esq)
         mc = AG.massa_e_cg(A)
@@ -184,6 +187,24 @@ def avalia(prob: dict, x: dict) -> dict:
                        alpha_solo=an.get("alpha_solo"), CdA_proprio=an.get("CdA"), n_span=ns, n_chord=nc)
         k = cl["corrida"]
         q.update({"CL_max": cl["CL_max"], "alpha_estol": cl["alpha_estol"], "CL_corrida": k["CL"], "CD_corrida": k["CD"]})
+
+        if prob.get("dimensionamento"):
+            etapa = "dimensionamento estrutural"
+            from . import dimensiona as DM
+            from ..estrutura.cargas import casos_de_carga
+            pc = {**DM.PADRAO_CARGAS, **(an.get("cargas") or {})}
+            mproj = _f(an.get("massa_projeto", 20.0), {**ctx, **q}, "analise.massa_projeto") if isinstance(an.get("massa_projeto", 20.0), str) else float(an.get("massa_projeto", 20.0))
+            cc = casos_de_carga(esq, x_cg, q["z_cg"], mproj, rho, cl["CL_max"], lo["CL_alpha"], lo["c_ref"], lo["S_ref"], float(pc["Vc"]), float(pc["Vd"]),
+                                n_max=float(pc["n_max"]), n_min=float(pc["n_min"]), U_c=float(pc["U_c"]), U_d=float(pc["U_d"]),
+                                fator_seguranca=float(pc["fator_seguranca"]), n_span=ns, n_chord=nc)
+            dd = DM.dimensiona(esq, prob["dimensionamento"], cc["casos"], ctx, float(pc["fator_seguranca"]))
+            q["dimensionamento"] = dd
+            q["margem_estrutural"] = min(d["margem"] for d in dd)
+            for d in dd:
+                q["dim_" + d["nome"]] = d["valor"]
+            A = AG.constroi(esq); mc = AG.massa_e_cg(A)
+            q["PV"] = float(mc["massa_kg"]); q["x_cg_vazio"] = float(mc["cg_m"][0]); q["z_cg"] = float(mc["cg_m"][2])
+            q["massa_projeto"] = float(mproj)
 
         etapa = "tracao"
         pot = float(an.get("potencia_W", 600.0)); q["potencia"] = pot
@@ -227,7 +248,7 @@ def avalia(prob: dict, x: dict) -> dict:
         res["objetivo"] = _f(prob.get("objetivo", "pontuacao"), {**ctx, **q}, "objetivo")
     except (ProblemaInvalido, AG.GeometriaInvalida, ValueError, FileNotFoundError, KeyError, ZeroDivisionError, FloatingPointError) as e:
         res["falha"] = {"etapa": etapa, "motivo": str(e).split("\n")[0]}
-        ordem = ["variaveis e ligacoes", "geometria e massa", "estabilidade", "sustentacao e arrasto", "tracao", "decolagem", "regra"]
+        ordem = ["variaveis e ligacoes", "geometria e massa", "estabilidade", "sustentacao e arrasto", "dimensionamento estrutural", "tracao", "decolagem", "regra"]
         res["violacao"] = 10.0 + (len(ordem) - ordem.index(etapa))
     res["tempo_s"] = time.perf_counter() - t0
     for k_, v in list(q.items()):
