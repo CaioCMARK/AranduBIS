@@ -85,7 +85,7 @@ function lista() {
 }
 
 function seleciona(i) {
-  sel = i; lista(); props(); abaConteudo(); aplicaVisibilidade();
+  sel = i; const tp = esq.elementos[i] && esq.elementos[i].tipo; if ((tp === "trelica" || tp === "placa") && aba === "Estrutura") aba = "Seções"; abas(); lista(); props(); abaConteudo(); aplicaVisibilidade();
 }
 
 function nomeUnico(base) {
@@ -105,7 +105,7 @@ function guarda() {
 }
 function restaura(f) {
   esq = JSON.parse(f); sel = Math.min(sel, esq.elementos.length - 1);
-  lista(); props(); abaConteudo(); agenda();
+  abas(); lista(); props(); abaConteudo(); agenda();
 }
 function desfaz() { if (!passado.length) return; futuro.push(foto()); restaura(passado.pop()); }
 function refaz() { if (!futuro.length) return; passado.push(foto()); restaura(futuro.pop()); }
@@ -169,8 +169,9 @@ function props() {
 
 function abas() {
   const A = $("abas"); A.innerHTML = "";
-  ["Seções", "Estrutura", "Massa e CG"].forEach(n => {
-    const d = document.createElement("div"); d.textContent = n; if (n === aba) d.className = "at";
+  const tp = elemento() && elemento().tipo, rot = { Seções: tp === "trelica" ? "Tubos e nós" : tp === "placa" ? "Contorno" : "Seções" };
+  (tp === "trelica" || tp === "placa" ? ["Seções", "Massa e CG"] : ["Seções", "Estrutura", "Massa e CG"]).forEach(n => {
+    const d = document.createElement("div"); d.textContent = rot[n] || n; if (n === aba) d.className = "at";
     d.onclick = () => { aba = n; abas(); abaConteudo(); }; A.append(d);
   });
 }
@@ -180,7 +181,9 @@ function abaConteudo() {
   if (aba === "Massa e CG") return abaMassa(C);
   const e = elemento();
   if (!e) return C.append(nota("Selecione um elemento."));
-  if (aba === "Estrutura") return Estrutura.pinta(C, e);
+  if (aba === "Estrutura" && e.tipo !== "trelica" && e.tipo !== "placa") return Estrutura.pinta(C, e);
+  if (e.tipo === "trelica") return Construtor.trelica(C, e);
+  if (e.tipo === "placa") return Construtor.placa(C, e);
   if (Array.isArray(e.secoes)) return abaSecoes(C, e);
   if (e.secoes_lineares) {
     const s = e.secoes_lineares;
@@ -252,7 +255,7 @@ $("s_inserir").onchange = ev => {
   if (!esq) $("b_novo").click();
   guarda();
   esq.elementos.push(Modelos.novo(tipo, nomeUnico(tipo)));
-  sel = esq.elementos.length - 1; lista(); props(); abaConteudo(); agenda();
+  sel = esq.elementos.length - 1; abas(); lista(); props(); abaConteudo(); agenda();
 };
 $("b_desfaz").onclick = desfaz;
 $("b_refaz").onclick = refaz;
@@ -264,7 +267,7 @@ document.addEventListener("keydown", ev => {
 $("b_remove").onclick = () => {
   const e = elemento(); if (!e) return;
   if (!confirm(`Remover “${e.nome}”?`)) return;
-  guarda(); esq.elementos.splice(sel, 1); sel = Math.min(sel, esq.elementos.length - 1); lista(); props(); abaConteudo(); agenda();
+  guarda(); esq.elementos.splice(sel, 1); sel = Math.min(sel, esq.elementos.length - 1); abas(); lista(); props(); abaConteudo(); agenda();
 };
 $("b_abrir").onchange = ev => {
   const f = ev.target.files[0]; if (!f) return;
