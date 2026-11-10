@@ -170,8 +170,9 @@ function props() {
 function abas() {
   const A = $("abas"); A.innerHTML = "";
   const tp = elemento() && elemento().tipo, rot = { Seções: tp === "trelica" ? "Tubos e nós" : tp === "placa" ? "Contorno" : "Seções" };
-  (tp === "trelica" || tp === "placa" ? ["Seções", "Massa e CG"] : ["Seções", "Estrutura", "Massa e CG"]).forEach(n => {
-    const d = document.createElement("div"); d.textContent = rot[n] || n; if (n === aba) d.className = "at";
+  const nh = ((esq && esq.hipoteses) || []).filter(h => !h.confirmada).length;
+  (tp === "trelica" || tp === "placa" ? ["Seções", "Massa e CG", "Hipóteses"] : ["Seções", "Estrutura", "Massa e CG", "Hipóteses"]).forEach(n => {
+    const d = document.createElement("div"); d.textContent = n === "Hipóteses" && nh ? `Hipóteses (${nh})` : rot[n] || n; if (n === aba) d.className = "at";
     d.onclick = () => { aba = n; abas(); abaConteudo(); }; A.append(d);
   });
 }
@@ -179,6 +180,7 @@ function abas() {
 function abaConteudo() {
   const C = $("aba_conteudo"); C.innerHTML = "";
   if (aba === "Massa e CG") return abaMassa(C);
+  if (aba === "Hipóteses") return abaHipoteses(C);
   const e = elemento();
   if (!e) return C.append(nota("Selecione um elemento."));
   if (aba === "Estrutura" && e.tipo !== "trelica" && e.tipo !== "placa") return Estrutura.pinta(C, e);
@@ -218,6 +220,22 @@ function abaSecoes(C, e) {
     muda(() => e.secoes.push({ ...u, y: +(u.y + 0.1).toFixed(4) })); abaConteudo();
   };
   C.append(add);
+}
+
+function abaHipoteses(C) {
+  const H = (esq && esq.hipoteses) || [];
+  if (!H.length) return C.append(nota("Este modelo não declara hipóteses (chave “hipoteses” no JSON: item, valor, motivo, confirmada)."));
+  const t = document.createElement("table");
+  t.innerHTML = "<tr><th>confirmada</th><th>item</th><th>valor usado</th><th>por que é hipótese</th></tr>";
+  H.forEach(h => {
+    const tr = document.createElement("tr"), cx = document.createElement("input");
+    cx.type = "checkbox"; cx.checked = !!h.confirmada; cx.onchange = () => { guarda(); h.confirmada = cx.checked; abas(); };
+    const td = document.createElement("td"); td.append(cx); tr.append(td);
+    [h.item, h.valor, h.motivo].forEach(x => { const d = document.createElement("td"); d.textContent = x || ""; d.style.textAlign = "left"; tr.append(d); });
+    t.append(tr);
+  });
+  C.append(t);
+  C.append(nota(`${H.filter(h => !h.confirmada).length} de ${H.length} em aberto. Marcar como confirmada só registra a conferência; para mudar o valor, edite o elemento. Salve o modelo para guardar.`));
 }
 
 function abaMassa(C) {

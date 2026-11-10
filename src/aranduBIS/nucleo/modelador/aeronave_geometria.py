@@ -389,7 +389,7 @@ def constroi(esq: dict) -> Aeronave:
                     v_, c_ = _solido(Vp, Tp); al = float((cfg.get("nervuras") or {}).get("alivio", 1.0)) if str(zp[0]).startswith("nervuras") else 1.0
                     itens.append({"nome": f"{nome}.{zp[0]}", "massa": abs(v_) * al * ES.densidade(mat, esq_), "cg": c_.tolist(), "origem": f"{mat}: densidade x volume" + (f" x alivio {al:g}" if al != 1.0 else "")})
             if cfg.get("chapeado"):
-                ch = cfg["chapeado"]; ax = float(ch.get("ate_xc", 0.25)); Az, c_ = _area_casca(V, T, lab, el, esq_, ax); m_ = Az * float(ch.get("espessura", 0.001)) * ES.densidade(ch.get("material", "balsa"), esq_); itens.append({"nome": f"{nome}.chapeado", "massa": m_, "cg": c_.tolist(), "origem": "area ate x/c x espessura x densidade"})
+                ch = cfg["chapeado"]; ax = ch.get("ate_xc_y") or float(ch.get("ate_xc", 0.25)); Az, c_ = _area_casca(V, T, lab, el, esq_, ax); m_ = Az * float(ch.get("espessura", 0.001)) * ES.densidade(ch.get("material", "balsa"), esq_); itens.append({"nome": f"{nome}.chapeado", "massa": m_, "cg": c_.tolist(), "origem": "area ate x/c x espessura x densidade"})
         if tipo == "asa" and el.get("estrutura", {}).get("cruzadas"):
             cfg = el["estrutura"]; S_ = sorted((abs(float(q["y"])), float(q.get("xle", 0.0)), float(q["corda"])) for q in el["secoes"]); ps = np.array(el.get("posicao", [0, 0, 0]), float)
             for k, cz in enumerate(cfg["cruzadas"]):
@@ -425,7 +425,10 @@ def constroi(esq: dict) -> Aeronave:
 def _area_casca(V, T, lab, el, esq, ate_xc, de_xc=0.0):
     sec = _secoes(el); ys = np.array([q[1] for q in sec]); xl = np.array([q[0] for q in sec]); cs = np.array([q[3] for q in sec]); pos = np.asarray(el.get("posicao", [0, 0, 0]), float)
     tri = T[lab <= 1]; a, b, c = V[tri[:, 0]], V[tri[:, 1]], V[tri[:, 2]]; ar = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1); cen = (a + b + c) / 3
-    yb = cen[:, 1] - pos[1]; xc = (cen[:, 0] - pos[0] - np.interp(yb, ys, xl)) / np.interp(yb, ys, cs); sel = (xc >= de_xc) & (xc <= ate_xc); A_ = float(ar[sel].sum())
+    yb = cen[:, 1] - pos[1]; xc = (cen[:, 0] - pos[0] - np.interp(yb, ys, xl)) / np.interp(yb, ys, cs)
+    if not np.isscalar(ate_xc):
+        par = sorted((abs(float(q[0])), float(q[1])) for q in ate_xc); ate_xc = np.interp(np.abs(yb), [q[0] for q in par], [q[1] for q in par])
+    sel = (xc >= de_xc) & (xc <= ate_xc); A_ = float(ar[sel].sum())
     return A_, ((cen[sel] * ar[sel, None]).sum(0) / A_ if A_ > 0 else V.mean(0))
 
 def massa_e_cg(A) -> dict:
