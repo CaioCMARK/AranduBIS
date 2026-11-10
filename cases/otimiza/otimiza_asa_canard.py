@@ -13,9 +13,9 @@ YE, ENT = 0.31, 0.14
 def _c(y, ent=0.0):
     return f"(ct + (cr - ct) * (1 - {y} / (b / 2)) - {ent})"
 
-def problema() -> dict:
+def problema(esquema: str = "asa_canard.json") -> dict:
     pasta = RAIZ / "cases" / "geometria" / "generico"
-    base = json.loads((pasta / "asa_canard.json").read_text(encoding="utf8"))
+    base = json.loads((pasta / esquema).read_text(encoding="utf8"))
     base["_pasta"] = str(pasta)
     sis = json.loads((AQUI / "massas_sistema_convencional.json").read_text(encoding="utf8"))
     sis_massas = [m for m in sis["massas"] if m["nome"] not in ("servo_do_leme",)]
@@ -57,7 +57,8 @@ def problema() -> dict:
                         "malha": {"n_span": 12, "n_chord": 2, "n_perfil": 24, "n_por_baia": 2}}}
 
 if __name__ == "__main__":
-    prob = problema()
+    import os
+    prob = problema(os.environ.get("ESQUEMA", "asa_canard.json"))
     if sys.argv[1:] == ["avalia"]:
         r = P.avalia(prob, {})
         print(json.dumps({k: v for k, v in r.items() if k != "resultados"}, ensure_ascii=False, default=str)[:1500])
@@ -65,11 +66,15 @@ if __name__ == "__main__":
         raise SystemExit
     pop, ger, sem, proc = (int(v) for v in (sys.argv[1:] + ["12", "20", "1", "4"][len(sys.argv) - 1:])[:4])
     t0 = time.time()
-    r = B.evolui(prob, populacao=pop, geracoes=ger, semente=sem, processos=proc,
+    ini = []
+    for arq in filter(None, os.environ.get("INICIAIS", "").split(",")):
+        d_ = json.loads((AQUI / "saida" / arq).read_text(encoding="utf8"))
+        ini += [a["x"] for a in d_["refino"] if a.get("viavel")] + [d_["historico"][-1]["melhor_x"]]
+    r = B.evolui(prob, populacao=pop, geracoes=ger, semente=sem, processos=proc, inicial=ini or None,
                  ao_gerar=lambda g: print(g["geracao"], "melhor %.2f" % (g["melhor_objetivo"] or 0), g["melhor_viavel"], "viav", g["n_viaveis"], "div %.2f" % g["diversidade"],
                                           "%.0fs" % g["tempo_s"], {k: round(v, 3) for k, v in g["melhor_x"].items()}, flush=True))
     fin = B.refina(prob, r, quantos=3, processos=min(proc, 3))
     saida = AQUI / "saida"
     saida.mkdir(exist_ok=True)
-    (saida / "asa_canard.json").write_text(json.dumps({"historico": r["historico"], "refino": fin}, ensure_ascii=False, default=str, indent=1), encoding="utf8")
+    (saida / os.environ.get("SAIDA", "asa_canard.json")).write_text(json.dumps({"historico": r["historico"], "refino": fin}, ensure_ascii=False, default=str, indent=1), encoding="utf8")
     print("total %.0fs" % (time.time() - t0))

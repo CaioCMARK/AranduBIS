@@ -25,7 +25,7 @@ def perfil_refletido(nome="REFLEX-10.dat", t=0.10, k=0.030, r=0.60, n=60):
     (AQUI / nome).write_text("REFLEX-10\n" + "\n".join("%.6f %.6f" % (a, c) for a, c in zip(X, Y)) + "\n", encoding="ascii")
     return {"alpha0_graus": float(np.degrees(A0)), "Cm0": float(Cm0), "A1": float(A1), "A2": float(A2)}
 
-def monta(b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, nome="asa_canard"):
+def monta(perfil="REFLEX-10.dat", perfil_ponta=None, b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, nome="asa_canard"):
     h = b / 2
     ye = 0.31
     ent = 0.14
@@ -37,7 +37,7 @@ def monta(b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, 
         if ay <= ye:
             c = c - ent
         w = washout * ay / h
-        secoes.append({"y": round(y, 4), "xle": round(x_ent(ay), 4), "zle": 0.0, "corda": round(c, 4), "ainc": round(ainc_raiz + w, 3), "arquivo": "REFLEX-10.dat"})
+        secoes.append({"y": round(y, 4), "xle": round(x_ent(ay), 4), "zle": 0.0, "corda": round(c, 4), "ainc": round(ainc_raiz + w, 3), "arquivo": (perfil_ponta or perfil) if ay >= h - 1e-9 else perfil})
     nerv = [round(v, 3) for v in np.linspace(0.05, h - 0.03, 14)]
     asa = {"nome": "asa", "tipo": "asa", "n_perfil": 60, "posicao": [0.0, 0.0, 0.0], "secoes": secoes,
            "estrutura": {"nervuras": {"y": nerv, "espessura": 0.00238, "material": "balsa", "alivio": 0.45},
@@ -89,5 +89,7 @@ def monta(b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, 
 if __name__ == "__main__":
     print(perfil_refletido())
     esq = monta()
+    (AQUI / "asa_canard_alta_sustentacao.json").write_text(json.dumps(monta("S1223.dat", nome="asa_canard_alta_sustentacao"), indent=1, ensure_ascii=False), encoding="utf8")
+    (AQUI / "asa_canard_s1223_mh84.json").write_text(json.dumps(monta("S1223.dat", "MH84.dat", nome="asa_canard_s1223_mh84"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard.json").write_text(json.dumps(esq, indent=1, ensure_ascii=False), encoding="utf8")
     print(esq["referencia"])
