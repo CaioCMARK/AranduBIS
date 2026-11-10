@@ -68,7 +68,7 @@ const Estrutura = (() => {
     const B = bloco(C, "Tubos de reforço"), L = (e.estrutura || {}).tubos || [];
     tabela(B, ["x (m)", "lado", "Ø ext (m)", "Ø int (m)", "y de", "y até"], L.map(t => [
       entrada("number", t.x, v => muda(() => { t.x = v; })),
-      selecao(t.lado || "extradorso", ["extradorso", "intradorso"], v => muda(() => { t.lado = v; })),
+      selecao(t.lado || "extradorso", ["extradorso", "intradorso", "meio"], v => muda(() => { t.lado = v; })),
       entrada("number", t.de, v => muda(() => { t.de = v; })),
       entrada("number", t.di, v => muda(() => { t.di = v; })),
       entrada("number", (t.y || [0, 0])[0], v => muda(() => { t.y = [v, (t.y || [0, 0])[1]]; })),

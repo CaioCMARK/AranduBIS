@@ -203,7 +203,7 @@ def _partes_asa(el, nome, esq):
     for it, tb in enumerate(cfg.get("tubos", [])):
         de = float(tb["de"]); di = float(tb.get("di", 0.0)); lado = tb.get("lado", "extradorso"); y0, y1 = (tb.get("y") or [ys[0], ys[-1]]); est = sorted({float(y0), float(y1)} | {q for q in ys if y0 < q < y1}); Np = []
         for y in est:
-            q, zs, zi = anel_3d(y); xc = ES.posicao_x(tb, q[3], y) / q[3]; z_ = np.interp(xc, x, zs) - 0.5 * de / q[3] if lado == "extradorso" else np.interp(xc, x, zi) + 0.5 * de / q[3]; Np.append(mapa(q, xc, z_))
+            q, zs, zi = anel_3d(y); xc = ES.posicao_x(tb, q[3], y) / q[3]; z_ = 0.5 * (np.interp(xc, x, zs) + np.interp(xc, x, zi)) if lado == "meio" else np.interp(xc, x, zs) - 0.5 * de / q[3] if lado == "extradorso" else np.interp(xc, x, zi) + 0.5 * de / q[3]; Np.append(mapa(q, xc, z_))
         Bb = [[j, j + 1] for j in range(len(est) - 1)]; Va, Ta, _ = ES.barras_prisma(np.array(Np), Bb, [0.5 * de] * len(Bb)); P.append((Va, Ta, np.zeros(len(Ta), int), [f"tubo{it}"], {"material": tb.get("material", "tubo_carbono"), "de": de, "di": di}))
     return P
 
