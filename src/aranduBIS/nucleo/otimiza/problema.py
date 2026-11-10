@@ -271,6 +271,21 @@ def avalia(prob: dict, x: dict) -> dict:
             q["PV"] = float(mc["massa_kg"]); q["x_cg_vazio"] = float(mc["cg_m"][0]); q["z_cg"] = float(mc["cg_m"][2])
             q["massa_projeto"] = float(mproj)
 
+        if an.get("torcao"):
+            etapa = "torcao e aeroelasticidade"
+            from ..estrutura import torcao as TO
+            tc = an["torcao"]; pc = {**__import__("aranduBIS.nucleo.otimiza.dimensiona", fromlist=["x"]).PADRAO_CARGAS, **(an.get("cargas") or {})}
+            ms, vd = [], []
+            for nome in tc["elementos"]:
+                r_ = TO.analisa(esq, nome, rho=rho, Vd=float(pc["Vd"]), fator=float(pc["fator_seguranca"]), calib_GJ=float(tc.get("calib_GJ", 1.0)),
+                                ea_desloc_c=float(tc.get("ea_desloc_c", 0.0)))
+                if r_["margem_VR"] is not None:
+                    ms.append(r_["margem_VR"])
+                if r_["margem_VD"] is not None:
+                    vd.append(r_["margem_VD"])
+            q["margem_reversao"] = float(min(ms)) if ms else 9.99
+            q["margem_divergencia"] = float(min(vd)) if vd else 9.99
+
         etapa = "tracao"
         pot = float(an.get("potencia_W", 600.0)); q["potencia"] = pot
         if an.get("motor") and an.get("helice"):
@@ -313,7 +328,7 @@ def avalia(prob: dict, x: dict) -> dict:
         res["objetivo"] = _f(prob.get("objetivo", "pontuacao"), {**ctx, **q}, "objetivo")
     except (ProblemaInvalido, AG.GeometriaInvalida, ValueError, FileNotFoundError, KeyError, ZeroDivisionError, FloatingPointError) as e:
         res["falha"] = {"etapa": etapa, "motivo": str(e).split("\n")[0]}
-        ordem = ["variaveis e ligacoes", "geometria e massa", "estabilidade", "sustentacao e arrasto", "dimensionamento estrutural", "tracao", "decolagem", "regra"]
+        ordem = ["variaveis e ligacoes", "geometria e massa", "estabilidade", "sustentacao e arrasto", "dimensionamento estrutural", "torcao e aeroelasticidade", "tracao", "decolagem", "regra"]
         res["violacao"] = 10.0 + (len(ordem) - ordem.index(etapa))
     res["tempo_s"] = time.perf_counter() - t0
     for k_, v in list(q.items()):
