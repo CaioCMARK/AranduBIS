@@ -1,0 +1,160 @@
+{
+  "ano": 2024,
+  "classe": "regular",
+  "nome": "SAE 2024 Regular",
+  "fonte": "Regulamento_SAE_BRASIL_AeroDesign_2024_Rev01.pdf, secoes 7.2 e 7.7",
+  "constantes": {
+    "MTOW": 20.0,
+    "NR_MAX": 185.0,
+    "B_MAX": 2.5,
+    "P_MAX": 850.0,
+    "H_MAX": 0.6,
+    "CUSTO_MAX": 981.8
+  },
+  "cenario": {
+    "NR": 185.0,
+    "n_superficies": 2.0,
+    "PV_previsto": 0.0,
+    "CP_previsto": 0.0,
+    "potencia": 600.0,
+    "envergadura": 0.0,
+    "altura": 0.0
+  },
+  "grandezas": [
+    {
+      "nome": "CP_util",
+      "formula": "max(0, MTOW - PV)",
+      "descricao": "carga que ainda cabe no MTOW",
+      "unidade": "kg"
+    },
+    {
+      "nome": "CP",
+      "formula": "min(CP_bruta, CP_util)",
+      "descricao": "carga paga que de fato pontua -- o excesso sobre o MTOW nao e considerado, R[7.6.0.1]",
+      "unidade": "kg"
+    },
+    {
+      "nome": "EE",
+      "formula": "CP / PV if PV > 0 else 0",
+      "descricao": "eficiencia estrutural",
+      "unidade": ""
+    },
+    {
+      "nome": "PV_prev",
+      "formula": "PV_previsto if PV_previsto > 0 else PV",
+      "descricao": "peso vazio declarado; 0 vira previsao perfeita",
+      "unidade": "kg"
+    },
+    {
+      "nome": "CP_prev",
+      "formula": "CP_previsto if CP_previsto > 0 else CP",
+      "descricao": "carga paga declarada; 0 vira previsao perfeita",
+      "unidade": "kg"
+    },
+    {
+      "nome": "erro_PV",
+      "formula": "(PV_prev - PV) / PV_prev",
+      "descricao": "erro relativo da previsao de PV",
+      "unidade": ""
+    },
+    {
+      "nome": "erro_CP",
+      "formula": "abs((CP_prev - CP) / CP_prev)",
+      "descricao": "erro relativo da previsao de CP",
+      "unidade": ""
+    },
+    {
+      "nome": "FPV",
+      "formula": "max(0.80, 1.10 - 15 * erro_PV ** 2)",
+      "descricao": "Eq. 7.3 -- multiplica o escore de voo inteiro; piso 0,80",
+      "unidade": ""
+    },
+    {
+      "nome": "FPR",
+      "formula": "min(1.0, 0.50 + 0.75 * NR / NR_MAX)",
+      "descricao": "Eq. 7.4",
+      "unidade": ""
+    },
+    {
+      "nome": "N",
+      "formula": "min(max(trunc(n_superficies), 1), 3)",
+      "descricao": "superficies de funcao longitudinal, limitado a 3",
+      "unidade": ""
+    },
+    {
+      "nome": "P_CP",
+      "formula": "12.5 * CP",
+      "descricao": "Eq. 7.2 -- pontos pela carga paga",
+      "unidade": ""
+    },
+    {
+      "nome": "custo",
+      "formula": "potencia * envergadura ** (0.1529 + 0.1233 * max(N, 2))",
+      "descricao": "Eq. 7.1 -- 'custo' que acopla potencia, envergadura e numero de superficies",
+      "unidade": ""
+    }
+  ],
+  "itens": [
+    {
+      "nome": "P_VOO",
+      "formula": "FPV * FPR * P_CP",
+      "descricao": "Eq. 7.5",
+      "quando": ""
+    },
+    {
+      "nome": "P_AC",
+      "formula": "max(0, 30 - 830 * erro_CP ** 1.75)",
+      "descricao": "Eq. 7.6 -- acuracia da previsao de carga paga, ate 30 pontos",
+      "quando": ""
+    },
+    {
+      "nome": "B_RC",
+      "formula": "0 if (t < 0 or t >= 120) else max(0, min(20, 40 - t / 3))",
+      "descricao": "Eq. 7.8 -- retirada da carga",
+      "quando": ""
+    },
+    {
+      "nome": "B_PO",
+      "formula": "1.0 * CP",
+      "descricao": "Eq. 7.7 -- bonus por parar na area",
+      "quando": "parada_na_area"
+    }
+  ],
+  "restricoes": [
+    {
+      "nome": "custo",
+      "formula": "custo",
+      "limite": "CUSTO_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: P * B^(0,1529 + 0,1233 max(N,2)) <= 981,8"
+    },
+    {
+      "nome": "altura",
+      "formula": "altura",
+      "limite": "H_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: H <= 0,6 m"
+    },
+    {
+      "nome": "envergadura",
+      "formula": "envergadura",
+      "limite": "B_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: B <= 2,5 m"
+    },
+    {
+      "nome": "potencia",
+      "formula": "potencia",
+      "limite": "P_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: P <= 850 W"
+    },
+    {
+      "nome": "peso_total",
+      "formula": "PV + CP_bruta",
+      "limite": "MTOW",
+      "tipo": "max",
+      "descricao": "R[7.6.0.1]: peso vazio + carga <= 20 kg"
+    }
+  ]
+}

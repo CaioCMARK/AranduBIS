@@ -97,3 +97,38 @@ def test_mensagem_de_nome_desconhecido_e_curta():
     a = R.avaliar(r, {"PV": 5, "CP_bruta": 10})
     erro = {x["nome"]: x for x in a["itens"]}["X"]["erro"]
     assert "ZZ" in erro and len(erro) < 160 and "\n" not in erro
+
+def test_restricoes_medem_quanto_falta_e_regras_de_tres_anos():
+    import json
+    from pathlib import Path
+    from aranduBIS.nucleo import regra as R
+    pasta = Path(__file__).resolve().parents[1] / "cases" / "regras"
+    aviao = {"PV": 4.0, "CP_bruta": 10.0, "envergadura": 3.1, "altura": 0.7, "potencia": 600.0, "n_superficies": 2, "NR": 185.0}
+    tot = {}
+    for ano in (2024, 2025, 2026):
+        reg = R.normaliza(json.loads((pasta / f"sae{ano}_regular.json").read_text(encoding="utf8")))
+        assert R.conferir(reg) == []
+        out = R.avaliar(reg, aviao); tot[ano] = out["total"]
+        rest = {c["nome"]: c for c in out["restricoes"]}
+        if ano == 2024:
+            assert not out["viavel"] and not rest["envergadura"]["ok"] and not rest["altura"]["ok"]
+            assert rest["custo"]["ok"] and abs(rest["custo"]["valor"] - 600 * 3.1 ** (0.1529 + 0.1233 * 2)) < 1e-6
+            assert abs(rest["envergadura"]["violacao"] - 0.6 / 2.5) < 1e-9 and abs(rest["envergadura"]["folga"] + 0.6) < 1e-9
+            assert out["violacao"] > rest["envergadura"]["violacao"]
+        else:
+            assert out["viavel"] and out["violacao"] == 0.0 and abs(rest["envergadura"]["folga"] - 0.9) < 1e-9
+    assert tot[2024] > tot[2026] > tot[2025] > 0
+
+def test_medidas_da_aeronave_e_cone():
+    import numpy as np
+    from aranduBIS.nucleo import medidas as M
+    asa = {"nome": "asa", "tipo": "asa", "perfil": "NACA 0012", "n_perfil": 20, "posicao": [0, 0, 0.3],
+           "secoes": [{"y": -1.0, "xle": 0, "zle": 0, "corda": 0.3, "ainc": 0}, {"y": 1.0, "xle": 0, "zle": 0, "corda": 0.3, "ainc": 0}]}
+    eh = dict(asa, nome="eh", posicao=[1.0, 0, 0.3], secoes=[dict(s, y=0.3 * s["y"], corda=0.15) for s in asa["secoes"]])
+    ev = dict(asa, nome="ev", rolagem=90.0, posicao=[1.0, 0, 0.3], secoes=[{"y": 0.0, "corda": 0.15}, {"y": 0.3, "corda": 0.15}])
+    m = M.medidas({"versao": 1, "nome": "t", "elementos": [asa, eh, ev]}, cone_altura=2.0)
+    assert abs(m["envergadura"] - 2.0) < 1e-6 and abs(m["comprimento"] - 1.15) < 1e-3 and m["n_superficies"] == 2 and m["superficies"] == ["asa", "eh"]
+    assert m["altura"] > 0.3 and m["raio_cone"] > 1.0
+    assert M.medidas({"versao": 1, "nome": "t", "elementos": [asa, eh, ev]}, excluir=("ev",))["altura"] < m["altura"]
+    P = np.array([[1.0, 0, 0], [-1.0, 0, 0], [0, 0, 0.5]])
+    assert abs(M.raio_do_cone(P, 1.0) - 1.0) < 1e-3 and M.raio_do_cone(P, 0.4) == float("inf")

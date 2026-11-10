@@ -73,3 +73,13 @@ def grava(esquema: dict, pasta, nome: str | None = None) -> str:
 
 def materiais() -> list[dict]:
     return [{"nome": n, "densidade": d, "origem": o} for n, (d, o) in ES.MATERIAIS.items()]
+
+def medidas(p: dict) -> dict:
+    from ..nucleo.medidas import medidas as _med
+    esq = dict(p.get("esquema") or {})
+    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "biplano"))
+    try:
+        ca = p.get("cone_altura")
+        return _med(esq, excluir=tuple(p.get("excluir") or ()), cone_altura=float(ca) if ca else None)
+    except (AG.GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        raise ErroDeGeometria(str(e))

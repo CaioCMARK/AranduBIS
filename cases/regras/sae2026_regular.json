@@ -5,14 +5,17 @@
   "fonte": "Regulamento_SAE_BRASIL_AeroDesign_2026_Rev00_EN.pdf, secao 7.7",
   "constantes": {
     "MTOW": 20.0,
-    "NR_MAX": 185.0
+    "NR_MAX": 185.0,
+    "B_MAX": 4.0,
+    "P_MAX": 600.0
   },
   "cenario": {
     "NR": 185.0,
     "n_superficies": 2.0,
     "envergadura": 0.0,
     "PV_previsto": 0.0,
-    "CP_previsto": 0.0
+    "CP_previsto": 0.0,
+    "potencia": 600.0
   },
   "grandezas": [
     {
@@ -118,6 +121,29 @@
       "formula": "2 * EE",
       "descricao": "Eq. 7.7 -- bonus por parar na area, melhor bateria",
       "quando": "parada_na_area"
+    }
+  ],
+  "restricoes": [
+    {
+      "nome": "envergadura",
+      "formula": "envergadura",
+      "limite": "B_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: B <= 4,0 m"
+    },
+    {
+      "nome": "potencia",
+      "formula": "potencia",
+      "limite": "P_MAX",
+      "tipo": "max",
+      "descricao": "R[7.2.0.1]: P <= 600 W, pico medido em voo"
+    },
+    {
+      "nome": "peso_total",
+      "formula": "PV + CP_bruta",
+      "limite": "MTOW",
+      "tipo": "max",
+      "descricao": "R[7.6.0.1]: peso vazio + carga <= 20 kg (o excesso de carga nao pontua)"
     }
   ]
 }
