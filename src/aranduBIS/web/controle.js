@@ -6,7 +6,7 @@ const Controle = (() => {
     { k: "beta", r: "Glissada β (°)", d: "Ângulo de derrapagem da condição (0 = voo simétrico).", zero: true, p: 0 },
     { g: "Ailerons", k: "sobe_max", cfg: "controle.sobe_max", r: "Máx. para cima (°)", d: "Batente do aileron para cima." },
     { k: "desce_max", cfg: "controle.desce_max", r: "Máx. para baixo (°)", d: "Batente para baixo (só vale em sobe e desce)." },
-    { g: "Critérios", k: "pb2V_min", cfg: "controle.pb2V_min", r: "pb/2V mínimo", d: "Hipótese de projeto: use o requisito da equipe." },
+    { g: "Critérios", k: "pb2V_min", cfg: "controle.pb2V_min", r: "pb/2V mínimo", d: "Critério de projeto: use o requisito do seu projeto." },
     { k: "t_inclinacao_max", cfg: "controle.t_inclinacao_max", r: "Tempo máx. (s)", d: "Tempo para atingir a inclinação do critério." },
     { k: "inclinacao", cfg: "controle.inclinacao", r: "Inclinação (°)", d: "Ângulo de rolagem do critério de tempo." },
     { g: "Servo", k: "V_servo", cfg: "controle.V_servo", r: "Velocidade do servo (m/s)", d: "Velocidade máxima para o momento de charneira." },

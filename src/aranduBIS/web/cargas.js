@@ -43,7 +43,7 @@ const Cargas3 = (() => {
       s.onchange = () => { sup = s.value; graficos(); };
       const G2 = document.createElement("div"); G2.className = "prop"; G2.append(el("label", "Superfície"), s); P.append(G2);
     }
-    P.append(el("div", "Valores de partida: documento de referência (hipóteses editáveis em Configurações).", "nota"));
+    P.append(el("div", "Valores de partida editáveis em Configurações.", "nota"));
   }
 
   function agenda() { clearTimeout(tempo); tempo = setTimeout(calcula, 500); }

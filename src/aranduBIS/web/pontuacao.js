@@ -34,7 +34,7 @@ const Pontuacao = (() => {
     const V = $("veredito"); V.hidden = false; V.className = "veredito neutro"; V.innerHTML = "";
     const s = document.createElement("select"); s.title = "Regras de pontuação";
     s.add(new Option("Escolher regra…", ""));
-    lista.forEach(r => s.add(new Option(`${r.nome} (${r.origem === "fabrica" ? "de fábrica" : "da equipe"})`, JSON.stringify(r))));
+    lista.forEach(r => s.add(new Option(`${r.nome} (${r.origem === "fabrica" ? "de fábrica" : "do usuário"})`, JSON.stringify(r))));
     s.onchange = async () => {
       if (!s.value) return; const r = JSON.parse(s.value);
       if (!confirm("Trocar de regra descarta as edições não salvas. Continuar?")) { s.value = ""; return; }
