@@ -6,6 +6,8 @@ import sys
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+mimetypes.add_type("font/woff2", ".woff2")
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -166,6 +168,8 @@ def fazer_handler(est: Estado):
                     return self._json(_estado_cfg(est))
                 if self.path == "/api/otimiza/inicia":
                     return self._json({"id": OT.inicia(d.get("problema") or {}, d.get("execucao") or {})})
+                if self.path == "/api/otimiza/inicia_arvore":
+                    return self._json({"id": OT.inicia_arvore(d.get("topologias") or {}, d.get("execucao") or {}, d.get("semear"))})
                 if self.path == "/api/otimiza/para":
                     OT.para(d.get("id", ""))
                     return self._json({"ok": True})
