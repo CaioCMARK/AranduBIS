@@ -25,11 +25,12 @@ def melhor_que(a: dict, b: dict) -> bool:
     return va < vb
 
 def _aval(args):
-    prob, x = args
-    return P.avalia(prob, x)
+    prob, x, avalia = args
+    return avalia(prob, x)
 
 def evolui(prob: dict, populacao: int = 24, geracoes: int = 40, F: float = 0.7, CR: float = 0.8, estrategia: str = "melhor",
-           semente: int = 0, processos: int = 1, inicial: list[dict] | None = None, ao_gerar=None) -> dict:
+           semente: int = 0, processos: int = 1, inicial: list[dict] | None = None, ao_gerar=None, avalia=None) -> dict:
+    avalia = avalia or P.avalia
     nomes, lo, hi, disc = _limites(prob)
     n = len(nomes); rng = np.random.default_rng(semente); t0 = time.perf_counter()
     pop = lo + rng.random((populacao, n)) * (hi - lo)
@@ -40,7 +41,7 @@ def evolui(prob: dict, populacao: int = 24, geracoes: int = 40, F: float = 0.7, 
     pool = ProcessPoolExecutor(processos) if processos > 1 else None
     mapa = (lambda L: list(pool.map(_aval, L))) if pool else (lambda L: [_aval(a) for a in L])
     try:
-        res = mapa([(prob, _x(nomes, v, disc)) for v in pop]); n_aval = populacao; hist = []
+        res = mapa([(prob, _x(nomes, v, disc), avalia) for v in pop]); n_aval = populacao; hist = []
         for g in range(geracoes + 1):
             ib = 0
             for i in range(1, populacao):
@@ -66,7 +67,7 @@ def evolui(prob: dict, populacao: int = 24, geracoes: int = 40, F: float = 0.7, 
                 fora = (v < lo) | (v > hi)
                 v = np.where(fora, np.where(rng.random(n) < 0.5, lo + (pop[i] - lo) * rng.random(n), hi - (hi - pop[i]) * rng.random(n)), v)
                 tentativas[i] = np.clip(v, lo, hi)
-            filhos = mapa([(prob, _x(nomes, v, disc)) for v in tentativas]); n_aval += populacao
+            filhos = mapa([(prob, _x(nomes, v, disc), avalia) for v in tentativas]); n_aval += populacao
             for i in range(populacao):
                 if melhor_que(filhos[i], res[i]) or (filhos[i]["violacao"] == res[i]["violacao"] and filhos[i]["objetivo"] == res[i]["objetivo"]):
                     pop[i], res[i] = tentativas[i], filhos[i]
@@ -80,13 +81,17 @@ def evolui(prob: dict, populacao: int = 24, geracoes: int = 40, F: float = 0.7, 
     return {"melhor": res[ib], "populacao": res, "historico": hist, "semente": semente, "avaliacoes": n_aval, "variaveis": nomes,
             "parametros": {"populacao": populacao, "geracoes": geracoes, "F": F, "CR": CR, "estrategia": estrategia}}
 
-def refina(prob: dict, resultado: dict, quantos: int = 5, processos: int = 1) -> list[dict]:
+def refina(prob: dict, resultado: dict, quantos: int = 5, processos: int = 1, avalia=None, tira_malha=None) -> list[dict]:
+    avalia = avalia or P.avalia
     cheia = copy.deepcopy(prob)
-    cheia.setdefault("analise", {}).pop("malha", None)
+    if tira_malha:
+        tira_malha(cheia)
+    else:
+        cheia.setdefault("analise", {}).pop("malha", None)
     ordem = sorted(resultado["populacao"], key=lambda r: (r["violacao"] > 0, r["violacao"] if r["violacao"] > 0 else -(r["objetivo"] or 0)))[:quantos]
     pool = ProcessPoolExecutor(processos) if processos > 1 else None
     try:
-        novos = list(pool.map(_aval, [(cheia, r["x"]) for r in ordem])) if pool else [_aval((cheia, r["x"])) for r in ordem]
+        novos = list(pool.map(_aval, [(cheia, r["x"], avalia) for r in ordem])) if pool else [_aval((cheia, r["x"], avalia)) for r in ordem]
     finally:
         if pool:
             pool.shutdown()

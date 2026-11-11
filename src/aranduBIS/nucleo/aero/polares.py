@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from enum import Enum
 
-from scipy.interpolate import RegularGridInterpolator
+from numba import njit
 
 class Origem(str, Enum):
 
@@ -25,6 +25,32 @@ class Confianca(str, Enum):
     MARGINAL = "marginal"
     SUSPEITA = "suspeita"
     DESCARTADA = "descartada"
+
+@njit(cache=True, fastmath=False)
+def _consulta_grade(re_log_pts, alpha_pts, re_log_grid, alpha_grid, grade3):
+    n = re_log_pts.shape[0]
+    nr = re_log_grid.shape[0]
+    na = alpha_grid.shape[0]
+    out = np.empty((n, 3))
+    for k in range(n):
+        x = re_log_pts[k]
+        y = alpha_pts[k]
+        i = 0
+        while i < nr - 2 and re_log_grid[i + 1] < x:
+            i += 1
+        j = 0
+        while j < na - 2 and alpha_grid[j + 1] < y:
+            j += 1
+        x0, x1 = re_log_grid[i], re_log_grid[i + 1]
+        y0, y1 = alpha_grid[j], alpha_grid[j + 1]
+        tx = (x - x0) / (x1 - x0)
+        ty = (y - y0) / (y1 - y0)
+        for c in range(3):
+            g00 = grade3[i, j, c]; g10 = grade3[i + 1, j, c]
+            g01 = grade3[i, j + 1, c]; g11 = grade3[i + 1, j + 1, c]
+            out[k, c] = (g00 * (1 - tx) * (1 - ty) + g10 * tx * (1 - ty)
+                         + g01 * (1 - tx) * ty + g11 * tx * ty)
+    return out
 
 @dataclass
 class Polar:
@@ -85,11 +111,11 @@ class Polar:
             )
 
     def _montar_interpoladores(self) -> None:
-        eixo = (np.log(self.re), self.alpha)
-        for k in ("cl", "cd", "cm"):
-            self._interp[k] = RegularGridInterpolator(
-                eixo, getattr(self, k), method="linear", bounds_error=False, fill_value=None
-            )
+        self._interp = {
+            "re_log": np.log(self.re),
+            "alpha": self.alpha,
+            "grade3": np.ascontiguousarray(np.stack([self.cl, self.cd, self.cm], axis=-1)),
+        }
 
     def __call__(self, alpha, re, avisar=True) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         alpha = np.asarray(alpha, dtype=float)
@@ -97,8 +123,10 @@ class Polar:
         alpha, re = np.broadcast_arrays(alpha, re)
         if avisar and re.size:
             self._avisar_fora_da_grade(alpha, re)
-        pts = np.column_stack([np.log(re).ravel(), alpha.ravel()])
-        saida = tuple(self._interp[k](pts).reshape(alpha.shape) for k in ("cl", "cd", "cm"))
+        re_log_pts = np.log(re).ravel()
+        saida3 = _consulta_grade(np.ascontiguousarray(re_log_pts), np.ascontiguousarray(alpha.ravel()),
+                                 self._interp["re_log"], self._interp["alpha"], self._interp["grade3"])
+        saida = tuple(saida3[:, c].reshape(alpha.shape) for c in range(3))
         return saida
 
     def _avisar_fora_da_grade(self, alpha, re) -> None:
