@@ -7,7 +7,7 @@ name = "aranduBIS"
 version = "0.0.1"
 description = "AranduBIS - projeto de aeronaves SAE AeroDesign (V2)"
 requires-python = ">=3.11"
-dependencies = ["numpy>=1.26", "scipy>=1.11"]
+dependencies = ["numpy>=1.26", "scipy>=1.11", "numba>=0.60"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import threading
 import time
 import uuid
@@ -58,9 +59,10 @@ def inicia(problema: dict, execucao: dict | None = None) -> str:
 
     def roda():
         try:
+            proc = max(1, (os.cpu_count() or 2) - 1)
             r = B.evolui(problema, populacao=pop, geracoes=ger, estrategia=estrategia, semente=semente,
-                         processos=1, ao_gerar=ao_gerar)
-            refino = B.refina(problema, r, quantos=3, processos=1)
+                         processos=proc, ao_gerar=ao_gerar)
+            refino = B.refina(problema, r, quantos=3, processos=min(proc, 3))
             with job.lock:
                 job.refino = refino
                 job.estado = "concluido"

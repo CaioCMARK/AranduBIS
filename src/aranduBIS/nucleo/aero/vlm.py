@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 
 import numpy as np
+from numba import njit, prange
 from scipy.linalg import lu_factor, lu_solve
 
 from .perfil import Perfil
@@ -27,8 +28,47 @@ def n_span_recomendado(AR: float) -> int:
 
 COND_MAXIMA = 1.0e5
 
+@njit(cache=True, fastmath=False, parallel=True)
+def _velocidade_segmento_nb(P, A, B, eps, eps_rel):
+    npt = P.shape[0]; ns = A.shape[0]
+    out = np.zeros((npt, ns, 3))
+    for i in prange(npt):
+        px, py, pz = P[i, 0], P[i, 1], P[i, 2]
+        for j in range(ns):
+            ax, ay, az = A[j, 0], A[j, 1], A[j, 2]
+            bx, by, bz = B[j, 0], B[j, 1], B[j, 2]
+            r1x, r1y, r1z = px - ax, py - ay, pz - az
+            r2x, r2y, r2z = px - bx, py - by, pz - bz
+            crx = r1y * r2z - r1z * r2y
+            cry = r1z * r2x - r1x * r2z
+            crz = r1x * r2y - r1y * r2x
+            n2 = crx * crx + cry * cry + crz * crz
+            n1 = math.sqrt(r1x * r1x + r1y * r1y + r1z * r1z)
+            nn = math.sqrt(r2x * r2x + r2y * r2y + r2z * r2z)
+            r0x, r0y, r0z = bx - ax, by - ay, bz - az
+            L = math.sqrt(r0x * r0x + r0y * r0y + r0z * r0z)
+            n1m = n1 if n1 > eps else eps
+            nnm = nn if nn > eps else eps
+            K = (r0x * (r1x / n1m - r2x / nnm) + r0y * (r1y / n1m - r2y / nnm)
+                 + r0z * (r1z / n1m - r2z / nnm))
+            n2m = n2 if n2 > eps * eps else eps * eps
+            Lm = L if L > eps else eps
+            fac = K / (4.0 * math.pi)
+            h = math.sqrt(n2) / Lm
+            degenerado = (h < eps_rel * Lm) or (n1 < eps) or (nn < eps)
+            if not degenerado:
+                out[i, j, 0] = crx / n2m * fac
+                out[i, j, 1] = cry / n2m * fac
+                out[i, j, 2] = crz / n2m * fac
+    return out
+
 def _velocidade_segmento(P, A, B, eps: float = 1e-10,
                          eps_rel: float = 1e-7, xp=np):
+    if xp is np:
+        return _velocidade_segmento_nb(np.ascontiguousarray(P, dtype=np.float64),
+                                       np.ascontiguousarray(A, dtype=np.float64),
+                                       np.ascontiguousarray(B, dtype=np.float64),
+                                       float(eps), float(eps_rel))
     r1 = P[:, None, :] - A[None, :, :]
     r2 = P[:, None, :] - B[None, :, :]
     cr = xp.cross(r1, r2)

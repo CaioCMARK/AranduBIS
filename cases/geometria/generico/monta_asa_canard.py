@@ -25,13 +25,16 @@ def perfil_refletido(nome="REFLEX-10.dat", t=0.10, k=0.030, r=0.60, n=60):
     (AQUI / nome).write_text("REFLEX-10\n" + "\n".join("%.6f %.6f" % (a, c) for a, c in zip(X, Y)) + "\n", encoding="ascii")
     return {"alpha0_graus": float(np.degrees(A0)), "Cm0": float(Cm0), "A1": float(A1), "A2": float(A2)}
 
-def monta(perfil="REFLEX-10.dat", perfil_ponta=None, b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, nome="asa_canard"):
+def monta(perfil="REFLEX-10.dat", perfil_ponta=None, meio=None, b=2.4, cr=0.66, ct=0.22, xle_ponta=0.55, washout=-3.0, ainc_raiz=2.0, nome="asa_canard"):
     h = b / 2
     ye = 0.31
     ent = 0.14
     x_ent = lambda y: xle_ponta * y / h
     secoes = []
-    for y in (-h, -ye - 0.02, -ye, 0.0, ye, ye + 0.02, h):
+    ys_ = [-h, -ye - 0.02, -ye, 0.0, ye, ye + 0.02, h]
+    if meio:
+        ys_ = [-h, -meio * h] + ys_[1:-1] + [meio * h, h]
+    for y in ys_:
         ay = abs(y)
         c = ct + (cr - ct) * (1 - ay / h)
         if ay <= ye:
@@ -90,6 +93,7 @@ if __name__ == "__main__":
     print(perfil_refletido())
     esq = monta()
     (AQUI / "asa_canard_alta_sustentacao.json").write_text(json.dumps(monta("S1223.dat", nome="asa_canard_alta_sustentacao"), indent=1, ensure_ascii=False), encoding="utf8")
+    (AQUI / "asa_canard_s1223_mh84_meio.json").write_text(json.dumps(monta("S1223.dat", "MH84.dat", meio=0.6, nome="asa_canard_s1223_mh84_meio"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard_s1223_mh84.json").write_text(json.dumps(monta("S1223.dat", "MH84.dat", nome="asa_canard_s1223_mh84"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard.json").write_text(json.dumps(esq, indent=1, ensure_ascii=False), encoding="utf8")
     print(esq["referencia"])

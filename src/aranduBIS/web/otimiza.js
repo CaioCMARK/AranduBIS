@@ -178,7 +178,7 @@ const Otimiza = (() => {
     sel.value = v.execucao.estrategia; sel.onchange = () => { v.execucao.estrategia = sel.value; guarda(); };
     G.append(l, sel);
     P.append(G);
-    P.append(nota("Roda em 1 processo nesta tela. Para vários núcleos, use os scripts de cases/otimiza/ pelo terminal."));
+    P.append(nota("Roda em vários núcleos (um a menos que a máquina tem) nesta mesma tela."));
     const btns = document.createElement("div"); btns.style.cssText = "padding:4px 8px;display:flex;gap:6px";
     const bIni = el("button", "Iniciar"); bIni.id = "b_otim_ini"; bIni.onclick = iniciar;
     const bPar = el("button", "Parar"); bPar.id = "b_otim_par"; bPar.onclick = parar;
