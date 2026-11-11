@@ -1,7 +1,8 @@
 "use strict";
 
 const Etapas = (() => {
-  const vistas = { 1: $("et1"), 2: $("et2"), 3: $("et3") };
+  const vistas = { 1: $("et1"), 2: $("et2"), 3: $("et3"), 4: $("et4"), 5: $("et5") };
+  const entra = { 1: () => vista.desenha(), 2: () => Analise.entra(), 3: () => Etapa3.entra(), 4: () => Otimiza.entra(), 5: () => Resultados.entra() };
   let atual = 1;
   function vai(n) {
     if (!vistas[n] || n === atual) return;
@@ -9,7 +10,7 @@ const Etapas = (() => {
     Object.entries(vistas).forEach(([k, el]) => { el.hidden = +k !== n; });
     document.querySelectorAll(".etapas div[data-etapa]").forEach(d => d.classList.toggle("at", +d.dataset.etapa === n));
     document.body.dataset.etapa = n;
-    if (n === 1) vista.desenha(); else if (n === 2) Analise.entra(); else Etapa3.entra();
+    entra[n]();
   }
   document.querySelectorAll(".etapas div[data-etapa]").forEach(d => { d.onclick = () => vai(+d.dataset.etapa); });
   return { vai };
