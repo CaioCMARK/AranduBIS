@@ -12,6 +12,7 @@ from urllib.parse import parse_qs, urlparse
 from .fronteira import analise as AN
 from .fronteira import arquivos as AQ
 from .fronteira import geometria as G
+from .fronteira import otimiza as OT
 from .fronteira import regras as RG
 from .nucleo import configuracao as C
 
@@ -105,7 +106,10 @@ def fazer_handler(est: Estado):
                     return self._json({"materiais": G.materiais()})
                 if u.path == "/api/configuracao":
                     return self._json(_estado_cfg(est))
-            except (G.ErroDeGeometria, AQ.ErroDeArquivo, RG.ErroDeRegra, OSError) as e:
+                if u.path == "/api/otimiza/estado":
+                    q = parse_qs(u.query)
+                    return self._json(OT.estado(q.get("id", [""])[0]))
+            except (G.ErroDeGeometria, AQ.ErroDeArquivo, RG.ErroDeRegra, OT.ErroDeOtimiza, OSError) as e:
                 return self._json({"erro": str(e)}, 400)
             return self._json({"erro": "não encontrado"}, 404)
 
@@ -160,7 +164,14 @@ def fazer_handler(est: Estado):
                     est.pasta.mkdir(parents=True, exist_ok=True)
                     est.cfg.gravar(est.arq_cfg)
                     return self._json(_estado_cfg(est))
-            except (G.ErroDeGeometria, C.ConfiguracaoInvalida, AN.ErroDeAnalise, RG.ErroDeRegra) as e:
+                if self.path == "/api/otimiza/inicia":
+                    return self._json({"id": OT.inicia(d.get("problema") or {}, d.get("execucao") or {})})
+                if self.path == "/api/otimiza/para":
+                    OT.para(d.get("id", ""))
+                    return self._json({"ok": True})
+                if self.path == "/api/otimiza/materializa":
+                    return self._json(OT.materializa(d.get("problema") or {}, d.get("x") or {}))
+            except (G.ErroDeGeometria, C.ConfiguracaoInvalida, AN.ErroDeAnalise, RG.ErroDeRegra, OT.ErroDeOtimiza) as e:
                 return self._json({"erro": str(e)}, 400)
             except (ValueError, KeyError, TypeError) as e:
                 return self._json({"erro": f"pedido inválido: {e}"}, 400)
