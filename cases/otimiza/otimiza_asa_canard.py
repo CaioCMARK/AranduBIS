@@ -87,6 +87,29 @@ def problema(esquema: str = "asa_canard.json") -> dict:
                         "trim_decolagem": {"fator_v": 1.2},
                         "malha": {"n_span": 12, "n_chord": 2, "n_perfil": 24, "n_por_baia": 2}}}
 
+def _finito(v, alt):
+    return v if np.isfinite(v) else alt
+
+def extrai_x(esq: dict) -> dict:
+    asa = next(e for e in esq["elementos"] if e["nome"] == "asa")
+    canard = next(e for e in esq["elementos"] if e["nome"] == "canard")
+    sec = asa["secoes"]; meio = len(sec) == 9
+    tip, centro = sec[0], sec[len(sec) // 2]
+    b = 2 * abs(tip["y"])
+    ct = tip["corda"]; cr = centro["corda"] + ENT
+    sw = tip["xle"]; ai = centro["ainc"]; wo = tip["ainc"] - ai
+    x = {"b": b, "cr": cr, "ct": ct, "sw": sw, "wo": wo, "ai": ai,
+         "cc": canard["secoes"][0]["corda"], "bc": abs(canard["secoes"][1]["y"]), "ac": canard["secoes"][0]["ainc"]}
+    if meio:
+        mid = sec[1]
+        ym = _finito(abs(mid["y"]) / (b / 2), 0.6)
+        corda_reta = ct + (cr - ct) * (1 - ym)
+        x["ym"] = ym
+        x["km"] = _finito(mid["corda"] / corda_reta, 1.0) if corda_reta else 1.0
+        x["ks"] = _finito(mid["xle"] / (sw * ym), 1.0) if sw * ym else 1.0
+        x["fm"] = _finito((mid["ainc"] - ai) / (wo * ym), 1.0) if wo * ym else 1.0
+    return x
+
 if __name__ == "__main__":
     import os
     prob = problema(os.environ.get("ESQUEMA", "asa_canard.json"))

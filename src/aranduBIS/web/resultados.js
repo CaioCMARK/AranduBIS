@@ -11,7 +11,8 @@ const Resultados = (() => {
     const r = refino();
     if (!r || !r.length) { L.append(nota("Sem resultados ainda. Rode uma otimização na etapa 4.")); return; }
     r.forEach((p, i) => {
-      const d = el("div", `${i + 1}. ${fmt(p.pontuacao, 1)}${p.viavel ? "" : " ⚠"}`, "el" + (i === sel ? " sel" : ""));
+      const topo = p.resultados && p.resultados.topologia;
+      const d = el("div", `${i + 1}. ${topo ? topo + " · " : ""}${fmt(p.pontuacao, 1)}${p.viavel ? "" : " ⚠"}`, "el" + (i === sel ? " sel" : ""));
       d.onclick = () => { sel = i; lista(); pinta(); };
       L.append(d);
     });
@@ -22,8 +23,9 @@ const Resultados = (() => {
     const r = refino();
     if (!r || !r.length) { V.className = "veredito neutro"; V.textContent = "Sem execução concluída."; return; }
     const p = r[sel];
+    const topo = p.resultados && p.resultados.topologia;
     V.className = "veredito " + (p.viavel ? "ok" : "ruim");
-    V.innerHTML = `<b>${p.viavel ? "Viável" : "Inviável"}</b> · pontuação <b>${fmt(p.pontuacao, 2)}</b>`
+    V.innerHTML = (topo ? `<span class="nome-regra">${topo}</span> ` : "") + `<b>${p.viavel ? "Viável" : "Inviável"}</b> · pontuação <b>${fmt(p.pontuacao, 2)}</b>`
       + (p.falha ? ` · falhou em “${p.falha.etapa}”: ${p.falha.motivo}` : "");
   }
 
@@ -66,10 +68,13 @@ const Resultados = (() => {
   function painel(p) {
     const P = $("par5"); P.innerHTML = "";
     if (!p) return;
+    const topo = p.resultados && p.resultados.topologia;
+    const problema = topo ? (Otimiza.ultimoProblema() || {})[topo] : Otimiza.ultimoProblema();
+    const x = topo ? Object.fromEntries(Object.entries(p.x).filter(([k]) => k.startsWith(topo + "_")).map(([k, val]) => [k.slice(topo.length + 1), val])) : p.x;
     const b = el("button", "Abrir no editor"); b.style.margin = "6px 8px";
     b.onclick = async () => {
       try {
-        const novo = await chama("/api/otimiza/materializa", { problema: Otimiza.ultimoProblema(), x: p.x });
+        const novo = await chama("/api/otimiza/materializa", { problema, x });
         carrega_aeronave(novo, "otimizado"); Etapas.vai(1); msg("Projeto otimizado aberto na etapa 1.");
       } catch (e) { msg(e.message, true); }
     };

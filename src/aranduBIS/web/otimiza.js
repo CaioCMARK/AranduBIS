@@ -2,7 +2,7 @@
 
 const Otimiza = (() => {
   const CHAVE = "aranduBIS.otimiza";
-  const SECOES = [["variaveis", "Variáveis"], ["restricoes", "Restrições"], ["regra", "Regra e cenário"], ["analise", "Análise"]];
+  const SECOES = [["variaveis", "Variáveis"], ["restricoes", "Restrições"], ["regra", "Regra e cenário"], ["analise", "Análise"], ["arvore", "Árvore de topologias"]];
   const AN_CAMPOS = [
     { g: "Condições de voo", k: "rho", r: "Densidade do ar (kg/m³)", p: 1.1 },
     { k: "V", r: "Velocidade de referência (m/s)", p: 12 },
@@ -17,7 +17,8 @@ const Otimiza = (() => {
     { g: "Calibração", k: "fator_massas", r: "Fator sobre as massas de sistema (1 = sem ajuste)", p: 1.0 },
   ];
   let v = { variaveis: [], restricoes: [], regraNome: null, regraOrigem: null, regraJson: null, cenario: {}, analise: {}, avancado: "{}",
-            execucao: { populacao: 16, geracoes: 20, semente: 0, estrategia: "melhor" }, ultimoProblema: null };
+            execucao: { populacao: 16, geracoes: 20, semente: 0, estrategia: "melhor" }, ultimoProblema: null,
+            arvore: [], arvoreSemente: "" };
   let secao = "variaveis", jobId = null, poll = null, ultimoEstado = null, listaRegras = [], seqRegra = 0;
 
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
@@ -33,13 +34,41 @@ const Otimiza = (() => {
     });
   }
 
+  function caminhosDoEsquema() {
+    const fora = new Set(["nome", "tipo"]);
+    const out = [];
+    const anda = (no, prefixo) => {
+      if (no === null || no === undefined) return;
+      if (typeof no === "number") { out.push(prefixo); return; }
+      if (Array.isArray(no)) { no.forEach((item, i) => anda(item, `${prefixo}[${i}]`)); return; }
+      if (typeof no === "object") {
+        for (const [k, val] of Object.entries(no)) { if (!fora.has(k)) anda(val, `${prefixo}.${k}`); }
+      }
+    };
+    (esq && esq.elementos || []).forEach(e => anda(e, e.nome));
+    return out;
+  }
+
+  function listaAlvos() {
+    let dl = document.getElementById("lista_alvos4");
+    if (!dl) { dl = document.createElement("datalist"); dl.id = "lista_alvos4"; document.body.append(dl); }
+    dl.innerHTML = "";
+    caminhosDoEsquema().forEach(c => dl.append(new Option(c)));
+    return dl;
+  }
+
   function secaoVariaveis(C) {
-    C.append(nota('alvo: caminho no esquema da aeronave, por exemplo “asa.secoes[1].corda”, “canard.posicao[0]” ou “asa.controles[0].x” — os mesmos nomes do JSON avançado de cada elemento, na etapa 1.'));
+    C.append(nota('alvo: caminho no esquema da aeronave, por exemplo “asa.secoes[1].corda”, “canard.posicao[0]” ou “asa.controles[0].x” — os mesmos nomes do JSON avançado de cada elemento, na etapa 1. Comece a digitar para sugestões da aeronave carregada.'));
+    listaAlvos();
     const t = document.createElement("table"); t.className = "edita";
     t.innerHTML = "<tr><th>nome</th><th>alvo</th><th>mínimo</th><th>máximo</th><th>padrão</th><th></th></tr>";
     v.variaveis.forEach((x, i) => {
       const tr = document.createElement("tr");
-      const campo = (chave, tipo) => { const td = document.createElement("td"); td.append(entrada(tipo, x[chave], val => { x[chave] = val; guarda(); })); return td; };
+      const campo = (chave, tipo) => {
+        const td = document.createElement("td"); const inp = entrada(tipo, x[chave], val => { x[chave] = val; guarda(); });
+        if (chave === "alvo") inp.setAttribute("list", "lista_alvos4");
+        td.append(inp); return td;
+      };
       tr.append(campo("nome", "text"), campo("alvo", "text"), campo("minimo", "number"), campo("maximo", "number"), campo("padrao", "number"));
       const rm = document.createElement("td"); const b = el("button", "✕"); b.title = "Remover variável";
       b.onclick = () => { v.variaveis.splice(i, 1); guarda(); pintaSecao(); };
@@ -146,7 +175,59 @@ const Otimiza = (() => {
     if (secao === "variaveis") return secaoVariaveis(C);
     if (secao === "restricoes") return secaoRestricoes(C);
     if (secao === "regra") return secaoRegra(C);
+    if (secao === "arvore") return secaoArvore(C);
     return secaoAnalise(C);
+  }
+
+  function snapshotAtual(nome) {
+    return {
+      nome, esq: JSON.parse(JSON.stringify(esq)), variaveis: JSON.parse(JSON.stringify(v.variaveis)),
+      restricoes: JSON.parse(JSON.stringify(v.restricoes)), regraNome: v.regraNome, regraOrigem: v.regraOrigem,
+      regraJson: v.regraJson, cenario: JSON.parse(JSON.stringify(v.cenario)), analise: JSON.parse(JSON.stringify(v.analise)),
+      avancado: v.avancado,
+    };
+  }
+
+  function montaProblemaDeSnapshot(snap) {
+    const esqAntigo = esq;
+    const vAntigo = { variaveis: v.variaveis, restricoes: v.restricoes, regraJson: v.regraJson, cenario: v.cenario, analise: v.analise, avancado: v.avancado };
+    esq = snap.esq;
+    Object.assign(v, { variaveis: snap.variaveis, restricoes: snap.restricoes, regraJson: snap.regraJson, cenario: snap.cenario, analise: snap.analise, avancado: snap.avancado });
+    try { return montaProblema(); } finally { esq = esqAntigo; Object.assign(v, vAntigo); }
+  }
+
+  function secaoArvore(C) {
+    C.append(nota("Em vez de otimizar as dimensões de UMA aeronave, a busca escolhe ENTRE as topologias salvas aqui — \"a partir de restrições e pontuação, o otimizador decide a aeronave\". Monte o problema normalmente nas outras seções (com a aeronave certa carregada na etapa 1), depois salve como uma topologia; troque a aeronave e repita para a próxima. Com 2 ou mais salvas, o botão Iniciar roda a árvore."));
+    const t = document.createElement("table"); t.className = "edita";
+    t.innerHTML = "<tr><th>topologia</th><th>aeronave</th><th>variáveis</th><th></th></tr>";
+    (v.arvore || []).forEach((snap, i) => {
+      const tr = document.createElement("tr");
+      tr.append(el("td", snap.nome), el("td", snap.esq.nome || "—"), el("td", String(snap.variaveis.length)));
+      const rm = document.createElement("td"); const b = el("button", "✕"); b.title = "Remover topologia";
+      b.onclick = () => { v.arvore.splice(i, 1); if (v.arvoreSemente === snap.nome) v.arvoreSemente = ""; guarda(); pintaSecao(); painelExecucao(); };
+      rm.append(b); tr.append(rm); t.append(tr);
+    });
+    C.append(t);
+    const add = el("button", "+ salvar a configuração atual como topologia"); add.style.margin = "6px";
+    add.onclick = () => {
+      const nome = (prompt("Nome curto para esta topologia (ex: biplano, asa_voadora):") || "").trim();
+      if (!nome) return;
+      if (v.arvore.some(s => s.nome === nome)) { msg("Já existe uma topologia com esse nome.", true); return; }
+      if (!esq || !esq.elementos.length) { msg("Carregue ou desenhe uma aeronave na etapa 1.", true); return; }
+      if (!v.variaveis.length) { msg("Adicione ao menos uma variável em “Variáveis” antes de salvar.", true); return; }
+      try { montaProblema(); } catch (e) { msg("Problema inválido: " + e.message, true); return; }
+      v.arvore.push(snapshotAtual(nome)); guarda(); pintaSecao(); painelExecucao();
+      msg(`Topologia “${nome}” salva. Troque a aeronave na etapa 1 e ajuste o problema para a próxima.`);
+    };
+    C.append(add);
+    if (v.arvore.length) {
+      const G = document.createElement("div"); G.className = "prop"; G.style.margin = "6px";
+      const sel = document.createElement("select"); sel.add(new Option("(nenhuma — sorteia tudo do zero)", ""));
+      v.arvore.forEach(snap => sel.add(new Option(snap.nome, snap.nome)));
+      sel.value = v.arvoreSemente || ""; sel.onchange = () => { v.arvoreSemente = sel.value; guarda(); };
+      G.append(el("label", "Semear a busca com"), sel); C.append(G);
+      C.append(nota("Semear usa a aeronave salva na topologia escolhida como primeiro indivíduo dela, em vez de sortear — as outras topologias continuam exploradas do zero."));
+    }
   }
 
   function montaProblema() {
@@ -179,8 +260,9 @@ const Otimiza = (() => {
     G.append(l, sel);
     P.append(G);
     P.append(nota("Roda em vários núcleos (um a menos que a máquina tem) nesta mesma tela."));
+    if ((v.arvore || []).length >= 2) P.append(nota(`Árvore ativa: escolhe entre ${v.arvore.length} topologias (${v.arvore.map(s => s.nome).join(", ")}).`));
     const btns = document.createElement("div"); btns.style.cssText = "padding:4px 8px;display:flex;gap:6px";
-    const bIni = el("button", "Iniciar"); bIni.id = "b_otim_ini"; bIni.onclick = iniciar;
+    const bIni = el("button", (v.arvore || []).length >= 2 ? "Iniciar árvore" : "Iniciar"); bIni.id = "b_otim_ini"; bIni.onclick = iniciar;
     const bPar = el("button", "Parar"); bPar.id = "b_otim_par"; bPar.onclick = parar;
     btns.append(bIni, bPar); P.append(btns);
     atualizaBotoes();
@@ -194,6 +276,7 @@ const Otimiza = (() => {
   }
 
   function iniciar() {
+    if ((v.arvore || []).length >= 2) return iniciarArvore();
     if (!esq || !esq.elementos.length) { msg("Carregue ou desenhe uma aeronave na etapa 1.", true); return; }
     if (!v.variaveis.length) { msg("Adicione ao menos uma variável em “Variáveis”.", true); return; }
     let problema;
@@ -201,6 +284,24 @@ const Otimiza = (() => {
     chama("/api/otimiza/inicia", { problema, execucao: v.execucao }).then(r => {
       jobId = r.id; ultimoEstado = null; v.ultimoProblema = problema; guarda();
       msg("Otimização iniciada."); atualizaBotoes(); renderVeredito(); renderGraficos();
+      clearInterval(poll); poll = setInterval(consulta, 1000); consulta();
+    }).catch(e => msg(e.message, true));
+  }
+
+  function iniciarArvore() {
+    let topologias;
+    try {
+      topologias = {};
+      for (const snap of v.arvore) topologias[snap.nome] = montaProblemaDeSnapshot(snap);
+    } catch (e) { msg(e.message, true); return; }
+    const corpo = { topologias, execucao: v.execucao };
+    if (v.arvoreSemente) {
+      const semente = v.arvore.find(s => s.nome === v.arvoreSemente);
+      if (semente) corpo.semear = { topologia: semente.nome, esq: semente.esq };
+    }
+    chama("/api/otimiza/inicia_arvore", corpo).then(r => {
+      jobId = r.id; ultimoEstado = null; v.ultimoProblema = topologias; guarda();
+      msg("Árvore de topologias iniciada."); atualizaBotoes(); renderVeredito(); renderGraficos();
       clearInterval(poll); poll = setInterval(consulta, 1000); consulta();
     }).catch(e => msg(e.message, true));
   }
@@ -230,10 +331,12 @@ const Otimiza = (() => {
     const V = $("veredito4"); V.hidden = false;
     if (!ultimoEstado) { V.className = "veredito neutro"; V.textContent = "Ajuste o problema à esquerda e clique em Iniciar."; return; }
     const h = ultimoEstado.historico, ult = h.length ? h[h.length - 1] : null;
-    V.className = "veredito " + (ultimoEstado.estado === "concluido" ? "ok" : ultimoEstado.estado === "erro" ? "ruim" : "neutro");
+    const ocupado = ultimoEstado.estado === "rodando" && !ult;
+    V.className = "veredito " + (ultimoEstado.estado === "concluido" ? "ok" : ultimoEstado.estado === "erro" ? "ruim" : "neutro") + (ocupado ? " ocupado" : "");
     V.innerHTML = `<b>${LEGENDA[ultimoEstado.estado] || ultimoEstado.estado}</b>`
       + (ult ? ` · geração ${ult.geracao}/${ultimoEstado.geracoes_total} · melhor <b>${fmt(ult.melhor_objetivo, 2)}</b> (${ult.melhor_viavel ? "viável" : "inviável"})`
-            + ` · ${ult.n_viaveis} viáveis · diversidade ${fmt(ult.diversidade, 2)} · ${fmt(ultimoEstado.tempo_s, 0)} s` : "")
+            + ` · ${ult.n_viaveis} viáveis · diversidade ${fmt(ult.diversidade, 2)} · ${fmt(ultimoEstado.tempo_s, 0)} s`
+            : (ocupado ? ` · avaliando a primeira geração (${fmt(ultimoEstado.tempo_s, 0)} s)…` : ""))
       + (ultimoEstado.erro ? ` · ${ultimoEstado.erro}` : "");
   }
 
