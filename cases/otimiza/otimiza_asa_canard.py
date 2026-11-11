@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,7 +22,6 @@ def problema(esquema: str = "asa_canard.json") -> dict:
     sis_massas = [m for m in sis["massas"] if m["nome"] not in ("servo_do_leme",)]
     extras = [{"nome": "motopropulsor", "formula": "0.427 + 0.115 + 0.100 + 0.086", "posicao": [0.50, 0.0, 0.0]},
               {"nome": "servos_leme_e_elevon", "formula": "0.0294 * 2", "posicao": [0.35, 0.0, 0.0]},
-              {"nome": "bateria_de_potencia", "formula": "0.9", "posicao": [0.05, 0.0, 0.0]},
               {"nome": "fuselagem_e_trem", "formula": "0.150 + 0.100 + 0.122 + 0.026 + 0.080 + 0.25", "posicao": [0.15, 0.0, 0.0]}]
     cadeia = [(0, "b / 2", "0"), (1, f"{YE + 0.02}", "0"), (2, f"{YE}", "1"), (3, "0", "1")]
     lig = [{"escala_y": {"elementos": ["asa"], "fator": "b / 2.4"}}]
@@ -44,10 +44,10 @@ def problema(esquema: str = "asa_canard.json") -> dict:
                           {"nome": "wo", "minimo": -6.0, "maximo": 0.0, "padrao": -3.0}, {"nome": "ai", "minimo": 0.0, "maximo": 5.0, "padrao": 2.0},
                           {"nome": "cc", "minimo": 0.10, "maximo": 0.22, "padrao": 0.14}, {"nome": "bc", "minimo": 0.2, "maximo": 0.6, "padrao": 0.40},
                           {"nome": "ac", "minimo": 0.0, "maximo": 8.0, "padrao": 2.0}, {"nome": "xc", "minimo": 0.15, "maximo": 0.55, "padrao": 0.30}],
-            "grandezas": sis["grandezas"], "massas": sis_massas + extras, "ligacoes": lig,
+            "fator_massas": float(os.environ.get("FATOR_MASSAS", "1.0")), "grandezas": sis["grandezas"], "massas": sis_massas + extras, "ligacoes": lig,
             "dimensionamento": [{"nome": "parede", "elementos": ["asa"], "ajuste": {"nome": "t", "minimo": 0.0002, "maximo": 0.0030}, "margem_alvo": 0.1,
                                  "ligacoes": [{"alvos": [f"asa.estrutura.tubos[{i}].di" for i in range(4)], "formula": "0.012 - 2*t"}]}],
-            "regra": json.loads((RAIZ / "cases" / "regras" / "sae2025_regular.json").read_text(encoding="utf8")), "cenario": {"NR": 185.0},
+            "regra": json.loads((RAIZ / "cases" / "regras" / "sae2026_regular.json").read_text(encoding="utf8")), "cenario": {"NR": 185.0},
             "restricoes": [{"nome": "margem_estatica", "formula": "margem_estatica", "limite": 0.05, "tipo": "min"},
                            {"nome": "margem_estrutural", "formula": "margem_estrutural", "limite": 0.0, "tipo": "min"},
                            {"nome": "defl_canard", "formula": "defl_trim_decolagem", "limite": 20.0, "tipo": "max"},

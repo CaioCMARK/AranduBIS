@@ -6,7 +6,7 @@ from .problema import ProblemaInvalido, _f, poe
 
 PADRAO_CARGAS = {"Vc": 13.0, "Vd": 15.9, "n_max": 1.8, "n_min": 0.0, "U_c": 4.0, "U_d": 2.0, "fator_seguranca": 1.2}
 
-def insere_massas(esq: dict, lista: list, ctx: dict) -> list[dict]:
+def insere_massas(esq: dict, lista: list, ctx: dict, fator: float = 1.0) -> list[dict]:
     entrou = []
     for m in lista or []:
         onde = f"peca {m['nome']}"
@@ -20,6 +20,7 @@ def insere_massas(esq: dict, lista: list, ctx: dict) -> list[dict]:
         else:
             kg = _f(m["formula"], ctx, onde)
             custo = _f(m["custo"], ctx, onde + " (custo)") if isinstance(m.get("custo"), str) else float(m.get("custo", 0.0))
+        kg *= float(fator)
         if kg <= 0:
             continue
         pos = [_f(p, ctx, f"posicao de {m['nome']}") if isinstance(p, str) else float(p) for p in m.get("posicao", [0.0, 0.0, 0.0])]
