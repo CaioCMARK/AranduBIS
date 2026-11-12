@@ -315,6 +315,38 @@ def torcao(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def torcao_fe(p: dict) -> dict:
+    from ..nucleo.estrutura.asa_fe import verifica
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    c = cargas(p)
+    if "erro" in c:
+        return c
+    esq = p.get("esquema") or {}
+    try:
+        saidas, avisos = [], []
+        for e in esq.get("elementos", []):
+            if e.get("tipo") != "asa" or not e.get("estrutura"):
+                continue
+            achados = [(k, next((s for s in caso["superficies"] if s["nome"] == e["nome"]), None)) for k, caso in enumerate(c["casos"])]
+            achados = [(k, s) for k, s in achados if s is not None]
+            if not achados:
+                continue
+            k, sup = max(achados, key=lambda t: abs(t[1]["fletor_raiz"]))
+            lado = sup["lados"].get("dir") or sup["lados"].get("esq")
+            r = verifica(esq, e["nome"], lado, mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True),
+                         Vd=_num(p, "Vd", 15.9, positivo=True), x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True),
+                         cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True), calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True),
+                         ea_desloc_c=_num(p, "ea_desloc_c", 0.0))
+            r["caso"] = c["casos"][k]["nome"]
+            saidas.append(r)
+            avisos += r["avisos"]
+        if not saidas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        return {"asas": saidas, "vn": c["vn"], "massa_kg": c["massa_kg"], "avisos": sorted(set(avisos + c["avisos"]))}
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
 def cauda(p: dict) -> dict:
     from ..nucleo.estrutura.cauda import analisa
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida

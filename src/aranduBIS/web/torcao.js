@@ -11,7 +11,7 @@ const Torcao3 = (() => {
   ];
   const CHAVE = "aranduBIS.torcao";
   const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
-  let v = {}, res = null, tempo = null, seq = 0, sel = null;
+  let v = {}, res = null, fe = null, tempo = null, seq = 0, seqFe = 0, sel = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
   Padroes.aplica(v, CAMPOS);
@@ -60,6 +60,19 @@ const Torcao3 = (() => {
       if (r.erro) { res = null; msg(r.erro, true); } else { res = r; msg("Pronto"); }
     } catch (e) { if (meu !== seq) return; res = null; msg(e.message, true); }
     mostra();
+    calculaFE(corpo());
+  }
+
+  async function calculaFE(base) {
+    const meu = ++seqFe;
+    fe = null;
+    if (!res) return;
+    try {
+      const r = await chama("/api/torcao_fe", Object.assign({}, Cargas3.corpo(), base, { esquema: esq }));
+      if (meu !== seqFe) return;
+      fe = r.erro ? { erro: r.erro } : r;
+    } catch (e) { if (meu !== seqFe) return; fe = { erro: e.message }; }
+    if (ativa()) { graficos(); baixo(); }
   }
 
   const asaSel = () => res.asas.find(a => a.nome === sel) || res.asas[0];
@@ -75,7 +88,8 @@ const Torcao3 = (() => {
   function graficos() {
     const C = $("graficos3"); C.innerHTML = "";
     if (!res) return;
-    const a = asaSel(), g = [0, 1, 2, 3].map(() => el("div", "", "graf")); C.append(...g);
+    const a = asaSel(), f = fe && !fe.erro ? fe.asas.find(x => x.nome === a.nome) : null;
+    const g = (f ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3]).map(() => el("div", "", "graf")); C.append(...g);
     const desenha = () => {
       Grafico.desenha(g[0], { titulo: `Rigidez de torção GJ, ${a.nome}`, xlab: "y (m)", ylab: "N·m²",
         series: [{ nome: "GJ", x: a.y, y: a.GJ, cor: COR[0] }] });
@@ -86,11 +100,17 @@ const Torcao3 = (() => {
         const refs = [{ tipo: "v", valor: a.V_requerida, rotulo: `${fmt(a.fator, 2)} Vd`, cor: "#c85a5a" }, { tipo: "h", valor: 0, rotulo: "", cor: "#999" }];
         Grafico.desenha(g[2], { titulo: "Efetividade do aileron L / L rígido", xlab: "V (m/s)", ylab: "razão", yMin: -1, yMax: 1.1,
           series: [{ nome: "L / L rígido", x: cv.V, y: cv.razao.map(r => Math.max(-1, r)), cor: COR[0] }], refs });
-        const f = Array.from({ length: 40 }, (_, i) => 0.25 + i * 0.1), base = a.VR === null ? null : a.VR / Math.sqrt(a.calib_GJ);
+        const fg = Array.from({ length: 40 }, (_, i) => 0.25 + i * 0.1), base = a.VR === null ? null : a.VR / Math.sqrt(a.calib_GJ);
         if (base) Grafico.desenha(g[3], { titulo: "Reversão em função do GJ", xlab: "GJ (× modelo)", ylab: "VR (m/s)",
-          series: [{ nome: "VR", x: f, y: f.map(k => base * Math.sqrt(k)), cor: COR[3] }],
+          series: [{ nome: "VR", x: fg, y: fg.map(k => base * Math.sqrt(k)), cor: COR[3] }],
           refs: [{ tipo: "h", valor: a.V_requerida, rotulo: "exigido", cor: "#c85a5a" }, { tipo: "v", valor: a.calib_GJ, rotulo: "atual", cor: "#999" }] });
       } else { g[2].textContent = "Sem aileron declarado nesta asa."; }
+      if (f) {
+        Grafico.desenha(g[4], { titulo: `Flecha sob carga limite, ${f.nome} (${f.caso})`, xlab: "y (m)", ylab: "m",
+          series: [{ nome: "elementos finitos", x: f.y, y: f.w_fe, cor: COR[0] }, { nome: "integração analítica", x: f.y, y: f.w_analitica, cor: COR[1], tracejado: true }] });
+        Grafico.desenha(g[5], { titulo: "Torção sob carga limite (+ = bordo de ataque para cima)", xlab: "y (m)", ylab: "graus",
+          series: [{ nome: "elementos finitos", x: f.y, y: f.theta_fe_graus, cor: COR[0] }, { nome: "integração analítica", x: f.y, y: f.theta_analitica_graus, cor: COR[1], tracejado: true }] });
+      }
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && ativa()) desenha(); }); }
@@ -111,6 +131,18 @@ const Torcao3 = (() => {
     C.append(el("div", `${a.nome}: caixa-D fechada em ${nf} de ${a.fechada.length} estações (y de ${fmt(a.y[0], 2)} a ${fmt(a.y[a.y.length - 1], 2)} m); onde o chapeado acaba antes da longarina a seção é aberta e o GJ cai por duas ou três ordens de grandeza. `
       + `Linha elástica = centro de cisalhamento da caixa fechada (fluxo de cisalhamento com os tubos como áreas concentradas).`, "nota"));
     res.avisos.forEach(x => C.append(el("div", x, "nota")));
+    if (!fe) C.append(el("div", "Verificação por elementos finitos: calculando as cargas do diagrama V-n (a vista Cargas deixa isso em memória)…", "nota"));
+    else if (fe.erro) C.append(el("div", "Verificação por elementos finitos indisponível: " + fe.erro, "nota"));
+    else {
+      const tf = document.createElement("table");
+      tf.innerHTML = `<tr><th>asa</th><th>caso de carga</th><th>flecha na ponta (m)</th><th>analítica (m)</th><th>FE / analítica</th><th>flecha / semi-envergadura</th><th>torção na ponta (°)</th><th>analítica (°)</th><th>FE / analítica</th></tr>`
+        + fe.asas.map(b => `<tr><td>${b.nome}</td><td>${b.caso}</td><td>${fmt(b.flecha_ponta_fe_m, 4)}</td><td>${fmt(b.flecha_ponta_analitica_m, 4)}</td>`
+          + `<td>${b.razao_flecha === null ? "—" : fmt(b.razao_flecha, 3)}</td><td>${fmt(b.flecha_pct_fe, 1)} %</td><td>${fmt(b.torcao_ponta_fe_graus, 2)}</td>`
+          + `<td>${fmt(b.torcao_ponta_analitica_graus, 2)}</td><td>${b.razao_torcao === null ? "—" : fmt(b.razao_torcao, 3)}</td></tr>`).join("");
+      C.append(el("div", "Verificação por elementos finitos", "grupo-par"), tf);
+      C.append(el("div", `Semi-asa como viga (${fe.asas[0].n_nos} nós) com a rigidez EI e GJ desta página, sob a carga líquida (sustentação menos o peso da asa) do caso de maior fletor do diagrama V-n. É um segundo solver para as mesmas contas: razão perto de 1 confirma a integração analítica.`, "nota"));
+      fe.avisos.forEach(x => C.append(el("div", x, "nota")));
+    }
     C.append(el("div", "Teoria de faixas, uma semi-asa em balanço, sem montantes entre as asas (conservador), sem enflechamento. Fora daqui: flutter (precisa de massa e inércia da asa), a deformação sob torção refeita no VLM e a torção da cauda (passo 3.4).", "nota"));
   }
 

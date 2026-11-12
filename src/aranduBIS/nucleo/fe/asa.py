@@ -18,8 +18,8 @@ def modelo_asa(y, c, EI, GJ, ea_c, ca_c, q_por_m, EA=None, momento_por_m=None) -
         m.no(1001 + i, ca_c * c[i], y[i], 0.0)
     ea = np.zeros(n) + 1e-3 if EA is None else np.asarray(EA, float) / E0
     for i in range(n - 1):
-        k = 0.5 * (EI[i] + EI[i + 1]) / E0
-        j = 0.5 * (GJ[i] + GJ[i + 1]) / E0
+        k = 2.0 / (1.0 / EI[i] + 1.0 / EI[i + 1]) / E0
+        j = 2.0 / (1.0 / GJ[i] + 1.0 / GJ[i + 1]) / E0
         m.prop(i + 1, 1, 0.5 * (ea[i] + ea[i + 1]), k, CORDAL * k, j)
         m.barra(i + 1, i + 1, i + 1, i + 2, (0.0, 0.0, 1.0))
     m.engasta([1])
