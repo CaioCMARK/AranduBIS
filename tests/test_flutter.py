@@ -66,7 +66,7 @@ def _aeronave():
     import json
     from pathlib import Path
     raiz = Path(__file__).resolve().parents[1]
-    d = json.loads((raiz / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((raiz / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(raiz / "cases/geometria/biplano")
     return d
 

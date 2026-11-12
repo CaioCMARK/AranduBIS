@@ -11,13 +11,13 @@ RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
 def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     return d
 
 @pytest.fixture(scope="module")
 def r(biplano):
-    return autoridade_rolagem(biplano, massa_kg=15.0, raios={})
+    return autoridade_rolagem(biplano, massa_kg=11.0, raios={})
 
 def test_acha_os_dois_ailerons(biplano):
     nomes = {c["nome"] for _, c in comandos_de_rolagem(biplano)}

@@ -13,7 +13,7 @@ from aranduBIS.nucleo.modelador import aeronave_geometria as AG
 RAIZ = Path(__file__).resolve().parents[1]
 
 def _carrega():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     return d
 

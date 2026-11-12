@@ -14,7 +14,7 @@ G = E / (2 * (1 + NU))
 
 @pytest.fixture(scope="module")
 def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     return d
 
@@ -50,7 +50,7 @@ def test_painel_curvo_aguenta_mais_que_o_plano_e_curvatura_forte_mais_ainda():
 def test_paineis_do_modelo(biplano, pedido):
     a = AN.asa(pedido)["asas"][0]
     r = FL.verifica(biplano, "asa_inferior", a)
-    assert len(r["paineis"]) >= 10 and r["nervuras"][0] == pytest.approx(0.062)
+    assert len(r["paineis"]) >= 10 and r["nervuras"][0] == pytest.approx(0.0558)
     p = r["pior_pele"]
     assert p["margem_pele"] == pytest.approx(p["sigma_cr_MPa"] / p["sigma_pele_MPa"] - 1, rel=1e-6)
     assert p["knockdown_para_margem_zero"] == pytest.approx(0.5 * p["sigma_pele_MPa"] / p["sigma_cr_MPa"], rel=1e-6)

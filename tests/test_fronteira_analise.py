@@ -13,10 +13,10 @@ PAR = {
 }
 
 def test_resumo_aero_do_exemplo_pega_so_as_asas_que_sustentam():
-    r = AN.resumo_aero(G.abre_exemplo("biplano/biplano_2026.json"))
+    r = AN.resumo_aero(G.abre_exemplo("biplano/biplano_b.json"))
     nomes = {s["nome"] for s in r["superficies"]}
     assert nomes == {"asa_inferior", "asa_superior"}
-    assert 1.0 < r["area_m2"] < 2.0 and r["envergadura_m"] == pytest.approx(2.4, abs=1e-6)
+    assert 1.0 < r["area_m2"] < 2.0 and r["envergadura_m"] == pytest.approx(2.16, abs=1e-6)
     assert r["alongamento"] == pytest.approx(r["envergadura_m"] ** 2 / r["area_m2"])
 
 def test_papel_explicito_vence_o_nome():

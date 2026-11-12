@@ -92,7 +92,6 @@ def monta(perfil="REFLEX-10.dat", perfil_ponta=None, meio=None, b=2.4, cr=0.66, 
 if __name__ == "__main__":
     print(perfil_refletido())
     esq = monta()
-    (AQUI / "asa_canard_alta_sustentacao.json").write_text(json.dumps(monta("S1223.dat", nome="asa_canard_alta_sustentacao"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard_s1223_mh84_meio.json").write_text(json.dumps(monta("S1223.dat", "MH84.dat", meio=0.6, nome="asa_canard_s1223_mh84_meio"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard_s1223_mh84.json").write_text(json.dumps(monta("S1223.dat", "MH84.dat", nome="asa_canard_s1223_mh84"), indent=1, ensure_ascii=False), encoding="utf8")
     (AQUI / "asa_canard.json").write_text(json.dumps(esq, indent=1, ensure_ascii=False), encoding="utf8")

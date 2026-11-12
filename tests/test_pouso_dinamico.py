@@ -14,7 +14,7 @@ G0 = PD.G0
 
 @pytest.fixture(scope="module")
 def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     return d
 
