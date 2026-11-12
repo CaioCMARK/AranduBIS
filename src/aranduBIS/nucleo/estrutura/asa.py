@@ -91,7 +91,7 @@ def _margem(adm: float, atua: float) -> float:
     return INF if atua <= 1e-9 else min(INF, adm / atua - 1.0)
 
 def verifica(esq: dict, nome: str, casos: list, mats: dict | None = None, fator_seguranca: float = 1.2,
-             qualidade_balsa: float = 1.0, qualidade_carbono: float = 1.0) -> dict:
+             qualidade_balsa: float = 1.0, qualidade_carbono: float = 1.0, calib_EI: float = 1.0) -> dict:
     el = _elemento(esq, nome)
     cfg = el.get("estrutura") or {}
     if not cfg:
@@ -109,7 +109,7 @@ def verifica(esq: dict, nome: str, casos: list, mats: dict | None = None, fator_
     itens = ("tubo_comp", "tubo_tr", "pele_comp", "pele_tr", "alma_cis")
     adm = {"tubo_comp": m["tubo_carbono"]["XC"], "tubo_tr": m["tubo_carbono"]["X"], "pele_comp": m["balsa"]["XC"],
            "pele_tr": m["balsa"]["X"], "alma_cis": m["balsa"]["S"]}
-    EI = np.array([e["EI"] for e in estacoes])
+    EI = calib_EI * np.array([e["EI"] for e in estacoes])
     saida_casos, pior = [], None
     for c, lado in zip(casos, lados):
         L = lado.get("dir") or lado.get("esq")

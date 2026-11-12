@@ -242,7 +242,7 @@ def asa(p: dict) -> dict:
                 continue
             saidas.append(verifica(esq, e["nome"], c["casos"], mats=p.get("materiais"), fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True),
                                    qualidade_balsa=_num(p, "qualidade_balsa", 1.0, positivo=True),
-                                   qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True)))
+                                   qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True), calib_EI=_num(p, "calib_EI", 1.0, positivo=True)))
         if not saidas:
             return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
         pior = min(saidas, key=lambda s: s["critico"]["margem"])
@@ -305,7 +305,7 @@ def torcao(p: dict) -> dict:
                                   Vd=_num(p, "Vd", 15.9, positivo=True), fator=_num(p, "margem_aeroelastica", 1.2, positivo=True),
                                   x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True), cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True),
                                   eficiencia=_num(p, "eficiencia_comando", 0.85, positivo=True), calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True),
-                                  ea_desloc_c=_num(p, "ea_desloc_c", 0.0)))
+                                  ea_desloc_c=_num(p, "ea_desloc_c", 0.0), calib_EI=_num(p, "calib_EI", 1.0, positivo=True)))
         if not saidas:
             return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
         com_vr = [s for s in saidas if s["VR"] is not None]
@@ -337,7 +337,7 @@ def torcao_fe(p: dict) -> dict:
             r = verifica(esq, e["nome"], lado, mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True),
                          Vd=_num(p, "Vd", 15.9, positivo=True), x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True),
                          cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True), calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True),
-                         ea_desloc_c=_num(p, "ea_desloc_c", 0.0))
+                         ea_desloc_c=_num(p, "ea_desloc_c", 0.0), calib_EI=_num(p, "calib_EI", 1.0, positivo=True))
             r["caso"] = c["casos"][k]["nome"]
             saidas.append(r)
             avisos += r["avisos"]
@@ -365,6 +365,7 @@ def flutter(p: dict) -> dict:
                                           massa_asa_kg=_num(p, "massa_asa_kg", None, positivo=True) if p.get("massa_asa_kg") else None,
                                           x_cg_c=_num(p, "x_cg_c", None, positivo=True) if p.get("x_cg_c") else None,
                                           r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), zeta_s=_num(p, "zeta_s", 0.0),
+                                          calib_EI=_num(p, "calib_EI", 1.0, positivo=True),
                                           V_max_rel=_num(p, "V_max_rel", 3.0, positivo=True), n_modos=int(_num(p, "n_modos", 8, positivo=True)), itens=itens))
         if not saidas:
             return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
@@ -373,6 +374,55 @@ def flutter(p: dict) -> dict:
         return {"asas": saidas, "pior": pior["nome"], "VF": pior["VF"], "V_requerida": pior["V_requerida"], "margem_VF": pior["margem_VF"],
                 "avisos": sorted({a for s in saidas for a in s["avisos"]})}
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
+def aeroelastica(p: dict) -> dict:
+    from ..nucleo.estrutura.aeroelastica_estatica import estatica
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        A = AG.constroi(esq)
+        mc = AG.massa_e_cg(A)
+        massa = _num(p, "massa_kg", positivo=True) if p.get("massa_kg") is not None else mc["massa_kg"]
+        if not massa or massa <= 0:
+            return {"erro": "Sem massa: declare as pecas no modelo ou informe a massa."}
+        cg = mc["cg_m"]
+        x_cg = float(p["x_cg"]) if p.get("x_cg") is not None else (float(cg[0]) if cg else None)
+        if x_cg is None:
+            return {"erro": "Sem CG: declare as pecas no modelo ou informe x_cg."}
+        r = estatica(esq, V=_num(p, "V", 13.0, positivo=True), n=_num(p, "n", 1.0, positivo=True), massa_kg=massa, x_cg=x_cg,
+                     z_cg=float(cg[2]) if cg else 0.0, rho=_num(p, "rho", 1.1, positivo=True), mats=p.get("materiais"),
+                     calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True), calib_EI=_num(p, "calib_EI", 1.0, positivo=True),
+                     ea_desloc_c=_num(p, "ea_desloc_c", 0.0), x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True),
+                     cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True))
+        r["origem_massa"] = "informada" if p.get("massa_kg") is not None else "massas do modelo"
+        return r
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
+def calibracao(p: dict) -> dict:
+    from ..nucleo.estrutura.calibracao import calibra
+    from ..nucleo.estrutura.flutter import itens_de_massa
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        asas = [e["nome"] for e in esq.get("elementos", []) if e.get("tipo") == "asa" and e.get("estrutura")]
+        if not asas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        nome = p.get("asa") or asas[0]
+        if nome not in asas:
+            return {"erro": f"A asa {nome!r} nao tem estrutura declarada."}
+        r = calibra(esq, nome, p.get("observacoes") or {}, ajusta=tuple(p.get("ajusta") or ("EI", "GJ")), mats=p.get("materiais"),
+                    rho=_num(p, "rho", 1.1, positivo=True), Vd=_num(p, "Vd", 15.9, positivo=True), x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True),
+                    cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True), ea_desloc_c=_num(p, "ea_desloc_c", 0.0),
+                    massa_asa_kg=_num(p, "massa_asa_kg", None, positivo=True) if p.get("massa_asa_kg") else None,
+                    x_cg_c=_num(p, "x_cg_c", None, positivo=True) if p.get("x_cg_c") else None,
+                    r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), itens=itens_de_massa(esq))
+        r["asas"] = asas
+        return r
+    except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, TypeError) as e:
         return {"erro": _erro(e)}
 
 def cauda(p: dict) -> dict:

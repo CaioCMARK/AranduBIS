@@ -175,16 +175,16 @@ def massa_do_modelo(esq: dict, nome: str, y, c, xle, pos_x: float, itens: list |
     x_cg_c = float(sum(w * f for w, f in fr) / M)
     return {"massa_kg": M, "x_cg_c": x_cg_c}
 
-def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2, x_ca_c: float = 0.25,
-                    cl_alpha_2d: float = 2 * np.pi, calib_GJ: float = 1.0, ea_desloc_c: float = 0.0, massa_asa_kg: float | None = None,
-                    x_cg_c: float | None = None, r_giro_c: float = 0.28, zeta_s: float = 0.0, V_max_rel: float = 3.0, n_V: int = 45, n_modos: int = 8, itens=None) -> dict:
-    an = analisa(esq, nome, mats=mats, rho=rho, Vd=Vd, fator=fator, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, calib_GJ=calib_GJ, ea_desloc_c=ea_desloc_c)
+def dados_de_vibracao(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2, x_ca_c: float = 0.25,
+                      cl_alpha_2d: float = 2 * np.pi, calib_GJ: float = 1.0, calib_EI: float = 1.0, ea_desloc_c: float = 0.0,
+                      massa_asa_kg: float | None = None, x_cg_c: float | None = None, r_giro_c: float = 0.28, itens=None) -> dict:
+    an = analisa(esq, nome, mats=mats, rho=rho, Vd=Vd, fator=fator, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, calib_GJ=calib_GJ,
+                 ea_desloc_c=ea_desloc_c, calib_EI=calib_EI)
     el = _elemento(esq, nome)
     y, c = np.array(an["y"]), np.array(an["c"])
     sec = AG._secoes(el)
     xle = np.array([AG._secao_em(sec, float(v))[0] for v in y])
     pos_x = float((el.get("posicao") or [0.0, 0.0, 0.0])[0])
-    avisos = []
     try:
         mm = massa_do_modelo(esq, nome, y, c, xle, pos_x, itens)
     except ValueError:
@@ -192,12 +192,22 @@ def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float =
     M = massa_asa_kg if massa_asa_kg is not None else (mm["massa_kg"] / 2.0 if mm else None)
     if M is None:
         raise ValueError(f"sem massa da asa {nome!r}: informe a massa da semi-asa")
-    origem_m = "informada" if massa_asa_kg is not None else "itens de massa do modelo (semi-asa)"
     xcg = x_cg_c if x_cg_c is not None else (mm["x_cg_c"] if mm else 0.35)
-    origem_x = "informado" if x_cg_c is not None else ("itens de massa do modelo" if mm else "hipotese 0,35")
-    m_lin = M * c / np.trapezoid(c, y)
     ea = np.array(an["ea_c"])
-    r = flutter(y, c, np.array(an["EI"]), np.array(an["GJ"]), ea, m_lin, xcg - ea, r_giro_c, rho=rho, Vmax=V_max_rel * Vd, n_V=n_V, n_modos=n_modos,
+    return {"an": an, "y": y, "c": c, "EI": np.array(an["EI"]), "GJ": np.array(an["GJ"]), "ea_c": ea, "m_lin": M * c / np.trapezoid(c, y),
+            "x_alfa_c": xcg - ea, "M": float(M), "xcg": float(xcg), "r_giro_c": r_giro_c,
+            "origem_massa": "informada" if massa_asa_kg is not None else "itens de massa do modelo (semi-asa)",
+            "origem_x_cg": "informado" if x_cg_c is not None else ("itens de massa do modelo" if mm else "hipotese 0,35")}
+
+def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2, x_ca_c: float = 0.25,
+                    cl_alpha_2d: float = 2 * np.pi, calib_GJ: float = 1.0, ea_desloc_c: float = 0.0, massa_asa_kg: float | None = None,
+                    x_cg_c: float | None = None, r_giro_c: float = 0.28, zeta_s: float = 0.0, V_max_rel: float = 3.0, n_V: int = 45, n_modos: int = 8,
+                    itens=None, calib_EI: float = 1.0) -> dict:
+    d = dados_de_vibracao(esq, nome, mats=mats, rho=rho, Vd=Vd, fator=fator, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, calib_GJ=calib_GJ, calib_EI=calib_EI,
+                          ea_desloc_c=ea_desloc_c, massa_asa_kg=massa_asa_kg, x_cg_c=x_cg_c, r_giro_c=r_giro_c, itens=itens)
+    an, M, xcg = d["an"], d["M"], d["xcg"]
+    avisos = []
+    r = flutter(d["y"], d["c"], d["EI"], d["GJ"], d["ea_c"], d["m_lin"], d["x_alfa_c"], r_giro_c, rho=rho, Vmax=V_max_rel * Vd, n_V=n_V, n_modos=n_modos,
                 zeta_s=zeta_s, cl_alpha_2d=cl_alpha_2d)
     V_req = fator * Vd
     if r["VF"] is None and r["VD"] is None:
@@ -210,8 +220,8 @@ def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float =
                   "se nao estiverem no modelo. A posicao do centro de massa e o raio de giracao decidem o flutter: calibre com o ensaio de vibracao (GVT).")
     if any(not f for f in an["fechada"]):
         avisos.append("Parte da asa tem caixa aberta (GJ muito baixo): as frequencias de torcao e o flutter ficam dominados por essa regiao mole.")
-    sai = {"nome": nome, "V_requerida": V_req, "fator": fator, "massa_semi_asa_kg": float(M), "origem_massa": origem_m, "x_cg_c": float(xcg),
-           "origem_x_cg": origem_x, "r_giro_c": r_giro_c, "zeta_s": zeta_s, "rho": rho, "avisos": avisos, **r}
+    sai = {"nome": nome, "V_requerida": V_req, "fator": fator, "massa_semi_asa_kg": float(M), "origem_massa": d["origem_massa"], "x_cg_c": float(xcg),
+           "origem_x_cg": d["origem_x_cg"], "r_giro_c": r_giro_c, "zeta_s": zeta_s, "rho": rho, "avisos": avisos, **r}
     sai["margem_VF"] = None if r["VF"] is None else r["VF"] / V_req - 1.0
     sai["margem_VD"] = None if r["VD"] is None else r["VD"] / V_req - 1.0
     return sai

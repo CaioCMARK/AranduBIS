@@ -1,7 +1,7 @@
 "use strict";
 
 const Etapa3 = (() => {
-  const ITENS = [["cargas", "Cargas (V-n e envergadura)"], ["asa", "Asa: longarina e chapeado"], ["torcao", "Torção e reversão de comando"], ["flutter", "Flutter e vibração (GVT)"], ["flambagem", "Nervuras e flambagem do chapeado"], ["cauda", "Cauda e treliça (elementos finitos)"], ["trem", "Trem de pouso (pouso e taxi)"], ["massa", "Massa, CG e inércias"]];
+  const ITENS = [["cargas", "Cargas (V-n e envergadura)"], ["asa", "Asa: longarina e chapeado"], ["torcao", "Torção e reversão de comando"], ["flutter", "Flutter e vibração (GVT)"], ["aeroelastica", "Aeroelasticidade estática (VLM + torção)"], ["calibracao", "Calibração com ensaio (GVT e estáticos)"], ["flambagem", "Nervuras e flambagem do chapeado"], ["cauda", "Cauda e treliça (elementos finitos)"], ["trem", "Trem de pouso (pouso e taxi)"], ["massa", "Massa, CG e inércias"]];
   const MODULOS = {};
   let ativo = "cargas";
 

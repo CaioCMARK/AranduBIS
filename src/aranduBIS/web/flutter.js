@@ -44,7 +44,7 @@ const Flutter3 = (() => {
   function corpo() {
     const c = Cargas3.corpo(), t = Torcao3.dados().v;
     return { esquema: esq, rho: c.rho, Vd: c.Vd, materiais: Asa3.materiais(), margem_aeroelastica: t.margem_aeroelastica, x_ca_c: t.x_ca_c, cl_alpha_2d: t.cl_alpha_2d,
-             calib_GJ: t.calib_GJ, ea_desloc_c: t.ea_desloc_c, massa_asa_kg: v.massa_asa_kg, x_cg_c: v.x_cg_c, r_giro_c: v.r_giro_c, zeta_s: v.zeta_s, V_max_rel: v.V_max_rel };
+             calib_GJ: t.calib_GJ, calib_EI: t.calib_EI, ea_desloc_c: t.ea_desloc_c, massa_asa_kg: v.massa_asa_kg, x_cg_c: v.x_cg_c, r_giro_c: v.r_giro_c, zeta_s: v.zeta_s, V_max_rel: v.V_max_rel };
   }
 
   async function calcula() {
@@ -110,5 +110,6 @@ const Flutter3 = (() => {
 
   function mostra() { if (!ativa()) return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
   Etapa3.registra("flutter", { pinta() { parametros(); agenda(); if (res) mostra(); } });
-  return { dados: () => ({ v, res }) };
+  function aplica(patch) { Object.assign(v, patch); guarda(); if (ativa()) { parametros(); agenda(); } }
+  return { dados: () => ({ v, res }), aplica };
 })();

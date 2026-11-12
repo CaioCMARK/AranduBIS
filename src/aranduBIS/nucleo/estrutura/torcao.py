@@ -172,7 +172,7 @@ def _ail_de(el, c_ref):
 
 def analisa(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2,
             x_ca_c: float = 0.25, cl_alpha_2d: float = 2 * np.pi, eficiencia: float = 0.85, calib_GJ: float = 1.0,
-            ea_desloc_c: float = 0.0, n: int = 41) -> dict:
+            ea_desloc_c: float = 0.0, n: int = 41, calib_EI: float = 1.0) -> dict:
     from .asa import _elemento
     el = _elemento(esq, nome)
     cfg = el.get("estrutura") or {}
@@ -206,7 +206,7 @@ def analisa(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd
     r = aeroelastica(ys, cs, GJ, ea, x_ca_c, ail, cl_alpha_2d, rho, Vd, fator, eficiencia)
     V_req = fator * Vd
     sai = {"nome": nome, "y": ys.tolist(), "c": cs.tolist(), "GJ": GJ.tolist(), "ea_c": ea.tolist(), "ca_c": x_ca_c,
-           "fechada": [e["fechada"] for e in est], "area": [e["area"] for e in est], "EI": [e["EI"] for e in est],
+           "fechada": [e["fechada"] for e in est], "area": [e["area"] for e in est], "EI": [calib_EI * e["EI"] for e in est], "calib_EI": calib_EI,
            "K_theta": float(1.0 / _integra(1.0 / GJ, ys)), "V_requerida": V_req, "fator": fator,
            "VD": r["VD"], "VR": r["VR"], "curva": {"V": r.get("V", []), "razao": r.get("razao", [])},
            "aileron": None if ail is None else {"y": [ail[0], ail[1]], "corda": ail[2], "xc": ail[3]},

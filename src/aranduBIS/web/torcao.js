@@ -2,7 +2,8 @@
 
 const Torcao3 = (() => {
   const CAMPOS = [
-    { g: "Calibração com ensaio", k: "calib_GJ", cfg: "estrutura.calib_GJ", r: "GJ (× modelo)", d: "1 = parede fina (Bredt-Batho). Troque pelo fator do ensaio de torção estática." },
+    { g: "Calibração com ensaio", k: "calib_EI", r: "EI (× modelo)", d: "1 = parede fina com os módulos de Configurações. Troque pelo fator do ensaio de flexão ou do GVT (vista Calibração com ensaio)." },
+    { k: "calib_GJ", cfg: "estrutura.calib_GJ", r: "GJ (× modelo)", d: "1 = parede fina (Bredt-Batho). Troque pelo fator do ensaio de torção estática." },
     { k: "ea_desloc_c", cfg: "estrutura.ea_desloc_c", r: "Linha elástica (Δ x/c, + para trás)", d: "Correção do GVT sobre a linha elástica calculada.", zero: true },
     { g: "Aerodinâmica das faixas", k: "x_ca_c", cfg: "estrutura.x_ca_c", r: "Centro aerodinâmico (x/c)", d: "Hipótese: 0,25." },
     { k: "cl_alpha_2d", cfg: "estrutura.cl_alpha_2d", r: "cl-α 2D (1/rad)", d: "Teoria de faixas: 2π é conservador." },
@@ -14,6 +15,7 @@ const Torcao3 = (() => {
   let v = {}, res = null, fe = null, tempo = null, seq = 0, seqFe = 0, sel = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
+  if (!(v.calib_EI > 0)) v.calib_EI = 1;
   Padroes.aplica(v, CAMPOS);
   Padroes.aoMudar(() => { Padroes.aplica(v, CAMPOS); if (ativa()) { parametros(); agenda(); } });
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "torcao";
@@ -47,7 +49,7 @@ const Torcao3 = (() => {
   function corpo() {
     const c = Cargas3.corpo();
     return { esquema: esq, rho: c.rho, Vd: c.Vd, materiais: Asa3.materiais(), margem_aeroelastica: v.margem_aeroelastica, x_ca_c: v.x_ca_c,
-             cl_alpha_2d: v.cl_alpha_2d, eficiencia_comando: v.eficiencia_comando, calib_GJ: v.calib_GJ, ea_desloc_c: v.ea_desloc_c };
+             cl_alpha_2d: v.cl_alpha_2d, eficiencia_comando: v.eficiencia_comando, calib_GJ: v.calib_GJ, calib_EI: v.calib_EI, ea_desloc_c: v.ea_desloc_c };
   }
 
   async function calcula() {
@@ -148,5 +150,6 @@ const Torcao3 = (() => {
 
   function mostra() { if (!ativa()) return; if (!document.activeElement || document.activeElement.tagName !== "INPUT") parametros(); veredito(); graficos(); baixo(); }
   Etapa3.registra("torcao", { pinta() { parametros(); agenda(); if (res) mostra(); } });
-  return { dados: () => ({ v, res }) };
+  function aplica(patch) { Object.keys(patch).forEach(k => { v[k] = patch[k]; Padroes.toca(v, k); }); guarda(); if (ativa()) { parametros(); agenda(); } }
+  return { dados: () => ({ v, res }), aplica };
 })();

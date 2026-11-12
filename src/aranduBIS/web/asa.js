@@ -54,7 +54,7 @@ const Asa3 = (() => {
   function agenda() { clearTimeout(tempo); tempo = setTimeout(calcula, 500); }
 
   function corpo() {
-    return Object.assign(Cargas3.corpo(), { materiais: materiais(), qualidade_balsa: v.qualidade_balsa, qualidade_carbono: v.qualidade_carbono });
+    return Object.assign(Cargas3.corpo(), { materiais: materiais(), qualidade_balsa: v.qualidade_balsa, qualidade_carbono: v.qualidade_carbono, calib_EI: Torcao3.dados().v.calib_EI });
   }
 
   async function calcula() {
