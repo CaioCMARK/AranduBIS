@@ -148,6 +148,8 @@ def fazer_handler(est: Estado):
                     return self._json(AN.massa_estrutural(d))
                 if self.path == "/api/trem":
                     return self._json(AN.trem(d))
+                if self.path == "/api/pouso_dinamico":
+                    return self._json(AN.pouso_dinamico(d))
                 if self.path == "/api/flambagem":
                     return self._json(AN.flambagem(d))
                 if self.path == "/api/cauda":

@@ -44,7 +44,8 @@ def _com_solda(esq, r):
 
 def analisa(esq: dict, massa_kg: float | None = None, x_cg: float | None = None, z_cg: float | None = None, fator_pouso: float = 5.4,
             atrito_pouso: float = 0.3, fator_taxi_y: float = 0.5, fator_taxi_z: float = 1.0, fator_seguranca: float = 1.2,
-            K_flambagem: float = 0.8, raio_inercia: float = 0.25, raio_solda: float = 0.0, mats: dict | None = None, qualidade_carbono: float = 1.0) -> dict:
+            K_flambagem: float = 0.8, raio_inercia: float = 0.25, raio_solda: float = 0.0, mats: dict | None = None, qualidade_carbono: float = 1.0,
+            casos_extra: list | None = None) -> dict:
     mc = AG.massa_e_cg(AG.constroi(esq))
     cg = mc["cg_m"]
     massa = float(massa_kg) if massa_kg else float(mc["massa_kg"])
@@ -102,10 +103,14 @@ def analisa(esq: dict, massa_kg: float | None = None, x_cg: float | None = None,
     casos = [("pouso_3_pontos", f"{fator_pouso:g} x peso na vertical, tres pontos, spin-up {atrito_pouso:g}", fator_pouso, True, 0.0, atrito_pouso),
              ("pouso_2_pontos", f"{fator_pouso:g} x peso so nas principais, spin-up {atrito_pouso:g}", fator_pouso, False, 0.0, atrito_pouso),
              ("taxi_lateral", f"{fator_taxi_z:g} x peso vertical e {fator_taxi_y:g} x peso lateral nos tres pneus", fator_taxi_z, True, fator_taxi_y, 0.0)]
+    casos = [c + (None,) for c in casos] + [(e["nome"], e["descricao"], 0.0, True, 0.0, float(e.get("mu", 0.0)), (float(e["Rm"]), float(e["Rn"]))) for e in casos_extra or []]
     resultados = []
-    for k, (nome, desc, n_z, tres, n_y, mu) in enumerate(casos, 1):
+    for k, (nome, desc, n_z, tres, n_y, mu, dado) in enumerate(casos, 1):
         Rtot = n_z * W
-        if tres:
+        if dado is not None:
+            Rm, Rn = dado
+            Rtot = Rm + Rn
+        elif tres:
             Rm, Rn = Rtot * (xcg - x_n) / (x_m - x_n), Rtot * (x_m - xcg) / (x_m - x_n)
         else:
             Rm, Rn = Rtot, 0.0

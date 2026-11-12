@@ -275,6 +275,63 @@ def trem(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, StopIteration) as e:
         return {"erro": _erro(e)}
 
+_REF_AERO: dict = {}
+_FE_TREM: dict = {}
+
+def pouso_dinamico(p: dict) -> dict:
+    from ..nucleo.aero.equilibrio import monta
+    from ..nucleo.aero.estabilidade import derivadas
+    from ..nucleo.estrutura import pouso_dinamico as PD
+    from ..nucleo.estrutura import trem as TR
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        c = cargas({k: v for k, v in p.items() if k in ("esquema", "rho", "Vc", "Vd", "massa_kg", "x_cg", "CL_max", "ncrit", "n_max", "n_min", "U_c", "U_d", "fator_seguranca", "cl_min_rel")})
+        if "erro" in c:
+            return c
+        massa = float(c["massa_kg"])
+        mc = AG.massa_e_cg(AG.constroi(esq))
+        cg = mc["cg_m"]
+        x_cg = float(p["x_cg"]) if p.get("x_cg") is not None else (float(cg[0]) if cg else None)
+        if x_cg is None:
+            return {"erro": "Sem CG: declare as pecas no modelo ou informe x_cg."}
+        z_cg = float(cg[2]) if cg else 0.0
+        rho, Vc = _num(p, "rho", 1.1, positivo=True), _num(p, "Vc", 13.0, positivo=True)
+        chave = (json.dumps(esq, sort_keys=True, default=str), round(x_cg, 6), round(Vc, 3), round(rho, 4))
+        if chave not in _REF_AERO:
+            if len(_REF_AERO) > 6:
+                _REF_AERO.clear()
+            vlm = monta(esq, x_cg, z_cg)
+            d = derivadas(vlm, 3.0, V=Vc, rho=rho, laterais=False)
+            _REF_AERO[chave] = {"S": float(vlm.S_ref), "c": float(vlm.c_ref), "CLa": float(d.CL_alpha), "Cma": float(d.Cm_alpha)}
+        ref = _REF_AERO[chave]
+        fator_pouso, atrito = _num(p, "fator_pouso", 5.4, positivo=True), _num(p, "atrito_pouso", 0.3)
+        kw = dict(fator_seguranca=_num(p, "fator_seguranca", 1.2, positivo=True), K_flambagem=_num(p, "K_flambagem", 0.8, positivo=True),
+                  raio_inercia=_num(p, "raio_inercia", 0.25, positivo=True), raio_solda=_num(p, "raio_solda", 0.0), mats=p.get("materiais"),
+                  qualidade_carbono=_num(p, "qualidade_carbono", 1.0, positivo=True))
+        chave_fe = (chave[0], round(massa, 4), fator_pouso, atrito, json.dumps({k: v for k, v in kw.items() if k != "mats"}, sort_keys=True), json.dumps(kw["mats"], sort_keys=True, default=str))
+        if chave_fe not in _FE_TREM:
+            if len(_FE_TREM) > 4:
+                _FE_TREM.clear()
+            _FE_TREM[chave_fe] = TR.analisa(esq, massa_kg=massa, x_cg=x_cg, fator_pouso=fator_pouso, atrito_pouso=atrito, **kw)
+        opc = lambda k, pad=None, pos=False: _num(p, k, pad, positivo=pos) if p.get(k) is not None else pad
+        r = PD.analisa(esq, massa_kg=massa, x_cg=x_cg, Iyy=opc("Iyy", None, True), S=ref["S"], c_med=ref["c"], CL_alpha=ref["CLa"], Cm_alpha=ref["Cma"],
+                       CL_max=float(c["vn"]["CL_max"]), Vs=float(c["vn"]["Vs"]), rho=rho, V_toque_rel=_num(p, "V_toque_rel", 1.15, positivo=True),
+                       vel_descida=_num(p, "vel_descida", 1.0, positivo=True), atitude_2p_extra=_num(p, "atitude_2p_extra", 6.0),
+                       sustentacao_toque_rel=_num(p, "sustentacao_toque_rel", 1.0), Cm_q=_num(p, "Cm_q", -8.0), CD=_num(p, "CD", 0.12),
+                       mu_rolamento=_num(p, "mu_rolamento", 0.05), k_pneu_principal=_num(p, "k_pneu_principal", 30000.0, positivo=True),
+                       k_pneu_bequilha=_num(p, "k_pneu_bequilha", 30000.0, positivo=True), k_perna_principal=opc("k_perna_principal", None, True),
+                       k_perna_bequilha=opc("k_perna_bequilha", None, True), zeta=_num(p, "zeta", 0.15), curso_trem_mm=_num(p, "curso_trem_mm", 0.0),
+                       perfil_pista=str(p.get("perfil_pista") or "irregular"), altura_pista_mm=_num(p, "altura_pista_mm", 5.0), comprimento_pista_m=_num(p, "comprimento_pista_m", 0.3, positivo=True),
+                       V_taxi_rel=_num(p, "V_taxi_rel", 0.8, positivo=True), sustentacao_taxi_rel=_num(p, "sustentacao_taxi_rel", 0.0), fator_pouso_projeto=fator_pouso,
+                       aplica_fe=bool(p.get("aplica_fe")), atrito_pouso=atrito, fe_estatico=_FE_TREM[chave_fe], **kw)
+        r["ref_aero"] = ref
+        r["origem_massa"] = c["origem_massa"]
+        return r
+    except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, StopIteration) as e:
+        return {"erro": _erro(e)}
+
 def flambagem(p: dict) -> dict:
     from ..nucleo.estrutura.flambagem import verifica as fl
 
