@@ -93,9 +93,11 @@ body[data-etapa="2"] .g1-grupo{display:none}
 .veredito .total{margin-left:auto;font-size:14px}
 .graficos{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);min-height:0;overflow:hidden}
 .graficos.coluna{display:block;overflow:auto;background:var(--painel)}
-.graf{background:var(--painel);min-height:0;min-width:0;overflow:hidden}
+.graf{background:var(--painel);min-height:0;min-width:0;overflow:hidden;position:relative}
 .graf.grande{height:100%;min-height:180px}
 .graf svg{display:block}
+.graf-baixar{position:absolute;top:4px;right:4px;min-height:20px;padding:0 6px;font-size:12px;opacity:.35;z-index:1}
+.graf-baixar:hover{opacity:1}
 .el.breve{opacity:.45;cursor:default}
 .grupo-par{padding:5px 8px 0;font-weight:600;color:var(--suave);font-size:11.5px}
 .campo-origem{display:flex;gap:4px;align-items:center}

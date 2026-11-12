@@ -136,6 +136,10 @@ def fazer_handler(est: Estado):
                     return self._json(AN.limites(d))
                 if self.path == "/api/dinamica":
                     return self._json(AN.dinamica(d))
+                if self.path == "/api/dinamica/comandos":
+                    return self._json(AN.comandos(d))
+                if self.path == "/api/dinamica/resposta_comando":
+                    return self._json(AN.resposta_comando(d))
                 if self.path == "/api/envelope_cg":
                     return self._json(AN.envelope_cg(d))
                 if self.path == "/api/asa":

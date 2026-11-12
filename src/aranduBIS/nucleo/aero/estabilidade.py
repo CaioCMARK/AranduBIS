@@ -94,6 +94,49 @@ def derivadas(vlm: VLM, alpha: float, V: float = 1.0, rho: float = 1.0,
     d.Cn_r = (rp.Cn - rm.Cn) / (2 * h_taxa)
     return d
 
+def _faixas_de_controle(info: dict, controle: dict) -> tuple[np.ndarray, float]:
+    y = np.asarray(info["y"], float)
+    y0, y1 = (float(v) for v in controle["y"])
+    m = (np.abs(y) >= y0) & (np.abs(y) <= y1)
+    if "xc" in controle:
+        xc = float(controle["xc"])
+    elif "corda" in controle and m.any():
+        xc = 1.0 - float(controle["corda"]) / float(np.mean(np.asarray(info["c"], float)[m]))
+    else:
+        xc = 0.75
+    return m, min(max(xc, 0.3), 0.95)
+
+def delta_flap_de_controle(vlm: VLM, elemento: str, controle: dict, graus: float) -> tuple[dict | None, float]:
+    info = vlm._fatias.get(elemento)
+    if info is None:
+        return None, 0.75
+    m, xc = _faixas_de_controle(info, controle)
+    if not m.any():
+        return None, xc
+    y = np.asarray(info["y"], float)
+    s = np.where(y >= 0, 1.0, -1.0)
+    modo = controle.get("modo", "sim")
+    if modo == "anti":
+        d = np.where(m, s * graus, 0.0)
+    elif modo == "lado":
+        d = np.where(m & (y >= 0), graus, 0.0)
+    else:
+        d = np.where(m, graus, 0.0)
+    return {elemento: np.radians(d)}, xc
+
+def derivadas_de_controle(vlm: VLM, elemento: str, controle: dict, alpha: float,
+                          V: float = 1.0, rho: float = 1.0, h: float = 2.0) -> dict | None:
+    dp, xc = delta_flap_de_controle(vlm, elemento, controle, +h)
+    dm, _ = delta_flap_de_controle(vlm, elemento, controle, -h)
+    if dp is None or dm is None:
+        return None
+    rp = vlm.resolver(alpha, V=V, rho=rho, delta_flap=dp, x_charneira=xc)[0]
+    rm = vlm.resolver(alpha, V=V, rho=rho, delta_flap=dm, x_charneira=xc)[0]
+    d_rad = np.radians(2 * h)
+    return {"CL_delta": (rp.CL - rm.CL) / d_rad, "Cm_delta": (rp.Cm - rm.Cm) / d_rad,
+            "CY_delta": (rp.CY - rm.CY) / d_rad, "Cl_delta": (rp.Cl - rm.Cl) / d_rad,
+            "Cn_delta": (rp.Cn - rm.Cn) / d_rad}
+
 @dataclass
 class MomentoCharneira:
 

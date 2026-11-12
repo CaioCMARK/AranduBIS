@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from aranduBIS.fronteira import analise as AN
-from aranduBIS.nucleo.aero.dinamica import dinamica, inercias
+from aranduBIS.nucleo.aero.dinamica import comandos_disponiveis, dinamica, inercias, resposta_a_comando
 from aranduBIS.nucleo.aero.equilibrio import monta
 from aranduBIS.nucleo.aero.estabilidade import derivadas
 
@@ -62,6 +62,34 @@ def test_modelo_com_massa_pequena_avisa_que_faltam_pecas():
 def test_inercias_incompletas_sao_recusadas(gen):
     r = AN.dinamica({"esquema": gen, "V": 12, "massa_kg": 8.0, "inercias": {"Ixx": 1.0}})
     assert "erro" in r
+
+@pytest.fixture(scope="module")
+def biplano():
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2025.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    return d
+
+def test_comandos_disponiveis_le_os_controles_do_modelo(biplano):
+    nomes = {c["nome"] for c in comandos_disponiveis(biplano)}
+    assert nomes == {"aileron_inferior", "aileron_superior", "profundor", "leme"}
+
+def test_resposta_a_comando_nao_existe_da_erro_claro(biplano):
+    with pytest.raises(ValueError, match="não existe no modelo"):
+        resposta_a_comando(biplano, "nao_existe", V=13.0)
+
+def test_resposta_a_comando_so_excita_o_eixo_certo(biplano):
+    prof = resposta_a_comando(biplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=13.0)
+    assert prof["picos"]["alpha_graus"] > 0.5 and prof["picos"]["q_graus_s"] > 1.0
+    assert prof["picos"]["beta_graus"] < 1e-6 and prof["picos"]["phi_graus"] < 1e-6
+
+    ail = resposta_a_comando(biplano, "aileron_inferior", deflexao_graus=10.0, duracao_s=0.3, V=13.0)
+    assert ail["picos"]["beta_graus"] > 0.1 and ail["picos"]["phi_graus"] > 1.0
+    assert ail["picos"]["alpha_graus"] < 1e-6 and ail["picos"]["q_graus_s"] < 1e-6
+
+def test_resposta_a_comando_cresce_com_a_deflexao(biplano):
+    pequena = resposta_a_comando(biplano, "profundor", deflexao_graus=5.0, duracao_s=0.3, V=13.0)
+    grande = resposta_a_comando(biplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=13.0)
+    assert grande["picos"]["alpha_graus"] > 1.8 * pequena["picos"]["alpha_graus"]
 
 def test_inercia_por_raio_de_giro():
     from aranduBIS.nucleo.aero.dinamica import inercias_por_raio

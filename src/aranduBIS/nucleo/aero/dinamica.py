@@ -6,9 +6,10 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..modelador import aeronave_geometria as AG
+from ..modelador import superficies_comando as SC
 from .aeronave_vlm import avisos_de_ignoradas, superficies
 from .equilibrio import longitudinal, monta
-from .estabilidade import derivadas
+from .estabilidade import derivadas, derivadas_de_controle
 
 G = 9.80665
 
@@ -51,9 +52,9 @@ def inercias_por_raio(esq: dict, m: float, raios: dict | None = None) -> dict:
 def _modos(A: np.ndarray) -> list[complex]:
     return list(np.linalg.eigvals(A))
 
-def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float = 1.1, massa_kg: float | None = None,
-             I: dict | None = None, z_cg: float | None = None,
-             raios: dict | None = None, modo_inercia: str = "auto") -> dict:
+def _monta_estado(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float = 1.1, massa_kg: float | None = None,
+                  I: dict | None = None, z_cg: float | None = None,
+                  raios: dict | None = None, modo_inercia: str = "auto") -> dict:
     avisos = avisos_de_ignoradas(esq)
     try:
         prop = inercias(esq)
@@ -114,6 +115,24 @@ def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float =
     Lv_, Lp_, Lr_ = ((Lv + Ixz / Ixx * Nv) / den, (Lp + Ixz / Ixx * Np) / den, (Lr + Ixz / Ixx * Nr) / den)
     Nv_, Np_, Nr_ = ((Nv + Ixz / Izz * Lv) / den, (Np + Ixz / Izz * Lp) / den, (Nr + Ixz / Izz * Lr) / den)
     Al = np.array([[Yv, 0.0, -V, G], [Lv_, Lp_, Lr_, 0.0], [Nv_, Np_, Nr_, 0.0], [0.0, 1.0, 0.0, 0.0]])
+    return {
+        "avisos": avisos, "m": m, "origem_m": origem_m, "cg": cg, "z": z,
+        "Ixx": Ixx, "Iyy": Iyy, "Izz": Izz, "Ixz": Ixz, "origem_I": origem_I,
+        "vlm": vlm, "q": q, "CL_req": CL_req, "CDi": lg["trim"]["CDi"], "alpha": alpha, "d": d,
+        "S": S, "b": b, "c": c, "As": As, "Al": Al, "V": V, "rho": rho,
+    }
+
+def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float = 1.1, massa_kg: float | None = None,
+             I: dict | None = None, z_cg: float | None = None,
+             raios: dict | None = None, modo_inercia: str = "auto") -> dict:
+    base = _monta_estado(esq, x_cg=x_cg, V=V, rho=rho, massa_kg=massa_kg, I=I, z_cg=z_cg, raios=raios, modo_inercia=modo_inercia)
+    As, Al, d, avisos = base["As"], base["Al"], base["d"], base["avisos"]
+    ev = _modos(As)
+    sp = _par(ev)
+    CD = base["CDi"] + 0.03
+    LD = base["CL_req"] / CD
+    fug = {"omega": math.sqrt(2) * G / V, "zeta": 1.0 / (math.sqrt(2) * LD),
+           "nota": "aproximacao de Lanchester com CD = CDi + 0,03 (arrasto parasita nao entra)"}
     el = _modos(Al)
     dr = next((l for l in el if abs(l.imag) > 1e-9 and l.imag > 0), None)
     reais = sorted([l.real for l in el if abs(l.imag) <= 1e-9])
@@ -137,12 +156,76 @@ def dinamica(esq: dict, x_cg: float | None = None, V: float = 12.0, rho: float =
     resposta = {"t": t.tolist(), "beta": np.degrees(lat[:, 0] / V).tolist(), "phi": np.degrees(lat[:, 3]).tolist(),
                 "r": np.degrees(lat[:, 2]).tolist(), "alpha": np.degrees(lon[:, 0]).tolist(), "q": np.degrees(lon[:, 1]).tolist()}
     return {
-        "V": V, "rho": rho, "alpha": alpha, "CL": CL_req, "m": m, "origem_massa": origem_m, "origem_inercia": origem_I,
-        "inercias": {"Ixx": Ixx, "Iyy": Iyy, "Izz": Izz, "Ixz": Ixz}, "cg": cg, "S_ref": S, "b_ref": b, "c_ref": c,
+        "V": V, "rho": rho, "alpha": base["alpha"], "CL": base["CL_req"], "m": base["m"], "origem_massa": base["origem_m"],
+        "origem_inercia": base["origem_I"],
+        "inercias": {"Ixx": base["Ixx"], "Iyy": base["Iyy"], "Izz": base["Izz"], "Ixz": base["Ixz"]},
+        "cg": base["cg"], "S_ref": base["S"], "b_ref": base["b"], "c_ref": base["c"],
         "derivadas": {k: float(getattr(d, k)) for k in ("CL_alpha", "Cm_alpha", "Cm_q", "CY_beta", "Cl_beta", "Cn_beta",
                                                           "Cl_p", "Cl_r", "Cn_p", "Cn_r")},
         "margem_estatica": float(d.margem_estatica), "ponto_neutro": float(d.ponto_neutro),
         "resposta": resposta, "modos": modos, "avaliacao": avaliar(modos, d), "avisos": avisos,
+    }
+
+def _resposta_forcada(A: np.ndarray, B: np.ndarray, u0: float, duracao: float, t: np.ndarray) -> np.ndarray:
+    B = np.asarray(B, float).reshape(-1, 1)
+    n = A.shape[0]
+    xp = -np.linalg.pinv(A) @ (B * u0)
+    Ident = np.eye(n)
+    x_fim_degrau = None
+    x = np.zeros((len(t), n))
+    for i, ti in enumerate(t):
+        if ti <= duracao:
+            x[i] = ((Ident - expm(A * ti)) @ xp).ravel()
+            x_fim_degrau = x[i]
+        else:
+            if x_fim_degrau is None:
+                x_fim_degrau = ((Ident - expm(A * duracao)) @ xp).ravel()
+            x[i] = (expm(A * (ti - duracao)) @ x_fim_degrau.reshape(-1, 1)).ravel()
+    return x
+
+def comandos_disponiveis(esq: dict) -> list[dict]:
+    return [{"nome": c["nome"], "elemento": c["elemento"], "modo": c.get("modo", "sim"), "y": c["y"]}
+            for c in SC.lista(esq)]
+
+def resposta_a_comando(esq: dict, nome_controle: str, deflexao_graus: float = 10.0, duracao_s: float = 0.3,
+                       x_cg: float | None = None, V: float = 12.0, rho: float = 1.1, massa_kg: float | None = None,
+                       I: dict | None = None, z_cg: float | None = None, raios: dict | None = None,
+                       modo_inercia: str = "auto", t_total: float | None = None) -> dict:
+    base = _monta_estado(esq, x_cg=x_cg, V=V, rho=rho, massa_kg=massa_kg, I=I, z_cg=z_cg, raios=raios, modo_inercia=modo_inercia)
+    controles = {c["nome"]: c for c in SC.lista(esq)}
+    c = controles.get(nome_controle)
+    if c is None:
+        raise ValueError(f"comando {nome_controle!r} não existe no modelo; disponíveis: {sorted(controles)}")
+    dc = derivadas_de_controle(base["vlm"], c["elemento"], c, base["alpha"], V=V, rho=rho)
+    if dc is None:
+        raise ValueError(f"comando {nome_controle!r} não cobre nenhuma faixa do VLM (y = {c['y']})")
+    S, b, c_ref, q = base["S"], base["b"], base["c"], base["q"]
+    m, Ixx, Iyy, Izz, Ixz = base["m"], base["Ixx"], base["Iyy"], base["Izz"], base["Ixz"]
+    den = 1.0 - Ixz * Ixz / (Ixx * Izz)
+    B_long = np.array([-q * S * dc["CL_delta"] / (m * V), q * S * c_ref * dc["Cm_delta"] / Iyy])
+    L_delta, N_delta = q * S * b * dc["Cl_delta"] / Ixx, q * S * b * dc["Cn_delta"] / Izz
+    B_lat = np.array([q * S * dc["CY_delta"] / m, (L_delta + Ixz / Ixx * N_delta) / den,
+                      (N_delta + Ixz / Izz * L_delta) / den, 0.0])
+    delta = math.radians(deflexao_graus)
+    t_total = float(t_total) if t_total else max(10.0, duracao_s * 8.0)
+    t = np.linspace(0.0, t_total, 161)
+    lon = _resposta_forcada(base["As"], B_long, delta, duracao_s, t)
+    lat = _resposta_forcada(base["Al"], B_lat, delta, duracao_s, t)
+    resposta = {"t": t.tolist(), "alpha": np.degrees(lon[:, 0]).tolist(), "q": np.degrees(lon[:, 1]).tolist(),
+                "beta": np.degrees(lat[:, 0] / V).tolist(), "phi": np.degrees(lat[:, 3]).tolist(),
+                "r": np.degrees(lat[:, 2]).tolist()}
+
+    def pico(serie):
+        a = np.abs(serie)
+        return float(a.max()) if len(a) else 0.0
+
+    return {
+        "controle": nome_controle, "elemento": c["elemento"], "modo": c.get("modo", "sim"),
+        "deflexao_graus": deflexao_graus, "duracao_s": duracao_s, "t_total": t_total, "V": V, "alpha": base["alpha"],
+        "derivadas": dc, "resposta": resposta,
+        "picos": {"alpha_graus": pico(resposta["alpha"]), "q_graus_s": pico(resposta["q"]),
+                 "beta_graus": pico(resposta["beta"]), "phi_graus": pico(resposta["phi"])},
+        "avisos": base["avisos"],
     }
 
 def _par(ev) -> dict:
