@@ -154,6 +154,8 @@ def fazer_handler(est: Estado):
                     return self._json(AN.cauda(d))
                 if self.path == "/api/torcao":
                     return self._json(AN.torcao(d))
+                if self.path == "/api/flutter":
+                    return self._json(AN.flutter(d))
                 if self.path == "/api/torcao_fe":
                     return self._json(AN.torcao_fe(d))
                 if self.path == "/api/cargas":

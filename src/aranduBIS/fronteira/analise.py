@@ -347,6 +347,34 @@ def torcao_fe(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def flutter(p: dict) -> dict:
+    from ..nucleo.estrutura.flutter import analisa_flutter, itens_de_massa
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        saidas = []
+        itens = itens_de_massa(esq) if any(e.get("tipo") == "asa" and e.get("estrutura") for e in esq.get("elementos", [])) else None
+        for e in esq.get("elementos", []):
+            if e.get("tipo") != "asa" or not e.get("estrutura"):
+                continue
+            saidas.append(analisa_flutter(esq, e["nome"], mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True),
+                                          Vd=_num(p, "Vd", 15.9, positivo=True), fator=_num(p, "margem_aeroelastica", 1.2, positivo=True),
+                                          x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True), cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True),
+                                          calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True), ea_desloc_c=_num(p, "ea_desloc_c", 0.0),
+                                          massa_asa_kg=_num(p, "massa_asa_kg", None, positivo=True) if p.get("massa_asa_kg") else None,
+                                          x_cg_c=_num(p, "x_cg_c", None, positivo=True) if p.get("x_cg_c") else None,
+                                          r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), zeta_s=_num(p, "zeta_s", 0.0),
+                                          V_max_rel=_num(p, "V_max_rel", 3.0, positivo=True), n_modos=int(_num(p, "n_modos", 8, positivo=True)), itens=itens))
+        if not saidas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        com = [s for s in saidas if s["VF"] is not None]
+        pior = min(com, key=lambda s: s["VF"]) if com else saidas[0]
+        return {"asas": saidas, "pior": pior["nome"], "VF": pior["VF"], "V_requerida": pior["V_requerida"], "margem_VF": pior["margem_VF"],
+                "avisos": sorted({a for s in saidas for a in s["avisos"]})}
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
 def cauda(p: dict) -> dict:
     from ..nucleo.estrutura.cauda import analisa
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
