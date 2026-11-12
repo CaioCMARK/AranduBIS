@@ -413,6 +413,23 @@ def dinamica(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def comandos(p: dict) -> dict:
+    from ..nucleo.aero.dinamica import comandos_disponiveis
+
+    return {"comandos": comandos_disponiveis(p.get("esquema") or {})}
+
+def resposta_comando(p: dict) -> dict:
+    from ..nucleo.aero.dinamica import resposta_a_comando
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    try:
+        return resposta_a_comando(p.get("esquema") or {}, str(p.get("controle") or ""),
+                                  deflexao_graus=_num(p, "deflexao_graus", 10.0),
+                                  duracao_s=_num(p, "duracao_s", 0.3, positivo=True),
+                                  **_args_dinamica(p))
+    except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
+        return {"erro": _erro(e)}
+
 def controle(p: dict) -> dict:
     from ..nucleo.aero.controle import autoridade_rolagem
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida

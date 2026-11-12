@@ -26,6 +26,34 @@ const Grafico = (() => {
 
   const fmt = v => Math.abs(v) >= 1000 || (v !== 0 && Math.abs(v) < 0.01) ? v.toExponential(1) : String(+v.toFixed(3));
 
+  function nomeArquivo(titulo) {
+    return (titulo || "grafico").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") + ".png";
+  }
+
+  function baixarPNG(svg, titulo) {
+    const W = +svg.getAttribute("width"), H = +svg.getAttribute("height");
+    const clone = svg.cloneNode(true);
+    const cor = getComputedStyle(document.body).color;
+    const fundo = getComputedStyle(document.documentElement).getPropertyValue("--painel").trim() || "#fff";
+    clone.setAttribute("style", `color:${cor}`);
+    clone.insertBefore(no("rect", { x: 0, y: 0, width: W, height: H, fill: fundo }), clone.firstChild);
+    const xml = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+    img.onload = () => {
+      const esc = 2;
+      const c = document.createElement("canvas"); c.width = W * esc; c.height = H * esc;
+      const ctx = c.getContext("2d"); ctx.scale(esc, esc); ctx.drawImage(img, 0, 0, W, H);
+      c.toBlob(blob => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = nomeArquivo(titulo);
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      });
+    };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+  }
+
   function desenha(alvo, o) {
     alvo.innerHTML = "";
     const W = Math.max(alvo.clientWidth, 260), H = Math.max(alvo.clientHeight, 160);
@@ -95,6 +123,10 @@ const Grafico = (() => {
       });
     }
     alvo.append(svg);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "graf-baixar"; b.title = "Baixar gráfico (PNG)"; b.textContent = "⤓";
+    b.onclick = e => { e.stopPropagation(); baixarPNG(svg, o.titulo); };
+    alvo.append(b);
   }
 
   function liga(alvo, fn) {
