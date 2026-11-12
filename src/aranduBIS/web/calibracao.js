@@ -22,7 +22,7 @@ const Calibracao3 = (() => {
     v.asa = ases.includes(v.asa) ? v.asa : ases[0]; s.value = v.asa || "";
     s.onchange = () => { v.asa = s.value; guarda(); };
     const G2 = document.createElement("div"); G2.className = "prop"; G2.append(el("label", "Asa"), s); P.append(el("div", "Asa", "grupo-par"), G2);
-    P.append(el("div", "Massa e centro de massa: os da vista Flutter. Quanto mais ensaios independentes (flexão e torção em separado), melhor separados ficam EI e GJ.", "nota"));
+    P.append(el("div", "Massa e centro de massa: os da vista Massa da asa (real), se ligada, ou os da vista Flutter. Quanto mais ensaios independentes (flexão e torção em separado), melhor separados ficam EI e GJ.", "nota"));
   }
 
   function linhas(titulo, chave, campos, novo) {
@@ -63,7 +63,7 @@ const Calibracao3 = (() => {
     const f = typeof Flutter3 !== "undefined" ? Flutter3.dados().v : {}, t = Torcao3.dados().v, c = Cargas3.corpo();
     const ok = a => a.every(o => Object.values(o).every(x => x !== null && x !== ""));
     return { esquema: esq, asa: v.asa, rho: c.rho, Vd: c.Vd, materiais: Asa3.materiais(), x_ca_c: t.x_ca_c, cl_alpha_2d: t.cl_alpha_2d, ea_desloc_c: t.ea_desloc_c,
-             massa_asa_kg: f.massa_asa_kg, x_cg_c: f.x_cg_c, r_giro_c: f.r_giro_c || 0.28, ajusta: Object.keys(v.ajusta).filter(k => v.ajusta[k]),
+             massa_asa_kg: f.massa_asa_kg, x_cg_c: f.x_cg_c, r_giro_c: f.r_giro_c || 0.28, massa_real: typeof MassaAsa3 !== "undefined" ? MassaAsa3.corpo() : null, ajusta: Object.keys(v.ajusta).filter(k => v.ajusta[k]),
              observacoes: { frequencias: v.freq.filter(o => ok([o])), flecha: v.flecha.filter(o => ok([o])), torcao: v.torcao.filter(o => ok([o])) } };
   }
 

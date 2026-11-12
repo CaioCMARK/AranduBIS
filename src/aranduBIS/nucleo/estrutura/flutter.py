@@ -177,7 +177,8 @@ def massa_do_modelo(esq: dict, nome: str, y, c, xle, pos_x: float, itens: list |
 
 def dados_de_vibracao(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2, x_ca_c: float = 0.25,
                       cl_alpha_2d: float = 2 * np.pi, calib_GJ: float = 1.0, calib_EI: float = 1.0, ea_desloc_c: float = 0.0,
-                      massa_asa_kg: float | None = None, x_cg_c: float | None = None, r_giro_c: float = 0.28, itens=None) -> dict:
+                      massa_asa_kg: float | None = None, x_cg_c: float | None = None, r_giro_c: float = 0.28, itens=None,
+                      massa_real: dict | None = None) -> dict:
     an = analisa(esq, nome, mats=mats, rho=rho, Vd=Vd, fator=fator, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, calib_GJ=calib_GJ,
                  ea_desloc_c=ea_desloc_c, calib_EI=calib_EI)
     el = _elemento(esq, nome)
@@ -194,6 +195,16 @@ def dados_de_vibracao(esq: dict, nome: str, mats: dict | None = None, rho: float
         raise ValueError(f"sem massa da asa {nome!r}: informe a massa da semi-asa")
     xcg = x_cg_c if x_cg_c is not None else (mm["x_cg_c"] if mm else 0.35)
     ea = np.array(an["ea_c"])
+    if massa_real is not None:
+        from .massa_asa import perfil_de_massa
+        med = (massa_real.get("medidas") or {}).get(nome) or {}
+        pf = perfil_de_massa(esq, nome, y, ea, itens if itens is not None else itens_de_massa(esq),
+                             [a for a in massa_real.get("adicionais") or [] if a.get("asa") in (None, "", nome)],
+                             med.get("massa_medida_kg") or None, med.get("x_cg_medido_c") or None, med.get("y_cg_medido_m") or None)
+        return {"an": an, "y": y, "c": c, "EI": np.array(an["EI"]), "GJ": np.array(an["GJ"]), "ea_c": ea, "m_lin": np.array(pf["m_lin"]),
+                "x_alfa_c": np.array(pf["x_alfa_c"]), "M": pf["massa_kg"], "xcg": pf["x_cg_c"], "r_giro_c": np.array(pf["r_cg_c"]), "perfil_massa": pf,
+                "origem_massa": "distribuicao por estacao (estrutura do modelo + massas adicionais" + (" + massa medida)" if med.get("massa_medida_kg") else ")"),
+                "origem_x_cg": "distribuicao por estacao"}
     return {"an": an, "y": y, "c": c, "EI": np.array(an["EI"]), "GJ": np.array(an["GJ"]), "ea_c": ea, "m_lin": M * c / np.trapezoid(c, y),
             "x_alfa_c": xcg - ea, "M": float(M), "xcg": float(xcg), "r_giro_c": r_giro_c,
             "origem_massa": "informada" if massa_asa_kg is not None else "itens de massa do modelo (semi-asa)",
@@ -202,9 +213,10 @@ def dados_de_vibracao(esq: dict, nome: str, mats: dict | None = None, rho: float
 def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, fator: float = 1.2, x_ca_c: float = 0.25,
                     cl_alpha_2d: float = 2 * np.pi, calib_GJ: float = 1.0, ea_desloc_c: float = 0.0, massa_asa_kg: float | None = None,
                     x_cg_c: float | None = None, r_giro_c: float = 0.28, zeta_s: float = 0.0, V_max_rel: float = 3.0, n_V: int = 45, n_modos: int = 8,
-                    itens=None, calib_EI: float = 1.0) -> dict:
+                    itens=None, calib_EI: float = 1.0, massa_real: dict | None = None) -> dict:
     d = dados_de_vibracao(esq, nome, mats=mats, rho=rho, Vd=Vd, fator=fator, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, calib_GJ=calib_GJ, calib_EI=calib_EI,
-                          ea_desloc_c=ea_desloc_c, massa_asa_kg=massa_asa_kg, x_cg_c=x_cg_c, r_giro_c=r_giro_c, itens=itens)
+                          ea_desloc_c=ea_desloc_c, massa_asa_kg=massa_asa_kg, x_cg_c=x_cg_c, r_giro_c=r_giro_c, itens=itens, massa_real=massa_real)
+    r_giro_c = d["r_giro_c"]
     an, M, xcg = d["an"], d["M"], d["xcg"]
     avisos = []
     r = flutter(d["y"], d["c"], d["EI"], d["GJ"], d["ea_c"], d["m_lin"], d["x_alfa_c"], r_giro_c, rho=rho, Vmax=V_max_rel * Vd, n_V=n_V, n_modos=n_modos,
@@ -216,12 +228,26 @@ def analisa_flutter(esq: dict, nome: str, mats: dict | None = None, rho: float =
         avisos.append(f"Flutter a {r['VF']:.1f} m/s, a {r['f_flutter_hz']:.1f} Hz.")
     if r["VD"] is not None:
         avisos.append(f"Divergencia (autovalor real cruza zero) a {r['VD']:.1f} m/s.")
-    avisos.append("A massa da asa vem so dos itens estruturais do modelo (nervuras, longarina, tubos, chapeado); servo, aileron, entelagem e lastro nao entram "
-                  "se nao estiverem no modelo. A posicao do centro de massa e o raio de giracao decidem o flutter: calibre com o ensaio de vibracao (GVT).")
+    pm = d.get("perfil_massa")
+    if pm is None:
+        avisos.append("A massa da asa vem so dos itens estruturais do modelo (nervuras, longarina, tubos, chapeado), espalhada na proporcao da corda; servo, aileron, "
+                      "entelagem e lastro nao entram se nao estiverem no modelo. Use a vista Massa da asa (real) para declara-los. A posicao do centro de massa e "
+                      "o raio de giracao decidem o flutter: calibre com o ensaio de vibracao (GVT).")
+    else:
+        avisos += pm["avisos"]
+        n = len(d["y"])
+        c0 = d["c"]
+        m0 = pm["massa_kg"] * c0 / np.trapezoid(c0, d["y"])
+        xa0 = np.full(n, pm["x_cg_c"]) - d["ea_c"]
+        S0, I0 = m0 * xa0 * c0, m0 * ((0.28 * c0) ** 2 + (xa0 * c0) ** 2)
+        f_unif = modos_de_vibracao(d["y"], d["EI"], d["GJ"], m0, S0, I0, n_modos)["f_hz"]
     if any(not f for f in an["fechada"]):
         avisos.append("Parte da asa tem caixa aberta (GJ muito baixo): as frequencias de torcao e o flutter ficam dominados por essa regiao mole.")
     sai = {"nome": nome, "V_requerida": V_req, "fator": fator, "massa_semi_asa_kg": float(M), "origem_massa": d["origem_massa"], "x_cg_c": float(xcg),
-           "origem_x_cg": d["origem_x_cg"], "r_giro_c": r_giro_c, "zeta_s": zeta_s, "rho": rho, "avisos": avisos, **r}
+           "origem_x_cg": d["origem_x_cg"], "r_giro_c": float(np.mean(r_giro_c)), "zeta_s": zeta_s, "rho": rho, "avisos": avisos, **r}
+    if pm is not None:
+        sai["perfil_massa"] = pm
+        sai["f_vacuo_hz_massa_uniforme"] = f_unif
     sai["margem_VF"] = None if r["VF"] is None else r["VF"] / V_req - 1.0
     sai["margem_VD"] = None if r["VD"] is None else r["VD"] / V_req - 1.0
     return sai

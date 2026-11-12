@@ -36,6 +36,7 @@ const Flutter3 = (() => {
       const G2 = document.createElement("div"); G2.className = "prop"; G2.append(el("label", "Asa"), s);
       P.append(el("div", "Gráficos", "grupo-par"), G2);
     }
+    if (typeof MassaAsa3 !== "undefined" && MassaAsa3.corpo()) P.append(el("div", "Massa, centro de massa e raio de giração vêm da vista Massa da asa (real): os três campos acima ficam sem efeito.", "nota"));
     P.append(el("div", "Rigidez, linha elástica, densidade e Vd: as das vistas Torção, Cargas e Configurações.", "nota"));
   }
 
@@ -44,7 +45,8 @@ const Flutter3 = (() => {
   function corpo() {
     const c = Cargas3.corpo(), t = Torcao3.dados().v;
     return { esquema: esq, rho: c.rho, Vd: c.Vd, materiais: Asa3.materiais(), margem_aeroelastica: t.margem_aeroelastica, x_ca_c: t.x_ca_c, cl_alpha_2d: t.cl_alpha_2d,
-             calib_GJ: t.calib_GJ, calib_EI: t.calib_EI, ea_desloc_c: t.ea_desloc_c, massa_asa_kg: v.massa_asa_kg, x_cg_c: v.x_cg_c, r_giro_c: v.r_giro_c, zeta_s: v.zeta_s, V_max_rel: v.V_max_rel };
+             calib_GJ: t.calib_GJ, calib_EI: t.calib_EI, ea_desloc_c: t.ea_desloc_c, massa_asa_kg: v.massa_asa_kg, x_cg_c: v.x_cg_c, r_giro_c: v.r_giro_c, zeta_s: v.zeta_s, V_max_rel: v.V_max_rel,
+             massa_real: typeof MassaAsa3 !== "undefined" ? MassaAsa3.corpo() : null };
   }
 
   async function calcula() {

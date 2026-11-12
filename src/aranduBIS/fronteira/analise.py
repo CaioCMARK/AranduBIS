@@ -347,6 +347,69 @@ def torcao_fe(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError) as e:
         return {"erro": _erro(e)}
 
+def _massa_real(p: dict) -> dict | None:
+    m = p.get("massa_real")
+    if not m or not m.get("usar"):
+        return None
+    adic = []
+    for a in m.get("adicionais") or []:
+        b = {"nome": str(a.get("nome") or "adicional")}
+        if a.get("asa"):
+            b["asa"] = str(a["asa"])
+        for k in ("massa_kg", "y_m", "y_fim_m", "x_c", "largura_c", "gramatura_g_m2", "de_xc", "ate_xc"):
+            if a.get(k) not in (None, ""):
+                b[k] = _num(a, k)
+        if "massa_kg" not in b and "gramatura_g_m2" not in b:
+            continue
+        adic.append(b)
+    med = {}
+    for asa, d in (m.get("medidas") or {}).items():
+        med[asa] = {k: _num(d, k, positivo=True) for k in ("massa_medida_kg", "x_cg_medido_c", "y_cg_medido_m") if d.get(k) not in (None, "")}
+    return {"usar": True, "adicionais": adic, "medidas": med}
+
+def massa_asa(p: dict) -> dict:
+    from ..nucleo.estrutura.flutter import dados_de_vibracao, itens_de_massa, modos_de_vibracao
+    from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
+
+    esq = p.get("esquema") or {}
+    try:
+        mr = _massa_real(p) or {"usar": True, "adicionais": []}
+        asas = [e["nome"] for e in esq.get("elementos", []) if e.get("tipo") == "asa" and e.get("estrutura")]
+        if not asas:
+            return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
+        itens = itens_de_massa(esq)
+        saidas = []
+        decl = {e["nome"] for e in esq.get("elementos", []) if e.get("tipo") == "ponto"}
+        pontos = [q for q in itens if q["nome"] in decl and abs(q["cg"][1]) > 0.05]
+        for nome in asas:
+            d = dados_de_vibracao(esq, nome, mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True), Vd=_num(p, "Vd", 15.9, positivo=True),
+                                  x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True), cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True),
+                                  calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True), calib_EI=_num(p, "calib_EI", 1.0, positivo=True),
+                                  ea_desloc_c=_num(p, "ea_desloc_c", 0.0), itens=itens,
+                                  massa_real=mr)
+            ref = dados_de_vibracao(esq, nome, mats=p.get("materiais"), rho=_num(p, "rho", 1.1, positivo=True), Vd=_num(p, "Vd", 15.9, positivo=True),
+                                    x_ca_c=_num(p, "x_ca_c", 0.25, positivo=True), cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True),
+                                    calib_GJ=_num(p, "calib_GJ", 1.0, positivo=True), calib_EI=_num(p, "calib_EI", 1.0, positivo=True),
+                                    ea_desloc_c=_num(p, "ea_desloc_c", 0.0), itens=itens)
+            pf = d["perfil_massa"]
+
+            def freq(dd):
+                c = dd["c"]
+                xa = dd["x_alfa_c"] * c
+                m = dd["m_lin"]
+                return modos_de_vibracao(dd["y"], dd["EI"], dd["GJ"], m, m * xa, m * ((dd["r_giro_c"] * c) ** 2 + xa ** 2), 6)
+            fr, f0 = freq(d), freq(ref)
+            pf.update({"nome": nome, "f_hz": fr["f_hz"], "natureza": fr["natureza"], "f_hz_hipotese_antiga": f0["f_hz"], "natureza_hipotese_antiga": f0["natureza"],
+                       "massa_hipotese_antiga_kg": ref["M"], "x_cg_c_hipotese_antiga": ref["xcg"]})
+            saidas.append(pf)
+        aviso = []
+        if pontos:
+            aviso.append("Massas pontuais do modelo fora do eixo (servo, motor na asa?): " + ", ".join(f"{q['nome']} ({q['massa']:.3f} kg em y = {q['cg'][1]:+.2f} m)" for q in pontos)
+                         + ". Nao entram sozinhas: declare-as como adicionais da asa certa.")
+        return {"asas": saidas, "avisos": aviso}
+    except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError) as e:
+        return {"erro": _erro(e)}
+
 def flutter(p: dict) -> dict:
     from ..nucleo.estrutura.flutter import analisa_flutter, itens_de_massa
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
@@ -366,7 +429,8 @@ def flutter(p: dict) -> dict:
                                           x_cg_c=_num(p, "x_cg_c", None, positivo=True) if p.get("x_cg_c") else None,
                                           r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), zeta_s=_num(p, "zeta_s", 0.0),
                                           calib_EI=_num(p, "calib_EI", 1.0, positivo=True),
-                                          V_max_rel=_num(p, "V_max_rel", 3.0, positivo=True), n_modos=int(_num(p, "n_modos", 8, positivo=True)), itens=itens))
+                                          V_max_rel=_num(p, "V_max_rel", 3.0, positivo=True), n_modos=int(_num(p, "n_modos", 8, positivo=True)), itens=itens,
+                                          massa_real=_massa_real(p)))
         if not saidas:
             return {"erro": "Nenhuma asa com estrutura declarada (nervuras, longarina, tubos, chapeado) no modelo."}
         com = [s for s in saidas if s["VF"] is not None]
@@ -419,7 +483,7 @@ def calibracao(p: dict) -> dict:
                     cl_alpha_2d=_num(p, "cl_alpha_2d", 6.2832, positivo=True), ea_desloc_c=_num(p, "ea_desloc_c", 0.0),
                     massa_asa_kg=_num(p, "massa_asa_kg", None, positivo=True) if p.get("massa_asa_kg") else None,
                     x_cg_c=_num(p, "x_cg_c", None, positivo=True) if p.get("x_cg_c") else None,
-                    r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), itens=itens_de_massa(esq))
+                    r_giro_c=_num(p, "r_giro_c", 0.28, positivo=True), itens=itens_de_massa(esq), massa_real=_massa_real(p))
         r["asas"] = asas
         return r
     except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, TypeError) as e:

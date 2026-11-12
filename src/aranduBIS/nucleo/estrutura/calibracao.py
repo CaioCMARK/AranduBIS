@@ -48,7 +48,7 @@ def _rotulos(observ):
 
 def calibra(esq: dict, nome: str, observ: dict, ajusta=("EI", "GJ"), mats: dict | None = None, rho: float = 1.1, Vd: float = 15.9, x_ca_c: float = 0.25,
             cl_alpha_2d: float = 2 * np.pi, ea_desloc_c: float = 0.0, massa_asa_kg: float | None = None, x_cg_c: float | None = None,
-            r_giro_c: float = 0.28, itens=None) -> dict:
+            r_giro_c: float = 0.28, itens=None, massa_real: dict | None = None) -> dict:
     obs = {k: list(observ.get(k) or []) for k in ("frequencias", "flecha", "torcao")}
     medidas = _medidas(obs)
     if len(medidas) == 0:
@@ -59,11 +59,12 @@ def calibra(esq: dict, nome: str, observ: dict, ajusta=("EI", "GJ"), mats: dict 
     if not ajusta:
         raise ValueError("Escolha ao menos um parametro para ajustar (EI, GJ ou raio de giracao).")
     d = FL.dados_de_vibracao(esq, nome, mats=mats, rho=rho, Vd=Vd, x_ca_c=x_ca_c, cl_alpha_2d=cl_alpha_2d, ea_desloc_c=ea_desloc_c,
-                             massa_asa_kg=massa_asa_kg, x_cg_c=x_cg_c, r_giro_c=r_giro_c, itens=itens)
+                             massa_asa_kg=massa_asa_kg, x_cg_c=x_cg_c, r_giro_c=r_giro_c, itens=itens, massa_real=massa_real)
+    r0 = d["r_giro_c"]
 
     def parametros(p):
         v = dict(zip(ajusta, np.exp(p)))
-        return v.get("EI", 1.0), v.get("GJ", 1.0), r_giro_c * v.get("r_giro", 1.0)
+        return v.get("EI", 1.0), v.get("GJ", 1.0), r0 * v.get("r_giro", 1.0)
 
     def residuo(p):
         mod, _ = _modelo(d, *parametros(p), obs)
@@ -96,10 +97,12 @@ def calibra(esq: dict, nome: str, observ: dict, ajusta=("EI", "GJ"), mats: dict 
         avisos.append("Algum modo pedido nao existe no modelo (tipo e ordem): aumente a ordem ou troque o tipo.")
     rms = lambda r: float(np.sqrt(np.mean(np.square(r)))) if len(r) else 0.0
     v = dict(zip(ajusta, np.exp(sol.x)))
+    if massa_real is not None:
+        avisos += d["perfil_massa"]["avisos"]
     avisos.append(f"Massa da semi-asa fixa em {d['M']:.3f} kg ({d['origem_massa']}) e centro de massa em x/c = {d['xcg']:.3f}: erro de massa vira erro "
                   "proporcional nas rigidezes ajustadas.")
     return {"nome": nome, "parametros": {k: float(val) for k, val in v.items()}, "incerteza_pct": dict(zip(ajusta, incerteza)),
             "rotulos": _rotulos(obs), "medido": medidas.tolist(), "modelo_antes": [float(x) if np.isfinite(x) else None for x in mod_antes],
             "modelo_depois": mod_depois.tolist(), "erro_antes_pct": [float(100 * a) if e else None for a, e in zip(antes, existe)], "erro_depois_pct": (100 * depois).tolist(),
             "rms_antes_pct": 100 * rms(antes[existe]), "rms_depois_pct": 100 * rms(depois), "massa_semi_asa_kg": d["M"], "x_cg_c": d["xcg"],
-            "r_giro_c": r_giro_c * v.get("r_giro", 1.0), "f_vacuo_hz": vib["f_hz"], "natureza": vib["natureza"], "avisos": avisos}
+            "r_giro_c": float(np.mean(r0 * v.get("r_giro", 1.0))), "f_vacuo_hz": vib["f_hz"], "natureza": vib["natureza"], "avisos": avisos}
