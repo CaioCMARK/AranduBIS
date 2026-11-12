@@ -35,7 +35,7 @@ def test_pagina_e_exemplos(srv):
 
 def test_constroi_pelo_http(srv):
     porta, _ = srv
-    esq = json.loads(pede(porta, "GET", "/api/exemplo?nome=biplano/biplano_2026.json")[1])
+    esq = json.loads(pede(porta, "GET", "/api/exemplo?nome=biplano/biplano_b.json")[1])
     st, b = pede(porta, "POST", "/api/constroi", esq)
     assert st == 200 and json.loads(b)["massa_kg"] > 0
     st, b = pede(porta, "POST", "/api/constroi", {"versao": 1, "elementos": []})

@@ -5,7 +5,7 @@ import pytest
 
 from aranduBIS.nucleo.estrutura.massa import balanco
 
-CASO = Path(__file__).resolve().parents[1] / "cases/geometria/biplano/biplano_2025.json"
+CASO = Path(__file__).resolve().parents[1] / "cases/geometria/biplano/biplano_a.json"
 
 @pytest.fixture(scope="module")
 def esq():

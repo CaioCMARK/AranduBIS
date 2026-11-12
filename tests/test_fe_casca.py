@@ -59,7 +59,7 @@ def _biplano():
     import json
     from pathlib import Path
     raiz = Path(__file__).resolve().parents[1]
-    e = json.loads((raiz / "cases" / "geometria" / "biplano" / "biplano_2025.json").read_text(encoding="utf8"))
+    e = json.loads((raiz / "cases" / "geometria" / "biplano" / "biplano_a.json").read_text(encoding="utf8"))
     e["_pasta"] = str(raiz / "cases" / "geometria" / "biplano")
     return e
 

@@ -46,7 +46,7 @@ async function main() {
   for (const tema of TEMAS) for (const [w, h, dpr] of TAMANHOS) {
     await cdp("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: dpr, mobile: false });
     await cdp("Page.navigate", { url: URL }); await espera(1800);
-    await js(`(async()=>{ Tema.escolhe(${JSON.stringify(tema)}); carrega(await chama("/api/exemplo?nome=biplano%2Fbiplano_2026.json"), "biplano"); return 1 })()`);
+    await js(`(async()=>{ Tema.escolhe(${JSON.stringify(tema)}); carrega(await chama("/api/exemplo?nome=biplano%2Fbiplano_b.json"), "biplano"); return 1 })()`);
     await espera(2500);
     const r = JSON.parse(await js(`JSON.stringify((()=>{
       const alt = s => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().height) : -1; };

@@ -12,7 +12,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
 def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_2026.json").read_text(encoding="utf-8"))
+    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
     d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     return d
 
@@ -64,7 +64,7 @@ def test_fronteira_trem(biplano):
     assert "rodas" in AN.trem({"esquema": sem})["erro"]
 
 def test_solda_do_eixo_cria_zona_rigida_e_alivia_o_eixo():
-    esq = json.loads((RAIZ / "cases/geometria/biplano/biplano_2025.json").read_text(encoding="utf-8")); esq["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    esq = json.loads((RAIZ / "cases/geometria/biplano/biplano_a.json").read_text(encoding="utf-8")); esq["_pasta"] = str(RAIZ / "cases/geometria/biplano")
     esq2, zonas = TR._com_solda(esq, 0.01)
     assert len(zonas) == 2
     for c, ext in zonas:
