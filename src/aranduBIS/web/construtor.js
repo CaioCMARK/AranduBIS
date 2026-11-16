@@ -126,6 +126,10 @@ const Construtor = (() => {
     l("posição y (m)", entrada("number", e.y ?? 0, v => muda(() => { e.y = v ?? 0; })));
     l("material", selecao(e.material || MATERIAIS[0], [...new Set([e.material || MATERIAIS[0], ...MATERIAIS])], v => muda(() => { e.material = v; })));
     G.append(el("div", "Contorno no plano x–z, extrudado na espessura (nas Propriedades), centrado em y.", "nota"));
+    if (typeof Chapa2D !== "undefined" && Chapa2D.abre && document.documentElement.dataset.interface === "nova") {
+      const be = botao("Abrir o editor 2D", () => Chapa2D.abre(e), "Desenhe o contorno e os furos com grade, cotas e o corte da aeronave no plano da chapa como marca d'água");
+      be.classList.add("primario"); G.append(be);
+    }
 
     const P = bloco(C, "Contorno (m)");
     tabela(P, ["#", "x", "z"], e.contorno.map((p, i) => [String(i), num(p[0], v => muda(() => { p[0] = v; })), num(p[1], v => muda(() => { p[1] = v; }))]),

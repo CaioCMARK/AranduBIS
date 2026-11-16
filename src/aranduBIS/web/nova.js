@@ -10,6 +10,7 @@ const Interface = (() => {
     nervuras: '<path d="M3 14c3-7 13-8 18-2-5 3-13 4-18 2z"/><path d="M9 9.5v6M14 9v6.5"/>',
     nos: '<circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><path d="M6 16.3l5-8.6M18 16.3l-5-8.6M7 18h10"/>',
     secao: '<path d="M3 13c2-5 12-6 18-1-6 2-14 3-18 1z"/><path d="M12 3v18" stroke-dasharray="3 3"/>',
+    chapa: '<path d="M4 20V8l6-4h10v12l-6 4z"/><circle cx="13" cy="12" r="2.2"/>',
     medir: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/>',
     esq: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
     dir: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/>',
@@ -32,6 +33,7 @@ const Interface = (() => {
     ["nervuras", "Nervuras", "R", "Arraste, crie e remova nervuras da asa."],
     ["nos", "Nós e barras", "B", "Mova nós, ligue barras e defina juntas e apoios."],
     ["secao", "Seção", "S", "Clique num anel para editar a seção da asa."],
+    ["chapa", "Chapa 2D", "C", "Abre o editor 2D da chapa selecionada."],
     ["medir", "Medir", "D", "Clique em dois pontos para medir a distância; o terceiro mede o ângulo."],
   ];
   const sem = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -137,6 +139,10 @@ const Interface = (() => {
     } else if (nome === "secao") {
       if (garante(temSecoes)) { aba = "Seção"; abas(); abaConteudo(); Secao3D.atualiza(); }
       else { msg("Não há asa com seções no modelo.", true); nome = "selecionar"; }
+    } else if (nome === "chapa") {
+      if (garante(e => !!e && e.tipo === "placa")) Chapa2D.abre(elemento());
+      else msg("Não há chapa no modelo: insira um elemento do tipo Placa.", true);
+      nome = "selecionar";
     } else if (nome === "medir") {
       ferr = "medir"; medida.pts = []; vista.ferramenta = MEDIR; pintaMedida();
     }

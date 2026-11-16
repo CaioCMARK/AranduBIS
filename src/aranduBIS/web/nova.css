@@ -109,3 +109,27 @@ dialog.comandos{width:min(600px,94vw);margin-top:12vh}
 [data-interface="nova"] #r_msg{min-width:0;overflow:hidden;text-overflow:ellipsis}
 [data-interface="nova"] body:not([data-etapa="1"])[data-etapa] #r_modo,[data-interface="nova"] body:not([data-etapa="1"])[data-etapa] #r_coord{display:none}
 @media (max-width:1100px){[data-interface="nova"] #r_tri,[data-interface="nova"] #r_unid{display:none}}
+dialog.chapa2d{width:96vw;height:92vh;max-height:92vh;display:none;flex-direction:column;overflow:hidden}
+dialog.chapa2d[open]{display:flex}
+.c2-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.c2-corpo{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr 290px}
+.c2-ferr{display:flex;flex-direction:column;gap:4px;padding:8px;border-right:1px solid var(--linha);background:var(--painel)}
+.c2-ferr button{justify-content:flex-start}
+.c2-palco{position:relative;min-width:0;min-height:0;background:var(--vista)}
+.c2-svg{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;user-select:none}
+.c2-dica{position:absolute;left:10px;top:8px;font-size:12px;color:var(--suave);pointer-events:none}
+.c2-painel{border-left:1px solid var(--linha);background:var(--painel);overflow:auto}
+.c2-painel h5{margin:0;padding:8px 10px 2px;font-size:13px}
+.c2-marca-op{display:flex;gap:6px;align-items:center;padding:6px 10px;font-size:12px}
+.c2-grade{stroke:var(--linha);stroke-width:1;opacity:.45;fill:none}
+.c2-eixos{stroke:var(--suave);stroke-width:1;opacity:.6;fill:none}
+.c2-marca{stroke:var(--suave);stroke-width:1.2;fill:none;opacity:.7}
+.c2-chapa{fill:var(--marinho);fill-opacity:.2;stroke:none}
+.c2-laco{fill:none;stroke:var(--marinho);stroke-width:1.6}
+.c2-laco.at{stroke:var(--ouro,#c99a1e);stroke-width:2.4}
+.c2-previa{fill:none;stroke:var(--ouro,#c99a1e);stroke-width:1.6;stroke-dasharray:5 4}
+.c2-no{fill:var(--painel);stroke:var(--marinho);stroke-width:1.5}
+.c2-no.at{fill:var(--ouro,#c99a1e);stroke:var(--tinta)}
+.c2-cota{font:500 11px "Inter","Segoe UI",sans-serif;fill:var(--tinta);text-anchor:middle;paint-order:stroke;stroke:var(--vista);stroke-width:3px;font-variant-numeric:tabular-nums}
+[data-interface="nova"] .dlg-topo button.primario{background:var(--ouro);color:#1f2518;border-color:var(--ouro)}
+.c2-cota.esq{text-anchor:start}
