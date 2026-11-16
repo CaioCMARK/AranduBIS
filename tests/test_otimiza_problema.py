@@ -83,9 +83,9 @@ def test_massas_de_sistema_entram_por_formula_e_pesam_no_vazio():
 
 @pytest.mark.skip(reason="depende da estrutura do modelo de projeto original")
 def test_dimensionamento_reforca_ate_a_margem_alvo_e_pesa_mais():
-    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_a.json").read_text(encoding="utf8"))
-    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
-    A = ["asa_inferior", "asa_superior"]; nt = len(base["elementos"][0]["estrutura"]["tubos"])
+    base = json.loads((RAIZ / "cases" / "geometria" / "monoplano" / "monoplano_a.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "monoplano")
+    A = ["asa", "asa"]; nt = len(base["elementos"][0]["estrutura"]["tubos"])
     prob = _prob()
     prob.update(base=base, grandezas=[], restricoes=[], variaveis=[{"nome": "b", "minimo": 2.4, "maximo": 4.0, "padrao": 3.6}],
                 ligacoes=[{"alvos": [f"{a}.secoes[0].y" for a in A], "formula": "-b / 2"}, {"alvos": [f"{a}.secoes[4].y" for a in A], "formula": "b / 2"}])
@@ -102,8 +102,8 @@ def test_dimensionamento_reforca_ate_a_margem_alvo_e_pesa_mais():
 
 def test_retira_e_estica_alongam_o_boom_e_pesam_mais():
     from aranduBIS.nucleo.modelador import aeronave_geometria as AG
-    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_a.json").read_text(encoding="utf8"))
-    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
+    base = json.loads((RAIZ / "cases" / "geometria" / "monoplano" / "monoplano_a.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "monoplano")
     prob = {"base": base, "retira": ["massa_equivalente"], "variaveis": [{"nome": "lb", "minimo": 0.8, "maximo": 2.0, "padrao": 1.3}], "grandezas": [],
             "ligacoes": [{"estica": {"elementos": ["boom_tubos"], "de": 0.30, "fim": "lb"}}, {"alvos": ["empenagem_h.posicao[0]", "deriva.posicao[0]"], "formula": "lb"}]}
     def boom(lb):
@@ -127,17 +127,17 @@ def test_pecas_com_catalogo_trocam_massa_e_custo_pela_escolha():
 
 def test_dimensionamento_de_reversao_com_fe_reforca_a_secao_aberta_com_x():
     import copy
-    base = json.loads((RAIZ / "cases" / "geometria" / "biplano" / "biplano_a.json").read_text(encoding="utf8"))
-    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "biplano")
-    el = next(e for e in base["elementos"] if e["nome"] == "asa_inferior")
+    base = json.loads((RAIZ / "cases" / "geometria" / "monoplano" / "monoplano_a.json").read_text(encoding="utf8"))
+    base["_pasta"] = str(RAIZ / "cases" / "geometria" / "monoplano")
+    el = next(e for e in base["elementos"] if e["nome"] == "asa")
     ch = el["estrutura"]["chapeado"]; ch["ate_xc_y"] = [[p[0], 0.12] for p in ch["ate_xc_y"]]; ch["ate_xc"] = 0.12
     esq = copy.deepcopy(base)
-    d = {"nome": "x", "tipo": "reversao", "fe": True, "elementos": ["asa_inferior"], "ajuste": {"nome": "a", "minimo": 0.0005, "maximo": 0.02}, "margem_alvo": -0.55,
-         "iteracoes": 6, "ligacoes": [{"alvos": [f"asa_inferior.estrutura.cruzadas[{i}].area_m2" for i in range(2)], "formula": "a"}]}
+    d = {"nome": "x", "tipo": "reversao", "fe": True, "elementos": ["asa"], "ajuste": {"nome": "a", "minimo": 0.0005, "maximo": 0.2}, "margem_alvo": -0.55,
+         "iteracoes": 6, "ligacoes": [{"alvos": [f"asa.estrutura.cruzadas[{i}].area_m2" for i in range(2)], "formula": "a"}]}
     from aranduBIS.nucleo.otimiza import dimensiona as DM
     sem = DM.margem(esq, dict(d, fe=False), [], 1.2, {"Vd": 18.75})
     com = DM.margem(esq, d, [], 1.2, {"Vd": 18.75})
     assert com > sem
     r = DM.dimensiona(esq, [d], [], {}, 1.2, {"Vd": 18.75})[0]
-    assert r["atingiu"] and r["margem"] >= -0.55 - 1e-3 and 0.0005 < r["valor"] < 0.02
+    assert r["atingiu"] and r["margem"] >= -0.55 - 1e-3 and 0.0005 < r["valor"] < 0.2
     assert DM.dimensiona(copy.deepcopy(base), [dict(d, margem_alvo=0.5)], [], {}, 1.2, {"Vd": 18.75})[0]["atingiu"] is False

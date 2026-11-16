@@ -185,7 +185,7 @@ def test_instantaneo_tem_aneis_da_helice(acoplada):
 
 def test_fronteira_uvlm_com_helice_girante():
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     p = {"esquema": esq, "V": 12, "alpha": 4, "caso": "degrau", "helice_girante": True, "helice": "22x10E", "rpm": 4500,
          "rho": 1.1, "discretizacao": "manual", "n_span": 8, "n_chord": 2, "passos_por_corda": 2, "cordas": 2,
          "dpsi": 20, "instantaneos": True, "forcar": True}

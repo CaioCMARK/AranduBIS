@@ -102,18 +102,18 @@ def test_sopro_conserva_massa_e_dobra_longe():
 def test_fronteira_helice_e_sopro_na_asa():
     import copy
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     r = AN.helice({"esquema": esq, "helice": "22x10E", "rpm": 4500, "V": 12, "rho": 1.1, "alpha": 4})
     assert "erro" not in r, r.get("erro")
     assert r["ponto"]["T"] > 0 and 0 < r["ponto"]["eta"] < r["ponto"]["eta_ideal"]
     assert len(r["curva"]["CT"]) == len(r["curva"]["CT_apc"]) == len(r["curva"]["J"])
     e2 = copy.deepcopy(esq)
-    next(el for el in e2["elementos"] if el["nome"] == "helice")["posicao"] = [-0.25, 0.0, 0.0]
+    next(el for el in e2["elementos"] if el["nome"] == "helice")["posicao"] = [-0.25, 0.0, 0.5]
     a = AN.helice({"esquema": e2, "helice": "22x10E", "rpm": 4500, "V": 12, "rho": 1.1, "alpha": 4, "sentido": 1})["sopro"]
     b = AN.helice({"esquema": e2, "helice": "22x10E", "rpm": 4500, "V": 12, "rho": 1.1, "alpha": 4, "sentido": -1})["sopro"]
-    assert a["CL_com"] > 1.03 * a["CL_sem"] and "asa_inferior" in a["afetadas"]
-    qa = next(q for q in a["superficies"] if q["nome"] == "asa_inferior")
-    qb = next(q for q in b["superficies"] if q["nome"] == "asa_inferior")
+    assert a["CL_com"] > 1.03 * a["CL_sem"] and "asa" in a["afetadas"]
+    qa = next(q for q in a["superficies"] if q["nome"] == "asa")
+    qb = next(q for q in b["superficies"] if q["nome"] == "asa")
     ya, da = np.array(qa["y"]), np.array(qa["cl_com"]) - np.array(qa["cl_sem"])
     db = np.array(qb["cl_com"]) - np.array(qb["cl_sem"])
     assert np.allclose(np.interp(ya, -ya[::-1], da[::-1]), db, atol=1e-3)

@@ -16,9 +16,9 @@ RAIZ = Path(__file__).resolve().parents[1]
 G0 = PD.G0
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 def _simetrico(k=20000.0):
@@ -74,8 +74,8 @@ def test_perfis_de_pista():
     with pytest.raises(ValueError):
         PD.perfil_de_pista("lunar", 1, 1, 0)
 
-def test_taxi_em_pista_plana_volta_a_distribuicao_estatica(biplano):
-    r = PD.analisa(biplano, massa_kg=11.0, S=0.8, c_med=0.34, CL_alpha=4.2, Cm_alpha=-0.8, CL_max=1.5, Vs=12.9, perfil_pista="plana", razoes=(0.5, 1.0), mu_rolamento=0.0, CD=0.0)
+def test_taxi_em_pista_plana_volta_a_distribuicao_estatica(monoplano):
+    r = PD.analisa(monoplano, massa_kg=11.0, S=0.8, c_med=0.34, CL_alpha=4.2, Cm_alpha=-0.8, CL_max=1.5, Vs=12.9, perfil_pista="plana", razoes=(0.5, 1.0), mu_rolamento=0.0, CD=0.0)
     W = r["peso_N"]
     t = np.array(r["casos"]["taxi"]["t"])
     N = np.array(r["casos"]["taxi"]["N_principal"])[t > 1.2]
@@ -85,8 +85,8 @@ def test_taxi_em_pista_plana_volta_a_distribuicao_estatica(biplano):
     rx = {k: r["rodas"][k]["x"] * math.cos(th) - r["rodas"][k]["z"] * math.sin(th) for k in ("principal", "bequilha")}
     assert Nb.mean() / W == pytest.approx(-rx["principal"] / (rx["bequilha"] - rx["principal"]), rel=0.03)
 
-def test_pouso_com_rigidez_da_perna_da_trelica_e_ligacao_com_o_fe(biplano):
-    r = PD.analisa(biplano, massa_kg=11.0, S=0.8, c_med=0.34, CL_alpha=4.2, Cm_alpha=-0.8, CL_max=1.5, Vs=12.9, razoes=(0.5, 1.0, 2.0), aplica_fe=True)
+def test_pouso_com_rigidez_da_perna_da_trelica_e_ligacao_com_o_fe(monoplano):
+    r = PD.analisa(monoplano, massa_kg=11.0, S=0.8, c_med=0.34, CL_alpha=4.2, Cm_alpha=-0.8, CL_max=1.5, Vs=12.9, razoes=(0.5, 1.0, 2.0), aplica_fe=True)
     assert r["rigidez_perna_N_m"]["origem"].startswith("treli")
     assert 5e3 < r["rigidez_perna_N_m"]["principal"] < 5e5
     for k in ("pouso_3_pontos", "pouso_2_pontos", "taxi"):
@@ -99,18 +99,18 @@ def test_pouso_com_rigidez_da_perna_da_trelica_e_ligacao_com_o_fe(biplano):
     c = r["fe"]["casos"][0]
     assert sum(w["R"] for k, w in c["rodas"].items() if k != "bequilha") == pytest.approx(r["casos"]["pouso_3_pontos"]["pico"]["N_principal"], rel=1e-6)
 
-def test_casos_extra_no_trem_nao_mudam_os_casos_de_sempre(biplano):
-    a = TR.analisa(biplano, massa_kg=11.0, fator_pouso=3.0, **FIXOS)
-    b = TR.analisa(biplano, massa_kg=11.0, casos_extra=[{"nome": "x", "descricao": "d", "Rm": 400.0, "Rn": 100.0, "mu": 0.0}], fator_pouso=3.0, **FIXOS)
+def test_casos_extra_no_trem_nao_mudam_os_casos_de_sempre(monoplano):
+    a = TR.analisa(monoplano, massa_kg=11.0, fator_pouso=3.0, **FIXOS)
+    b = TR.analisa(monoplano, massa_kg=11.0, casos_extra=[{"nome": "x", "descricao": "d", "Rm": 400.0, "Rn": 100.0, "mu": 0.0}], fator_pouso=3.0, **FIXOS)
     assert [c["caso"] for c in b["casos"]] == [c["caso"] for c in a["casos"]] + ["x"]
     assert b["casos"][0]["margem"] == pytest.approx(a["casos"][0]["margem"])
     assert b["casos"][3]["rodas"]["bequilha"]["R"] == 100.0
 
-def test_api_pouso_dinamico(biplano):
-    r = AN.pouso_dinamico({**P, "esquema": biplano, "CL_max": 1.5, "massa_kg": 11.0, "razoes": [0.5], "aplica_fe": False})
+def test_api_pouso_dinamico(monoplano):
+    r = AN.pouso_dinamico({**P, "esquema": monoplano, "CL_max": 1.5, "massa_kg": 11.0, "razoes": [0.5], "aplica_fe": False})
     assert "erro" not in r, r
     assert set(r["casos"]) == {"pouso_3_pontos", "pouso_2_pontos", "taxi"}
     assert r["ref_aero"]["S"] > 0 and r["Vs"] > 0
-    r2 = AN.pouso_dinamico({**P, "esquema": biplano, "CL_max": 1.5, "massa_kg": 11.0, "vel_descida": 2.0})
+    r2 = AN.pouso_dinamico({**P, "esquema": monoplano, "CL_max": 1.5, "massa_kg": 11.0, "vel_descida": 2.0})
     assert r2["casos"]["pouso_3_pontos"]["pico"]["N_principal"] > r["casos"]["pouso_3_pontos"]["pico"]["N_principal"]
-    assert "erro" in AN.pouso_dinamico({**P, "esquema": biplano, "CL_max": 1.5, "vel_descida": -1})
+    assert "erro" in AN.pouso_dinamico({**P, "esquema": monoplano, "CL_max": 1.5, "vel_descida": -1})

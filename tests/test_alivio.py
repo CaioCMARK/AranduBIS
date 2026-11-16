@@ -44,10 +44,10 @@ def test_esforcos_da_viga_biapoiada_e_do_balanco():
     assert "engastada" in nome and M[0] == pytest.approx(-0.25 * 50.0 ** 2, rel=1e-3) and M[1] == 0.0
 
 def test_fronteira_poe_os_alivios_no_dxf_e_devolve_o_fator_de_massa():
-    esq = json.loads((RAIZ / "cases/geometria/biplano/biplano_a.json").read_text(encoding="utf-8"))
-    esq["_pasta"] = str(RAIZ / "cases/geometria/biplano")
-    base = AN.nervuras_dxf({"esquema": esq, "asa": "asa_inferior"})
-    r = AN.nervuras_dxf({"esquema": esq, "asa": "asa_inferior", "alivio": True})
+    esq = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_a.json").read_text(encoding="utf-8"))
+    esq["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
+    base = AN.nervuras_dxf({"esquema": esq, "asa": "asa"})
+    r = AN.nervuras_dxf({"esquema": esq, "asa": "asa", "alivio": True})
     assert "erro" not in r and base["alivio"] is None
     a = r["alivio"]
     assert a["n_furos"] > 0 and 0.0 < a["fracao_removida"] < 0.6 and a["fator_massa"] == pytest.approx(1.0 - a["fracao_removida"])

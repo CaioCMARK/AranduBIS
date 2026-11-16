@@ -34,7 +34,7 @@ def test_esfera_nao_desdobra_e_o_deficit_mede_a_curvatura():
 
 def _asa(estrutura, secoes=None):
     sec = secoes or [{"y": 0.0, "xle": 0.0, "z": 0.0, "corda": 0.30, "ainc": 0.0}, {"y": 0.9, "xle": 0.05, "z": 0.0, "corda": 0.20, "ainc": 0.0}]
-    return {"nome": "t", "_pasta": "cases/geometria/biplano", "elementos": [{"nome": "asa", "tipo": "asa", "perfil": "NACA 2412", "secoes": sec, "estrutura": estrutura}]}
+    return {"nome": "t", "_pasta": "cases/geometria/monoplano", "elementos": [{"nome": "asa", "tipo": "asa", "perfil": "NACA 2412", "secoes": sec, "estrutura": estrutura}]}
 
 
 def test_faixas_de_asa_reta_desdobram_bem():
@@ -89,34 +89,34 @@ def test_dxf_tem_camadas_e_espelho():
     assert n_cortes == sum(f["quantidade"] * len(f["pecas"]) for f in conj["faixas"])
 
 
-def test_fronteira_planificacao_do_biplano():
-    esq = G.abre_exemplo("biplano/biplano_a.json")
-    r = AN.planificacao({"esquema": esq, "asa": "asa_inferior"})
+def test_fronteira_planificacao_do_monoplano():
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
+    r = AN.planificacao({"esquema": esq, "asa": "asa"})
     assert "erro" not in r
     assert r["resumo"]["ok"] > 10 and sum(r["resumo"].values()) == len(r["faixas"])
     assert r["dxf"].startswith("0") or "SECTION" in r["dxf"]
     assert len(r["chapas"]) == sum(f["quantidade"] * len(f["pecas"]) for f in r["faixas"])
-    assert AN.planificacao({"esquema": esq, "asa": "asa_inferior", "modo": "xx"}).get("erro")
+    assert AN.planificacao({"esquema": esq, "asa": "asa", "modo": "xx"}).get("erro")
     assert AN.planificacao({"esquema": {"nome": "x", "elementos": []}}).get("erro")
 
 
 def test_cortes_manuais_em_y_e_modo_por_faixa():
-    esq = G.abre_exemplo("biplano/biplano_a.json")
-    r = AN.planificacao({"esquema": esq, "asa": "asa_inferior", "cortes_y_mm": [200, 500, 900]})
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
+    r = AN.planificacao({"esquema": esq, "asa": "asa", "cortes_y_mm": [200, 500, 900]})
     assert "erro" not in r
     ys = sorted({round(f["y0_m"], 3) for f in r["faixas"]} | {round(f["y1_m"], 3) for f in r["faixas"]})
     assert 0.2 in ys and 0.5 in ys and 0.9 in ys and -0.2 in ys
     chave = next(f["chave"] for f in r["faixas"] if abs(f["y0_m"] - 0.5) < 1e-6)
-    r2 = AN.planificacao({"esquema": esq, "asa": "asa_inferior", "cortes_y_mm": [200, 500, 900], "modos": {chave: "separado"}})
+    r2 = AN.planificacao({"esquema": esq, "asa": "asa", "cortes_y_mm": [200, 500, 900], "modos": {chave: "separado"}})
     f = next(f for f in r2["faixas"] if f["chave"] == chave)
     assert f["modo"] == "separado" and len(f["pecas"]) == 2
-    assert AN.planificacao({"esquema": esq, "asa": "asa_inferior", "cortes_y_mm": [99999]}).get("erro")
-    assert AN.planificacao({"esquema": esq, "asa": "asa_inferior", "cortes_y_mm": [200, 500, 900], "modos": {chave: "xx"}}).get("erro")
+    assert AN.planificacao({"esquema": esq, "asa": "asa", "cortes_y_mm": [99999]}).get("erro")
+    assert AN.planificacao({"esquema": esq, "asa": "asa", "cortes_y_mm": [200, 500, 900], "modos": {chave: "xx"}}).get("erro")
 
 
 def test_mapa_de_triangulos_cobre_so_a_pele_ate_o_limite():
-    esq = G.abre_exemplo("biplano/biplano_a.json")
-    r = AN.planificacao({"esquema": esq, "asa": "asa_inferior"})
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
+    r = AN.planificacao({"esquema": esq, "asa": "asa"})
     n = r["mapa"]["n"]
     assert sum(c for _, c in r["mapa"]["rle"]) == n
     usados = {k for k, _ in r["mapa"]["rle"]}

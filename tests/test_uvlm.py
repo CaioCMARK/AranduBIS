@@ -99,9 +99,9 @@ def test_esteira_cortada_com_cauda_mantem_o_limite_estacionario():
         assert u.h.CL[-1] == pytest.approx(ref, rel=0.015)
 
 
-def test_fronteira_uvlm_no_biplano():
+def test_fronteira_uvlm_no_monoplano():
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     r = AN.uvlm(dict(esquema=esq, V=15, caso="rajada_1cos", w0=3, H_cordas=6, cordas=4, n_span=8, n_chord=2, esteira_livre=False))
     assert "erro" not in r, r.get("erro")
     assert max(r["CL"][1:]) > r["CL_estacionario"] + 0.3 * r["CL_alpha"] * 3 / 15
@@ -129,7 +129,7 @@ def test_discretizacao_automatica_segue_as_regras_medidas():
 
 def test_fronteira_manual_sobrepoe_so_o_que_foi_preenchido():
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     base = dict(esquema=esq, V=15, caso="degrau", alpha=3)
     r = AN.uvlm(dict(base, discretizacao="manual", n_span=8, n_chord=2, cordas=3))
     d = {e["campo"]: e for e in r["discretizacao"]}

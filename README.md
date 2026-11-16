@@ -7,7 +7,7 @@ Reúne modelagem da aeronave (asas, cauda, fuselagem, treliças, trem de pouso),
 ## Por onde começar
 
 0. Na primeira abertura aparece o diálogo **Primeiros passos** (depois, pelo botão de mesmo nome na barra superior): ele resume as cinco etapas e abre um exemplo pronto. Cada etapa mostra também uma dica curta do que fazer a seguir.
-1. Abra um exemplo (menu "Exemplos", por exemplo `biplano/biplano_a.json`) e percorra as etapas na ordem das abas: **1 Geometria**, **2 Análise**, **3 Estrutura**, **4 Otimizar**, **5 Resultados**.
+1. Abra um exemplo (menu "Exemplos", por exemplo `monoplano/monoplano_a.json`) e percorra as etapas na ordem das abas: **1 Geometria**, **2 Análise**, **3 Estrutura**, **4 Otimizar**, **5 Resultados**.
 2. Na etapa 1, clique numa seção da asa na vista 3D (ou na aba "Seção") para ver o perfil daquela estação e arrastar bordo de ataque e bordo de fuga.
 3. O botão **Boas práticas** abre os manuais de cada método: o que ele resolve, como operar, como conferir o resultado e os erros comuns. Cada vista da etapa 3 tem o atalho "? teoria e boas práticas".
 4. Antes de levar um número para o relatório ou para a oficina, leia "Verificar e validar" e "Discretização e convergência" nos manuais.
@@ -50,7 +50,7 @@ python -m pytest
 
 ## Exemplos incluídos
 
-- `cases/geometria/biplano/`: dois biplanos de exemplo com estrutura completa (nervuras, longarinas, treliças, trem de pouso).
+- `cases/geometria/monoplano/`: dois monoplanos de exemplo com estrutura completa (nervuras, longarinas, treliças, trem de pouso). Três variantes (`monoplano_otimizado_*`) saíram do otimizador: `python cases/otimiza/roda_monoplano_generico.py 8` roda o problema genérico `cases/otimiza/monoplano_generico.json` com 8 núcleos e salva o histograma da população.
 - `cases/geometria/generico/`: aeronave genérica e asas com canard (inclui `asa_canard_eixo_a_frente`, a correção da divergência do canard).
 - `cases/geometria/laboratorio/`: laboratório de configurações estranhas (vertical na ponta, Burgess-Dunne, BWB tipo X-48, duto na cauda, asa em caixa, tandem), comparadas na mesma régua; ver o manual "Laboratório de configurações". `cases/otimiza/laboratorio/` pontua e otimiza cada uma pela regra SAE 2026 (`resume.py` imprime a tabela).
 - `cases/regras/`: regras da competição (2024 a 2026) usadas na pontuação.

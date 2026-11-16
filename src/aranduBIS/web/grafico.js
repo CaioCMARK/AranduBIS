@@ -63,7 +63,9 @@ const Grafico = (() => {
     const vale = v => v !== null && v !== undefined && Number.isFinite(v);
     for (const s of o.series) s.x.forEach((x, i) => {
       if (!vale(x) || !vale(s.y[i])) return;
-      x0 = Math.min(x0, x); x1 = Math.max(x1, x);
+      const w2 = s.tipo === "barras" ? (s.largura || 0) / 2 : 0;
+      x0 = Math.min(x0, x - w2); x1 = Math.max(x1, x + w2);
+      if (s.tipo === "barras" && o.yMin === undefined) y0 = Math.min(y0, 0);
       if (o.yMin === undefined) y0 = Math.min(y0, s.y[i]);
       if (o.yMax === undefined) y1 = Math.max(y1, s.y[i]);
     });
@@ -100,6 +102,11 @@ const Grafico = (() => {
     }
     o.series.forEach((s, k) => {
       const cor = s.cor || COR[k % COR.length];
+      if (s.tipo === "barras") {
+        const g = no("g", { fill: cor, "fill-opacity": s.opacidade ?? .55, stroke: cor, "stroke-opacity": .9 }), w = s.largura || 0, base = py(Math.max(Y.min, 0));
+        s.x.forEach((x, i) => { if (vale(x) && vale(s.y[i])) { const a = px(x - w / 2), b = px(x + w / 2); g.append(no("rect", { x: a.toFixed(1), y: py(s.y[i]).toFixed(1), width: Math.max(b - a - 1, 1).toFixed(1), height: Math.max(base - py(s.y[i]), 0).toFixed(1) })); } });
+        svg.append(g); return;
+      }
       if (s.marcador === "ponto") {
         const g = no("g", { fill: cor, "fill-opacity": s.opacidade ?? .8 });
         s.x.forEach((x, i) => { if (vale(x) && vale(s.y[i])) g.append(no("circle", { cx: px(x).toFixed(1), cy: py(s.y[i]).toFixed(1), r: s.raio || 1.6 })); });
@@ -122,7 +129,8 @@ const Grafico = (() => {
       o.series.forEach((s, k) => {
         if (!s.nome) return;
         const cor = s.cor || COR[k % COR.length];
-        svg.append(no("line", { x1: lx, x2: lx + 16, y1: m.c + 10, y2: m.c + 10, stroke: cor, "stroke-width": 2, "stroke-dasharray": s.tracejado ? "5 3" : "none" }));
+        if (s.tipo === "barras") svg.append(no("rect", { x: lx, y: m.c + 5, width: 16, height: 9, fill: cor, "fill-opacity": s.opacidade ?? .55, stroke: cor }));
+        else svg.append(no("line", { x1: lx, x2: lx + 16, y1: m.c + 10, y2: m.c + 10, stroke: cor, "stroke-width": 2, "stroke-dasharray": s.tracejado ? "5 3" : "none" }));
         const t = no("text", { x: lx + 20, y: m.c + 14, fill: "currentColor", "font-size": 10.5 }, s.nome);
         svg.append(t); lx += 28 + s.nome.length * 6.2;
       });

@@ -10,14 +10,14 @@ from aranduBIS.nucleo.estrutura import asa_fe as AF
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def r(biplano):
-    return AN.torcao_fe({"esquema": biplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
+def r(monoplano):
+    return AN.torcao_fe({"esquema": monoplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
 
 def test_carga_nas_estacoes_fecha_em_zero_na_ponta():
     y = np.linspace(0, 1.0, 11)
@@ -32,7 +32,7 @@ def test_analitica_de_viga_uniforme_fecha_com_qL4_sobre_8EI():
     assert M[0] == pytest.approx(50.0 * 1.2 ** 2 / 2, rel=1e-3)
 
 def test_fronteira_devolve_as_duas_asas(r):
-    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa_inferior", "asa_superior"}
+    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa", "asa"}
     assert r["massa_kg"] > 0
 
 def test_flecha_de_elementos_finitos_fecha_com_a_analitica(r):

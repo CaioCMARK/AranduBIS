@@ -52,8 +52,8 @@ def test_sem_massa_declarada_pede_massa_e_inercias(gen):
     assert "massa" in r["erro"]
 
 def test_modelo_com_massa_pequena_avisa_que_faltam_pecas():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     d["elementos"] = [e for e in d["elementos"] if e["nome"] != "massa_equivalente"]
     r = dinamica(d, V=12, massa_kg=12.0)
     assert any("faltam bateria, motor e carga" in a for a in r["avisos"])
@@ -64,31 +64,31 @@ def test_inercias_incompletas_sao_recusadas(gen):
     assert "erro" in r
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_a.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_a.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
-def test_comandos_disponiveis_le_os_controles_do_modelo(biplano):
-    nomes = {c["nome"] for c in comandos_disponiveis(biplano)}
-    assert nomes == {"aileron_inferior", "aileron_superior", "profundor", "leme"}
+def test_comandos_disponiveis_le_os_controles_do_modelo(monoplano):
+    nomes = {c["nome"] for c in comandos_disponiveis(monoplano)}
+    assert nomes == {"aileron", "profundor", "leme"}
 
-def test_resposta_a_comando_nao_existe_da_erro_claro(biplano):
+def test_resposta_a_comando_nao_existe_da_erro_claro(monoplano):
     with pytest.raises(ValueError, match="não existe no modelo"):
-        resposta_a_comando(biplano, "nao_existe", V=15.0)
+        resposta_a_comando(monoplano, "nao_existe", V=15.0)
 
-def test_resposta_a_comando_so_excita_o_eixo_certo(biplano):
-    prof = resposta_a_comando(biplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
+def test_resposta_a_comando_so_excita_o_eixo_certo(monoplano):
+    prof = resposta_a_comando(monoplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
     assert prof["picos"]["alpha_graus"] > 0.5 and prof["picos"]["q_graus_s"] > 1.0
     assert prof["picos"]["beta_graus"] < 1e-6 and prof["picos"]["phi_graus"] < 1e-6
 
-    ail = resposta_a_comando(biplano, "aileron_inferior", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
+    ail = resposta_a_comando(monoplano, "aileron", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
     assert ail["picos"]["beta_graus"] > 0.1 and ail["picos"]["phi_graus"] > 1.0
     assert ail["picos"]["alpha_graus"] < 1e-6 and ail["picos"]["q_graus_s"] < 1e-6
 
-def test_resposta_a_comando_cresce_com_a_deflexao(biplano):
-    pequena = resposta_a_comando(biplano, "profundor", deflexao_graus=5.0, duracao_s=0.3, V=15.0)
-    grande = resposta_a_comando(biplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
+def test_resposta_a_comando_cresce_com_a_deflexao(monoplano):
+    pequena = resposta_a_comando(monoplano, "profundor", deflexao_graus=5.0, duracao_s=0.3, V=15.0)
+    grande = resposta_a_comando(monoplano, "profundor", deflexao_graus=10.0, duracao_s=0.3, V=15.0)
     assert grande["picos"]["alpha_graus"] > 1.8 * pequena["picos"]["alpha_graus"]
 
 def test_inercia_por_raio_de_giro():

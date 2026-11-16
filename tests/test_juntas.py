@@ -81,20 +81,20 @@ RAIZ = Path(__file__).resolve().parents[1]
 KW = dict(tailstrike_peso=1.5, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS)
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def base(biplano):
-    return CA.analisa(biplano, **KW)
+def base(monoplano):
+    return CA.analisa(monoplano, **KW)
 
 def _trelica(esq, nome):
     return next(e for e in esq["elementos"] if e.get("tipo") == "trelica" and e["nome"] == nome)
 
-def test_apoio_explicito_igual_ao_automatico_da_o_mesmo(biplano, base):
-    e = copy.deepcopy(biplano)
+def test_apoio_explicito_igual_ao_automatico_da_o_mesmo(monoplano, base):
+    e = copy.deepcopy(monoplano)
     x_ap = base["x_apoio"]
     for el in e["elementos"]:
         if el.get("tipo") == "trelica":
@@ -107,16 +107,16 @@ def test_apoio_explicito_igual_ao_automatico_da_o_mesmo(biplano, base):
         assert a["margem"] == pytest.approx(b["margem"], rel=1e-9)
     assert any("substituem a regra" in a for a in r["avisos"])
 
-def test_junta_solda_declarada_nao_muda_nada(biplano, base):
-    e = copy.deepcopy(biplano)
+def test_junta_solda_declarada_nao_muda_nada(monoplano, base):
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "boom_tubos")
     el["juntas"] = [{"no": i, "tipo": "solda"} for i in range(len(el["nos"]))]
     r = CA.analisa(e, **KW)
     assert r["juntas_articuladas"] == 0
     assert r["casos"][0]["flecha_ponta_mm"] == pytest.approx(base["casos"][0]["flecha_ponta_mm"], rel=1e-12)
 
-def test_parafusos_no_boom_deixam_a_cauda_mais_flexivel(biplano, base):
-    e = copy.deepcopy(biplano)
+def test_parafusos_no_boom_deixam_a_cauda_mais_flexivel(monoplano, base):
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "boom_tubos")
     xs = [p[0] for p in el["nos"]]; meio = 0.5 * (min(xs) + max(xs))
     el["juntas"] = [{"no": i, "tipo": "rotula"} for i, p in enumerate(el["nos"]) if abs(p[0] - meio) < 0.25 * (max(xs) - min(xs))]
@@ -130,15 +130,15 @@ def test_parafusos_no_boom_deixam_a_cauda_mais_flexivel(biplano, base):
     assert r["modos_hz"][0] <= base["modos_hz"][0] * (1 + 1e-9)
     assert max(c["flecha_ponta_mm"] for c in r["casos"]) >= max(c["flecha_ponta_mm"] for c in base["casos"]) * (1 - 1e-9)
 
-def test_junta_invalida_vira_aviso(biplano):
-    e = copy.deepcopy(biplano)
+def test_junta_invalida_vira_aviso(monoplano):
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "boom_tubos")
     el["juntas"] = [{"no": 9999, "tipo": "rotula"}, {"no": 0, "tipo": "cola"}]
     r = CA.analisa(e, **KW)
     assert any("nao existe" in a for a in r["avisos"]) and any("desconhecido" in a for a in r["avisos"])
 
-def test_trem_e_vibracao_aceitam_juntas(biplano):
-    e = copy.deepcopy(biplano)
+def test_trem_e_vibracao_aceitam_juntas(monoplano):
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "trem")
     el["juntas"] = [{"no": 0, "tipo": "parafuso", "eixo_livre": "y"}, {"no": 1, "tipo": "parafuso", "eixo_livre": "y"}]
     r = TR.analisa(e, mats=MATS_FIXOS)
@@ -146,9 +146,9 @@ def test_trem_e_vibracao_aceitam_juntas(biplano):
     v = VB.analisa(e, mats=MATS_FIXOS) if hasattr(VB, "analisa") else None
     assert v is None or v
 
-def test_roda_presa_por_ligacao_declarada(biplano):
-    base = TR.analisa(biplano, mats=MATS_FIXOS)
-    e = copy.deepcopy(biplano)
+def test_roda_presa_por_ligacao_declarada(monoplano):
+    base = TR.analisa(monoplano, mats=MATS_FIXOS)
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "trem")
     rodas = [x for x in e["elementos"] if x.get("tipo") == "roda"]
     for r in rodas:
@@ -175,18 +175,18 @@ def test_ligacao_rigida_parcial_e_uma_rotula():
     assert monta((1, 2, 3, 4, 6)) == pytest.approx(P * L ** 3 / (3 * E * I), rel=1e-6)
     assert monta((1, 2, 3, 4, 5)) == pytest.approx(7 * P * (2 * L) ** 3 / (768 * E * I), rel=1e-6)
 
-def test_resistencia_de_junta_por_no(biplano, base):
+def test_resistencia_de_junta_por_no(monoplano, base):
     assert base["junta_critica"] is not None
     caso, j = base["junta_critica"]
     assert j["tipo"] == "solda" and j["modo"] in ("forca", "momento", "torcao") and j["utilizacao"] > 0
     assert j["margem"] == pytest.approx(1.0 / j["utilizacao"] - 1.0)
-    fraca = CA.analisa(biplano, **KW, juntas={"tau_cola_MPa": 5.0})
+    fraca = CA.analisa(monoplano, **KW, juntas={"tau_cola_MPa": 5.0})
     assert fraca["junta_critica"][1]["utilizacao"] == pytest.approx(2.0 * j["utilizacao"], rel=1e-9)
-    kt = CA.analisa(biplano, **KW, juntas={"Kt": 3.0})
+    kt = CA.analisa(monoplano, **KW, juntas={"Kt": 3.0})
     assert kt["junta_critica"][1]["utilizacao"] == pytest.approx(2.0 * j["utilizacao"], rel=1e-9)
 
-def test_junta_de_parafuso_usa_corte_e_esmagamento(biplano):
-    e = copy.deepcopy(biplano)
+def test_junta_de_parafuso_usa_corte_e_esmagamento(monoplano):
+    e = copy.deepcopy(monoplano)
     el = _trelica(e, "boom_tubos")
     xs = [p[0] for p in el["nos"]]
     alvo = int(np.argmax(xs))

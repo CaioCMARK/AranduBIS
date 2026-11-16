@@ -40,13 +40,21 @@ def _guarda(job: _Job) -> None:
             for k in list(_JOBS)[:-_MAX_JOBS]:
                 _JOBS.pop(k, None)
 
-def _le_execucao(execucao: dict | None) -> tuple[int, int, int, str]:
+def _processos(ex: dict) -> int:
+    pad = max(1, (os.cpu_count() or 2) - 1)
+    try:
+        n = int(ex.get("processos") or pad)
+    except (TypeError, ValueError):
+        n = pad
+    return max(1, min(n, os.cpu_count() or 1))
+
+def _le_execucao(execucao: dict | None) -> tuple[int, int, int, str, int]:
     ex = execucao or {}
     pop = max(4, min(int(ex.get("populacao", 16)), 300))
     ger = max(1, min(int(ex.get("geracoes", 20)), 500))
     semente = int(ex.get("semente", 0))
     estrategia = ex.get("estrategia") if ex.get("estrategia") in ("melhor", "aleatoria") else "melhor"
-    return pop, ger, semente, estrategia
+    return pop, ger, semente, estrategia, _processos(ex)
 
 def _comeca(ger: int, corpo) -> str:
     job = _Job(uuid.uuid4().hex[:10], ger)
@@ -81,10 +89,9 @@ def inicia(problema: dict, execucao: dict | None = None) -> str:
     problemas = P.confere(problema)
     if problemas:
         raise ErroDeOtimiza(problemas[0])
-    pop, ger, semente, estrategia = _le_execucao(execucao)
+    pop, ger, semente, estrategia, proc = _le_execucao(execucao)
 
     def corpo(job: _Job, ao_gerar) -> None:
-        proc = max(1, (os.cpu_count() or 2) - 1)
         r = B.evolui(problema, populacao=pop, geracoes=ger, estrategia=estrategia, semente=semente,
                      processos=proc, ao_gerar=ao_gerar)
         refino = B.refina(problema, r, quantos=3, processos=min(proc, 3))
@@ -102,7 +109,7 @@ def inicia_arvore(topologias: dict[str, dict], execucao: dict | None = None, sem
         problemas = P.confere(problema)
         if problemas:
             raise ErroDeOtimiza(f"topologia “{nome}”: {problemas[0]}")
-    pop, ger, semente, estrategia = _le_execucao(execucao)
+    pop, ger, semente, estrategia, proc = _le_execucao(execucao)
     prob = ARV.monta(topologias)
     inicial = None
     if semear:
@@ -120,7 +127,6 @@ def inicia_arvore(topologias: dict[str, dict], execucao: dict | None = None, sem
         inicial = [ARV.semeia(prob, nome_topo, x_extraido)]
 
     def corpo(job: _Job, ao_gerar) -> None:
-        proc = max(1, (os.cpu_count() or 2) - 1)
         r = B.evolui(prob, populacao=pop, geracoes=ger, estrategia=estrategia, semente=semente,
                      processos=proc, inicial=inicial, ao_gerar=ao_gerar, avalia=ARV.avalia)
         candidatos = ARV.top_por_topologia(prob, r["populacao"], 2)

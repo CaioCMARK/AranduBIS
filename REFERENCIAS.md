@@ -160,7 +160,7 @@ estrutura com ≥ 2 estações por baia de nervura; flutter com 8 modos e aviso 
 frequência de flutter; chapeado com elemento de ~8 mm; UVLM harmônico com erro ≈ 1,2·k/n_chord. Limites fixos de passos e
 painéis viraram estimativa de tempo e memória contra um orçamento configurável. Estudo de convergência do VLM em três malhas
 com Richardson e GCI (Roache, Fs = 1,25). A deflexão de flap/aileron no VLM passou a pesar pela fração de cada painel atrás
-da charneira (antes era tudo-ou-nada e a autoridade oscilava com n_chord; com 4 painéis e o critério antigo, o p·b/2V do biplano B saía 0,18 contra ~0,27
+da charneira (antes era tudo-ou-nada e a autoridade oscilava com n_chord; com 4 painéis e o critério antigo, o p·b/2V do exemplo B saía 0,18 contra ~0,27
 convergido). Manuais de boas práticas em `web/manuais/`.
 
 ### Esteira de partículas de vórtice

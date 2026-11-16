@@ -117,8 +117,8 @@ try {
   await cdp("Page.navigate", { url: URL }); await espera(1500);
   await js(`localStorage.setItem("aranduBIS.inicio.visto", "1"); localStorage.setItem("aranduBIS.interface", "nova"); 1`);
   await cdp("Page.navigate", { url: URL }); await espera(2000);
-  await js(`(async () => { carrega(await chama("/api/exemplo?nome=biplano%2Fbiplano_a.json"), "biplano_a"); return 1; })()`);
-  for (let i = 0; i < 90; i++) { await espera(1000); if (await js(`!!(malha && esq && esq.nome === "biplano_a" && malha.zonas.some(z => z.startsWith("montante_tubos.")))`)) break; }
+  await js(`(async () => { carrega(await chama("/api/exemplo?nome=monoplano%2Fmonoplano_a.json"), "monoplano_a"); return 1; })()`);
+  for (let i = 0; i < 90; i++) { await espera(1000); if (await js(`!!(malha && esq && esq.nome === "monoplano_a" && malha.zonas.some(z => z.startsWith("montante_tubos.")))`)) break; }
   await js(PREPARA);
   for (const [nome, codigo] of TESTES) {
     let r; try { r = JSON.parse(await js(codigo)); } catch (e) { r = { ok: false, erro: String(e) }; }

@@ -16,7 +16,7 @@ class ErroDeGeometria(ValueError):
 
 def constroi(esquema: dict) -> dict:
     esq = dict(esquema)
-    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "biplano"))
+    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "monoplano"))
     try:
         A = AG.constroi(esq)
     except AG.GeometriaInvalida as e:
@@ -102,7 +102,7 @@ def materiais() -> list[dict]:
 def medidas(p: dict) -> dict:
     from ..nucleo.medidas import medidas as _med
     esq = dict(p.get("esquema") or {})
-    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "biplano"))
+    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "monoplano"))
     try:
         ca = p.get("cone_altura")
         return _med(esq, excluir=tuple(p.get("excluir") or ()), cone_altura=float(ca) if ca else None)
@@ -112,7 +112,7 @@ def medidas(p: dict) -> dict:
 def exporta_fabricacao(p: dict, pasta_dados=None) -> dict:
     from ..nucleo.modelador import exporta_fabricacao as EF
     esq = dict(p.get("esquema") or {})
-    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "biplano"))
+    esq.setdefault("_pasta", str(PASTA_EXEMPLOS / "monoplano"))
     formatos = tuple(p.get("formatos") or ("dat", "dxf", "csv"))
     if not set(formatos) <= {"dat", "dxf", "csv", "avl", "stl_fechado", "stl_esqueleto", "montagem"}:
         raise ErroDeGeometria("formatos: use dat, dxf, csv, avl, stl_fechado, stl_esqueleto e montagem")

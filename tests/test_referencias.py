@@ -72,8 +72,8 @@ def test_api_sem_velocidade_pede_a_velocidade_em_vez_de_assumir_uma():
     import json
     from pathlib import Path
     raiz = Path(__file__).resolve().parent.parent
-    d = json.loads((raiz / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(raiz / "cases/geometria/biplano")
+    d = json.loads((raiz / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(raiz / "cases/geometria/monoplano")
     r = AN.torcao({"esquema": d})
     assert "Vd" in r["erro"] or "Vc" in r["erro"]
     assert "erro" not in AN.torcao({"esquema": d, "Vc": 12.0})

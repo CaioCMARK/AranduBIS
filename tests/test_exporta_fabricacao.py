@@ -99,7 +99,7 @@ def test_stl_esqueleto_exige_estrutura():
     assert not r["arquivos"] and any("sem triangulos" in a for a in r["avisos"])
 
 def test_stl_esqueleto_do_biplano_tem_menos_que_o_fechado_e_so_a_estrutura():
-    esq = _exemplo("biplano/biplano_a.json")
+    esq = _exemplo("monoplano/monoplano_a.json")
     r = EF.exporta(esq, ("stl_fechado", "stl_esqueleto"))
     nomes = {a["nome"].split("_")[-1]: _le_stl(a) for a in r["arquivos"]}
     assert set(nomes) == {"fechado.stl", "esqueleto.stl"}
@@ -114,8 +114,8 @@ def test_fronteira_aceita_formatos_stl():
 
 def test_folha_de_montagem_gera_pdf_com_paginas():
     import base64
-    esq = _exemplo("biplano/biplano_a.json")
-    r = EF.exporta(esq, ("montagem",), asas=["asa_inferior"])
+    esq = _exemplo("monoplano/monoplano_a.json")
+    r = EF.exporta(esq, ("montagem",), asas=["asa"])
     arq = [a for a in r["arquivos"] if a["nome"].endswith(".pdf")]
     assert len(arq) == 1
     b = base64.b64decode(arq[0]["base64"])

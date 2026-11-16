@@ -10,9 +10,9 @@ from aranduBIS.nucleo.estrutura.cargas import G, distribuicao, envelope_vn
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 def vn(**kw):
@@ -43,12 +43,12 @@ def test_fator_de_carga_negativo_so_entra_com_n_min_negativo():
     r = vn(n_min=-1.0)
     assert any(p["nome"] == "negativo_Vg" for p in r["pontos"]) and min(r["curvas"]["manobra_neg"]) == pytest.approx(-1.0)
 
-def test_cortante_e_fletor_fecham_com_o_equilibrio(biplano):
-    d = distribuicao(biplano, 0.10, 0.20, V=15.0, n=1.0, massa_kg=12.0, rho=1.1)
+def test_cortante_e_fletor_fecham_com_o_equilibrio(monoplano):
+    d = distribuicao(monoplano, 0.10, 0.20, V=15.0, n=1.0, massa_kg=12.0, rho=1.1)
     assert d["convergiu"]
     assert d["sustentacao_total_N"] == pytest.approx(d["peso_N"], rel=0.03)
     asas = [s for s in d["superficies"] if s["referencia"]]
-    assert len(asas) == 2
+    assert len(asas) == 1
     for s in asas:
         assert s["cortante"][0] == pytest.approx(s["cortante_raiz"], rel=0.01) and s["cortante"][-1] > 0
         assert all(np.diff(s["cortante"]) <= 1e-9) and all(np.diff(s["fletor"]) <= 1e-9)
@@ -56,18 +56,18 @@ def test_cortante_e_fletor_fecham_com_o_equilibrio(biplano):
         lados = s["lados"]
         assert lados["dir"]["fletor_raiz"] == pytest.approx(lados["esq"]["fletor_raiz"], rel=0.02)
 
-def test_alivio_inercial_reduz_o_fletor_e_cresce_com_n(biplano):
-    com = distribuicao(biplano, 0.10, 0.20, V=15.0, n=1.8, massa_kg=12.0, massas_sup={"asa_inferior": 0.3, "asa_superior": 0.3})
-    sem = distribuicao(biplano, 0.10, 0.20, V=15.0, n=1.8, massa_kg=12.0, massas_sup={"asa_inferior": 0.0, "asa_superior": 0.0})
-    f = lambda d: next(s for s in d["superficies"] if s["nome"] == "asa_inferior")["fletor_raiz"]
+def test_alivio_inercial_reduz_o_fletor_e_cresce_com_n(monoplano):
+    com = distribuicao(monoplano, 0.10, 0.20, V=15.0, n=1.8, massa_kg=12.0, massas_sup={"asa": 0.3, "asa": 0.3})
+    sem = distribuicao(monoplano, 0.10, 0.20, V=15.0, n=1.8, massa_kg=12.0, massas_sup={"asa": 0.0, "asa": 0.0})
+    f = lambda d: next(s for s in d["superficies"] if s["nome"] == "asa")["fletor_raiz"]
     assert 0 < f(com) < f(sem)
-    um = distribuicao(biplano, 0.10, 0.20, V=15.0, n=1.0, massa_kg=12.0)
-    assert f(sem) > 1.5 * next(s for s in um["superficies"] if s["nome"] == "asa_inferior")["fletor_raiz"]
+    um = distribuicao(monoplano, 0.10, 0.20, V=15.0, n=1.0, massa_kg=12.0)
+    assert f(sem) > 1.5 * next(s for s in um["superficies"] if s["nome"] == "asa")["fletor_raiz"]
 
-def test_fronteira_cargas_devolve_criticos_e_erros_legiveis(biplano):
-    r = AN.cargas({"esquema": biplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6, "fator_seguranca": 1.2})
-    assert "erro" not in r and set(r["criticos"]) >= {"asa_inferior", "asa_superior"}
-    c = r["criticos"]["asa_inferior"]
+def test_fronteira_cargas_devolve_criticos_e_erros_legiveis(monoplano):
+    r = AN.cargas({"esquema": monoplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6, "fator_seguranca": 1.2})
+    assert "erro" not in r and set(r["criticos"]) >= {"asa", "asa"}
+    c = r["criticos"]["asa"]
     assert c["fletor_ultimo"] == pytest.approx(1.2 * c["fletor_raiz"])
-    assert "erro" in AN.cargas({"esquema": biplano, "Vc": 15.0, "Vd": 12.0})
+    assert "erro" in AN.cargas({"esquema": monoplano, "Vc": 15.0, "Vd": 12.0})
     assert "erro" in AN.cargas({"esquema": {"elementos": []}})

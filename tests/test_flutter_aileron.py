@@ -44,8 +44,8 @@ def test_comando_muito_rigido_volta_a_asa_sem_aileron():
 
 def test_analise_da_aeronave_com_aileron():
     from aranduBIS.fronteira import geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
-    r = FL.analisa_flutter(esq, "asa_inferior", Vd=18.75, aileron={"f_b": 0.0}, n_V=25)
-    assert r["aileron"]["nome"] == "aileron_inferior" and r["aileron"]["massa_kg"] > 0
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
+    r = FL.analisa_flutter(esq, "asa", Vd=18.75, aileron={"f_b": 0.0}, n_V=25)
+    assert r["aileron"]["nome"] == "aileron" and r["aileron"]["massa_kg"] > 0
     assert "estimada" in r["aileron"]["origem_massa"]
     assert len(r["f_vacuo_hz"]) == len(r["formas"]["h"]) == len(r["natureza"])

@@ -17,7 +17,7 @@ const Otimiza = (() => {
     { g: "Calibração", k: "fator_massas", r: "Fator sobre as massas de sistema (1 = sem ajuste)", p: 1.0 },
   ];
   let v = { variaveis: [], restricoes: [], regraNome: null, regraOrigem: null, regraJson: null, cenario: {}, analise: {}, avancado: "{}",
-            execucao: { populacao: 16, geracoes: 20, semente: 0, estrategia: "melhor" }, ultimoProblema: null,
+            execucao: { populacao: 16, geracoes: 20, semente: 0, estrategia: "melhor", processos: 0 }, ultimoProblema: null,
             arvore: [], arvoreSemente: "" };
   let secao = "variaveis", jobId = null, poll = null, ultimoEstado = null, listaRegras = [], seqRegra = 0;
 
@@ -321,6 +321,7 @@ const Otimiza = (() => {
     campo("População", "populacao", { min: 4, max: 300, step: 1 });
     campo("Gerações", "geracoes", { min: 1, max: 500, step: 1 });
     campo("Semente", "semente", { step: 1 });
+    campo("Núcleos (0 = automático)", "processos", { min: 0, max: 128, step: 1 });
     const l = el("label", "Estratégia"); const sel = document.createElement("select");
     [["melhor", "melhor (rand-to-best)"], ["aleatoria", "aleatória (rand/1)"]].forEach(([k, n]) => sel.add(new Option(n, k)));
     sel.value = v.execucao.estrategia; sel.onchange = () => { v.execucao.estrategia = sel.value; guarda(); };
@@ -411,11 +412,11 @@ const Otimiza = (() => {
 
   function renderGraficos() {
     const C = $("graficos4");
-    if (!C._a) { C.innerHTML = ""; C._a = el("div", "", "graf"); C._b = el("div", "", "graf"); C.append(C._a, C._b); }
+    if (!C._a) { C.innerHTML = ""; C._a = el("div", "", "graf"); C._b = el("div", "", "graf"); C._c = el("div", "", "graf"); C.append(C._a, C._b, C._c); }
     const h = (ultimoEstado && ultimoEstado.historico) || [];
     const xs = h.map(r => r.geracao);
     C.parentElement.classList.toggle("vazio", !h.length);
-    const desenhaTudo = () => {
+    let desenhaTudo = () => {
       Grafico.desenha(C._a, {
         vazio: "A curva aparece quando a otimização começar", titulo: "Pontuação por geração", xlab: "geração", ylab: "pontuação",
         series: [{ nome: "melhor", x: xs, y: h.map(r => r.melhor_objetivo), cor: "#4a86c5" }, { nome: "média (viáveis)", x: xs, y: h.map(r => r.media_objetivo), cor: "#6aa84f" }],
@@ -425,6 +426,19 @@ const Otimiza = (() => {
         series: [{ nome: "diversidade", x: xs, y: h.map(r => r.diversidade), cor: "#d98a3d" }],
       });
     };
+    const histo = () => {
+      const g0 = h.length ? h[0].objetivos || [] : [], g1 = h.length ? h[h.length - 1].objetivos || [] : [], todos = g0.concat(g1);
+      if (!todos.length) { Grafico.desenha(C._c, { vazio: "O histograma aparece quando houver projetos viáveis", titulo: "Histograma da população", series: [] }); return; }
+      const lo = Math.min(...todos), hi = Math.max(...todos), n = Math.max(5, Math.min(14, Math.ceil(Math.sqrt(todos.length) * 1.6))), larg = (hi - lo) / n || 1;
+      const cont = L => { const c = new Array(n).fill(0); L.forEach(x => { c[Math.min(n - 1, Math.floor((x - lo) / larg))]++; }); return c; };
+      const centros = Array.from({ length: n }, (_, i) => lo + larg * (i + 0.5));
+      Grafico.desenha(C._c, {
+        titulo: `Histograma da pontuação (geração ${h.length - 1} e primeira)`, xlab: "pontuação dos projetos viáveis", ylab: "projetos",
+        series: [{ nome: "primeira geração", tipo: "barras", x: centros, y: cont(g0), largura: larg, cor: "#9aa38a", opacidade: .45 }, { nome: "geração atual", tipo: "barras", x: centros, y: cont(g1), largura: larg, cor: "#c99a1e", opacidade: .6 }],
+      });
+    };
+    const desenhaTudo0 = desenhaTudo;
+    desenhaTudo = () => { desenhaTudo0(); histo(); };
     desenhaTudo();
     if (!C._obs) { C._obs = true; Grafico.liga(C, () => { if (Etapas && document.body.dataset.etapa === "4") desenhaTudo(); }); }
   }

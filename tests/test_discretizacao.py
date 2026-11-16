@@ -64,7 +64,7 @@ def test_orcamento_e_memoria():
 
 def test_servidor_anexa_a_discretizacao_usada():
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     with D.pedido({"vlm.n_chord": 3}):
         r = AN.equilibrio({"esquema": esq, "V": 14, "rho": 1.1, "x_cg": 0.1})
         u = D.usadas()
@@ -118,7 +118,7 @@ def test_convergencia_vlm_e_richardson():
     ext, p, err, _ = richardson(1.0 + 0.04, 1.0 + 0.01, 1.0 + 0.0025)
     assert p == pytest.approx(2.0) and ext == pytest.approx(1.0) and err == pytest.approx(1.25 * 0.01 / 1.0, rel=1e-6)
     assert richardson(1.0, 1.1, 1.0)[1] is None
-    r = AN.convergencia_vlm({"esquema": G.abre_exemplo("biplano/biplano_a.json"), "rho": 1.1})
+    r = AN.convergencia_vlm({"esquema": G.abre_exemplo("monoplano/monoplano_a.json"), "rho": 1.1})
     assert "erro" not in r and len(r["familias"]) == 2
     cla = next(g for g in r["familias"][0]["grandezas"] if g["nome"].startswith("CLα"))
     assert cla["gci"] < 0.05
@@ -131,8 +131,8 @@ def test_flap_converge_com_n_chord():
     from aranduBIS.nucleo.aero.controle import autoridade_rolagem
     warnings.simplefilter("ignore")
     raiz = Path(__file__).resolve().parents[1]
-    d = json.loads((raiz / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(raiz / "cases/geometria/biplano")
+    d = json.loads((raiz / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(raiz / "cases/geometria/monoplano")
     pb = []
     for nc in (4, 8, 16):
         with D.pedido({"vlm.n_chord": nc}):

@@ -109,7 +109,7 @@ def test_vortice_de_ponta_enrola_para_dentro():
 
 def test_fronteira_esteira_de_particulas_e_video():
     from aranduBIS.fronteira import analise as AN, geometria as G
-    esq = G.abre_exemplo("biplano/biplano_a.json")
+    esq = G.abre_exemplo("monoplano/monoplano_a.json")
     p = dict(esquema=esq, V=15, caso="degrau", alpha=3, esteira="particulas", discretizacao="manual", n_span=6, n_chord=2, cordas=4)
     r = AN.uvlm(p)
     assert "erro" not in r, r.get("erro")

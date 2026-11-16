@@ -31,11 +31,11 @@ const Inicio = (() => {
     c.append(ol);
     const bs = el("div", "", "inicio-botoes");
     const b1 = el("button", "Explorar um exemplo", "primario");
-    b1.title = "Abre o biplano de exemplo, com estrutura completa";
+    b1.title = "Abre o monoplano de exemplo, com estrutura completa";
     b1.onclick = async () => {
       dlg.close();
       try {
-        const lista = (await chama("/api/exemplos")).exemplos, n = lista.find(x => x.endsWith("biplano_a.json")) || lista[0];
+        const lista = (await chama("/api/exemplos")).exemplos, n = lista.find(x => x.endsWith("monoplano_a.json")) || lista[0];
         if (n) carrega(await chama("/api/exemplo?nome=" + encodeURIComponent(n)), n);
         const d = document.querySelector('.etapas div[data-etapa="1"]'); if (d) d.click();
       } catch (x) { msg(x.message, true); }

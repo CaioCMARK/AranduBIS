@@ -223,7 +223,7 @@ def fazer_handler(est: Estado):
                 if self.path in ("/api/peso", "/api/peso/servos"):
                     from .nucleo import peso as PS
                     try:
-                        esq_ = dict(d.get("esquema") or {}); esq_.setdefault("_pasta", str(G.PASTA_EXEMPLOS / "biplano"))
+                        esq_ = dict(d.get("esquema") or {}); esq_.setdefault("_pasta", str(G.PASTA_EXEMPLOS / "monoplano"))
                         if self.path == "/api/peso":
                             return self._json(PS.calcula(esq_, d.get("opcoes"), d.get("motor"), d.get("mtow_kg")))
                         novo = PS.servos_no_modelo(esq_, float(d["servo_g"]))

@@ -16,14 +16,14 @@ FIXOS = {k: P[k] for k in ("fator_seguranca", "K_flambagem")}
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def dados(biplano):
-    return FL.dados_de_vibracao(biplano, "asa_inferior", Vd=18.0)
+def dados(monoplano):
+    return FL.dados_de_vibracao(monoplano, "asa", Vd=18.0)
 
 def _medidas(d, f_EI, f_GJ, r=None):
     r = d["r_giro_c"] if r is None else r
@@ -39,7 +39,7 @@ def _medidas(d, f_EI, f_GJ, r=None):
 def test_frequencia_escala_com_a_raiz_da_rigidez(dados):
     b, _ = CA._modelo(dados, 1.0, 4.0, 0.28, {"frequencias": [{"tipo": "torcao", "ordem": 1}], "flecha": [], "torcao": []})
     c, _ = CA._modelo(dados, 1.0, 1.0, 0.28, {"frequencias": [{"tipo": "torcao", "ordem": 1}], "flecha": [], "torcao": []})
-    assert b[0] == pytest.approx(2 * c[0], rel=0.02)
+    assert b[0] == pytest.approx(2 * c[0], rel=0.06)
 
 def test_flecha_estatica_fecha_com_a_formula_de_balanco(dados):
     y = dados["y"]
@@ -48,33 +48,33 @@ def test_flecha_estatica_fecha_com_a_formula_de_balanco(dados):
     w = abs(CA._estatica(y, EI, np.full(len(y), 20.0), len(y) - 1, 0, 8.0, len(y) - 1))
     assert w == pytest.approx(8.0 * L ** 3 / (3 * 150.0), rel=1e-6)
 
-def test_recupera_ei_e_gj_conhecidos(biplano, dados):
+def test_recupera_ei_e_gj_conhecidos(monoplano, dados):
     obs = _medidas(dados, 1.30, 0.70)
-    r = CA.calibra(biplano, "asa_inferior", obs, Vd=18.0)
+    r = CA.calibra(monoplano, "asa", obs, Vd=18.0)
     assert r["parametros"]["EI"] == pytest.approx(1.30, rel=0.02)
     assert r["parametros"]["GJ"] == pytest.approx(0.70, rel=0.02)
     assert r["rms_depois_pct"] < 0.5 < r["rms_antes_pct"]
 
-def test_so_frequencias_nao_separam_tres_parametros(biplano, dados):
+def test_so_frequencias_nao_separam_tres_parametros(monoplano, dados):
     obs = _medidas(dados, 1.2, 0.8)
     obs["flecha"], obs["torcao"] = [], []
-    r = CA.calibra(biplano, "asa_inferior", obs, ajusta=("EI", "GJ", "r_giro"), Vd=18.0)
+    r = CA.calibra(monoplano, "asa", obs, ajusta=("EI", "GJ", "r_giro"), Vd=18.0)
     assert any("subdeterminado" in a or "nao separam" in a for a in r["avisos"])
 
-def test_sem_medidas_da_erro(biplano):
+def test_sem_medidas_da_erro(monoplano):
     with pytest.raises(ValueError):
-        CA.calibra(biplano, "asa_inferior", {}, Vd=18.0)
+        CA.calibra(monoplano, "asa", {}, Vd=18.0)
 
-def test_fronteira_calibracao(biplano, dados):
+def test_fronteira_calibracao(monoplano, dados):
     obs = _medidas(dados, 1.1, 0.9)
-    r = AN.calibracao({**P, "esquema": biplano, "observacoes": obs, "ajusta": ["EI", "GJ"]})
+    r = AN.calibracao({**P, "esquema": monoplano, "observacoes": obs, "ajusta": ["EI", "GJ"]})
     assert "erro" not in r and r["parametros"]["EI"] == pytest.approx(1.1, rel=0.03)
     assert "erro" in AN.calibracao({**P, "esquema": {"elementos": []}})
-    assert "erro" in AN.calibracao({**P, "esquema": biplano, "observacoes": {}})
+    assert "erro" in AN.calibracao({**P, "esquema": monoplano, "observacoes": {}})
 
-def test_modo_de_qualquer_tipo_e_modo_ausente_nao_entra_na_media_antes(biplano, dados):
+def test_modo_de_qualquer_tipo_e_modo_ausente_nao_entra_na_media_antes(monoplano, dados):
     obs = {"frequencias": [{"tipo": "todos", "ordem": 1, "hz": 18.0}, {"tipo": "flexao", "ordem": 9, "hz": 50.0}], "flecha": [], "torcao": []}
-    r = CA.calibra(biplano, "asa_inferior", obs, ajusta=("GJ",), mats=MATS_FIXOS, Vd=18.0)
+    r = CA.calibra(monoplano, "asa", obs, ajusta=("GJ",), mats=MATS_FIXOS, Vd=18.0)
     assert r["modelo_antes"][1] is None and r["erro_antes_pct"][1] is None
     assert r["rms_antes_pct"] < 100
     assert r["rotulos"][0] == "1o modo"

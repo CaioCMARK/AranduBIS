@@ -13,8 +13,8 @@ from aranduBIS.nucleo.modelador import aeronave_geometria as AG
 RAIZ = Path(__file__).resolve().parents[1]
 
 def _carrega():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
@@ -44,14 +44,14 @@ def base(fechada, cg):
     return _roda(fechada, cg)
 
 def test_torcao_zero_nao_muda_o_vlm(aberta, cg):
-    e = AE.esquema_deformado(aberta, "asa_inferior", [0.0, 1.2], [0.0, 0.0])
+    e = AE.esquema_deformado(aberta, "asa", [0.0, 1.2], [0.0, 0.0])
     a = monta(aberta, cg[0], cg[2]).resolver(3.0, V=15.0, rho=1.1)[0]
     b = monta(e, cg[0], cg[2]).resolver(3.0, V=15.0, rho=1.1)[0]
     assert b.CL == pytest.approx(a.CL, rel=1e-3)
 
 def test_torcao_de_incidencia_positiva_aumenta_a_sustentacao(aberta, cg):
     a = monta(aberta, cg[0], cg[2]).resolver(3.0, V=15.0, rho=1.1)[0].CL
-    e = AE.esquema_deformado(aberta, "asa_inferior", [0.0, 1.2], [0.0, 3.0])
+    e = AE.esquema_deformado(aberta, "asa", [0.0, 1.2], [0.0, 3.0])
     assert monta(e, cg[0], cg[2]).resolver(3.0, V=15.0, rho=1.1)[0].CL > a
 
 def test_converge_e_o_trim_fecha_o_cl_alvo(base):
@@ -84,5 +84,5 @@ def test_ponta_aberta_diverge_e_diz_isso(aberta, cg):
 
 def test_fronteira_devolve_o_resultado_e_erro_claro(fechada):
     r = AN.aeroelastica({"esquema": fechada, "V": 15.0, "n": 1.0, "massa_kg": 12.0})
-    assert "erro" not in r and r["convergiu"] and {a["nome"] for a in r["asas"]} == {"asa_inferior", "asa_superior"}
+    assert "erro" not in r and r["convergiu"] and {a["nome"] for a in r["asas"]} == {"asa", "asa"}
     assert "erro" in AN.aeroelastica({"esquema": {"elementos": []}})

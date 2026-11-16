@@ -17,14 +17,14 @@ FIXOS = {k: P[k] for k in ("fator_seguranca", "K_flambagem")}
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def r(biplano):
-    return CA.analisa(biplano, tailstrike_peso=1.5, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
+def r(monoplano):
+    return CA.analisa(monoplano, tailstrike_peso=1.5, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
 
 def viga_simples(L=1.0, de=0.01, di=0.008):
     n = 8
@@ -35,8 +35,8 @@ def viga_simples(L=1.0, de=0.01, di=0.008):
         {"nome": "empenagem_h", "tipo": "asa", "perfil": "NACA 0012", "n_perfil": 40, "posicao": [L - 0.0475, 0.0, 0.0],
          "secoes": [{"y": -0.2, "corda": 0.19}, {"y": 0.2, "corda": 0.19}]}]}
 
-def test_modelo_tem_as_barras_do_esquema(biplano, r):
-    n_barras = sum(len(e["barras"]) for e in biplano["elementos"] if e["tipo"] == "trelica")
+def test_modelo_tem_as_barras_do_esquema(monoplano, r):
+    n_barras = sum(len(e["barras"]) for e in monoplano["elementos"] if e["tipo"] == "trelica")
     assert r["n_barras"] <= n_barras and r["n_barras"] > 0.9 * n_barras
     assert r["massa_kg"] == pytest.approx(0.31, abs=0.05)
 
@@ -51,9 +51,9 @@ def test_balanco_simples_confere_com_a_mao():
     sigma = 1.5 * 100.0 * 1.0 * 0.005 / I
     assert b["margens"]["compressao"] == pytest.approx(1000e6 / sigma - 1, rel=2e-3)
 
-def test_carga_maior_reduz_a_margem(biplano):
-    a = CA.analisa(biplano, peso_N=148.5, tailstrike_peso=0.5, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
-    b = CA.analisa(biplano, peso_N=148.5, tailstrike_peso=3.0, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
+def test_carga_maior_reduz_a_margem(monoplano):
+    a = CA.analisa(monoplano, peso_N=148.5, tailstrike_peso=0.5, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
+    b = CA.analisa(monoplano, peso_N=148.5, tailstrike_peso=3.0, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)
     ma = next(c["margem"] for c in a["casos"] if c["caso"] == "tailstrike")
     mb = next(c["margem"] for c in b["casos"] if c["caso"] == "tailstrike")
     assert mb < ma
@@ -62,19 +62,19 @@ def test_rajada_lateral_torce_o_boom(r):
     c = next(c for c in r["casos"] if c["caso"] == "rajada_lateral_Vc")
     assert abs(c["rotacao_h_graus"][0]) > 0
 
-def test_deck_bdf_reproduz_a_deformada(biplano, r):
+def test_deck_bdf_reproduz_a_deformada(monoplano, r):
     m = le(r["bdf"])
     assert len(m.barras) == r["n_barras"] and "SOL 101" in r["bdf"]
     ref = next(c for c in r["casos"] if c["caso"] == "tailstrike")
     u = Sistema(m).estatica(next(i for i, c in enumerate(r["casos"], 1) if c["caso"] == "tailstrike"))["u"]
     assert max(abs(v[2]) for v in u.values()) * 1000 >= ref["flecha_ponta_mm"] - 1e-6
 
-def test_tailstrike_so_entra_quando_pedido(biplano):
-    assert "tailstrike" not in [c["caso"] for c in CA.analisa(biplano, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)["casos"]]
+def test_tailstrike_so_entra_quando_pedido(monoplano):
+    assert "tailstrike" not in [c["caso"] for c in CA.analisa(monoplano, Vc=15.0, Vd=18.0, U_c=4.0, rho=1.1, mats=MATS_FIXOS, **FIXOS)["casos"]]
 
-def test_fronteira_cauda(biplano):
-    r2 = AN.cauda({**P, "esquema": biplano, "com_cargas": False})
+def test_fronteira_cauda(monoplano):
+    r2 = AN.cauda({**P, "esquema": monoplano, "com_cargas": False})
     assert "erro" not in r2 and r2["casos"][0]["caso"] == "trim" and r2["casos"][0]["descricao"].endswith("0.0 N")
-    sem = copy.deepcopy(biplano)
+    sem = copy.deepcopy(monoplano)
     sem["elementos"] = [e for e in sem["elementos"] if e["tipo"] != "trelica"]
     assert "trelica" in AN.cauda({**P, "esquema": sem, "com_cargas": False})["erro"]

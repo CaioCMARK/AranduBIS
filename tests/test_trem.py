@@ -14,14 +14,14 @@ FIXOS = {k: P[k] for k in ("fator_seguranca", "K_flambagem")}
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def r(biplano):
-    return TR.analisa(biplano, fator_pouso=3.0, **FIXOS)
+def r(monoplano):
+    return TR.analisa(monoplano, fator_pouso=3.0, **FIXOS)
 
 def caso(r, nome):
     return next(c for c in r["casos"] if c["caso"] == nome)
@@ -39,35 +39,35 @@ def test_modelo_fica_em_equilibrio_sem_apoio_real(r):
     for c in r["casos"]:
         assert c["residuo"] < 1e-8
 
-def test_momento_na_barra_do_eixo_confere_com_a_mao(r, biplano):
+def test_momento_na_barra_do_eixo_confere_com_a_mao(r, monoplano):
     c = caso(r, "pouso_3_pontos")
     b = max((b for b in c["piores"] if b["elemento"] == "trem"), key=lambda b: b["M"])
     alavanca = 0.17 - 0.045
     assert b["M"] == pytest.approx(1.5 * c["rodas"]["roda_dir"]["R"] * alavanca, rel=0.10)
 
-def test_dois_pontos_e_pior_que_tres_e_fator_maior_reduz_margem(biplano, r):
+def test_dois_pontos_e_pior_que_tres_e_fator_maior_reduz_margem(monoplano, r):
     assert caso(r, "pouso_2_pontos")["margem"] != caso(r, "pouso_3_pontos")["margem"]
-    r2 = TR.analisa(biplano, fator_pouso=2.0, **FIXOS)
+    r2 = TR.analisa(monoplano, fator_pouso=2.0, **FIXOS)
     assert caso(r2, "pouso_3_pontos")["margem"] > caso(r, "pouso_3_pontos")["margem"]
 
 def test_spin_up_nao_torce_o_eixo(r):
     c = caso(r, "pouso_3_pontos")
     assert max(b["T"] for b in c["piores"] if b["elemento"] == "trem") < 0.5
 
-def test_cg_fora_das_rodas_e_recusado(biplano):
+def test_cg_fora_das_rodas_e_recusado(monoplano):
     with pytest.raises(ValueError, match="entre a bequilha"):
-        TR.analisa(biplano, x_cg=0.5, fator_pouso=3.0, **FIXOS)
+        TR.analisa(monoplano, x_cg=0.5, fator_pouso=3.0, **FIXOS)
 
-def test_fronteira_trem(biplano):
-    r2 = AN.trem({**P, "esquema": biplano})
+def test_fronteira_trem(monoplano):
+    r2 = AN.trem({**P, "esquema": monoplano})
     assert "erro" not in r2 and r2["critico"]["margem"] < 1
-    assert "erro" in AN.trem({**P, "esquema": biplano, "fator_pouso": -1})
-    sem = copy.deepcopy(biplano)
+    assert "erro" in AN.trem({**P, "esquema": monoplano, "fator_pouso": -1})
+    sem = copy.deepcopy(monoplano)
     sem["elementos"] = [e for e in sem["elementos"] if e["tipo"] != "roda"]
     assert "rodas" in AN.trem({**P, "esquema": sem})["erro"]
 
 def test_solda_do_eixo_cria_zona_rigida_e_alivia_o_eixo():
-    esq = json.loads((RAIZ / "cases/geometria/biplano/biplano_a.json").read_text(encoding="utf-8")); esq["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+    esq = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_a.json").read_text(encoding="utf-8")); esq["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     esq2, zonas = TR._com_solda(esq, 0.01)
     assert len(zonas) == 2
     for c, ext in zonas:

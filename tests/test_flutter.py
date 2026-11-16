@@ -66,14 +66,14 @@ def _aeronave():
     import json
     from pathlib import Path
     raiz = Path(__file__).resolve().parents[1]
-    d = json.loads((raiz / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(raiz / "cases/geometria/biplano")
+    d = json.loads((raiz / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(raiz / "cases/geometria/monoplano")
     return d
 
 def test_fronteira_devolve_as_duas_asas_com_frequencias():
     from aranduBIS.fronteira import analise as AN
     r = AN.flutter({"esquema": _aeronave(), "Vd": 18.75})
-    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa_inferior", "asa_superior"}
+    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa", "asa"}
     for a in r["asas"]:
         assert len(a["f_vacuo_hz"]) == 8 and a["f_vacuo_hz"][0] > 0 and a["massa_semi_asa_kg"] > 0
         assert len(a["V"]) == len(a["amortecimento"][0]) == len(a["freq_hz"][0])

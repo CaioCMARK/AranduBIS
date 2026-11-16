@@ -12,14 +12,14 @@ from aranduBIS.nucleo.estrutura.materiais import propriedades
 RAIZ = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def cargas(biplano):
-    return AN.cargas({"esquema": biplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
+def cargas(monoplano):
+    return AN.cargas({"esquema": monoplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
 
 def mats():
     return {k: propriedades(k) for k in ("balsa", "tubo_carbono")}
@@ -44,7 +44,7 @@ def test_flexao_de_viga_composta_bate_com_a_conta_a_mao():
     assert s["EI"] == pytest.approx(EI_tubos + EI_alma, rel=0.02)
     assert s["zna"] == pytest.approx(0.5 * h, rel=1e-6)
 
-def test_tensao_no_tubo_e_momento_sobre_modulo(cargas, biplano):
+def test_tensao_no_tubo_e_momento_sobre_modulo(cargas, monoplano):
     s, _ = secao_teste()
     t, mg = AS._tensoes(s, 10.0, 0.0, mats())
     E = mats()["tubo_carbono"]["E"]
@@ -60,34 +60,34 @@ def test_chapeado_mais_curto_deixa_a_secao_mais_flexivel():
     assert sem["EI"] < curto["EI"] < cheio["EI"]
     assert curto["xe"] == pytest.approx(0.05)
 
-def test_qualidade_do_material_reduz_o_admissivel_e_a_margem(biplano, cargas):
-    a = AS.verifica(biplano, "asa_inferior", cargas["casos"])
-    b = AS.verifica(biplano, "asa_inferior", cargas["casos"], qualidade_balsa=0.5)
+def test_qualidade_do_material_reduz_o_admissivel_e_a_margem(monoplano, cargas):
+    a = AS.verifica(monoplano, "asa", cargas["casos"])
+    b = AS.verifica(monoplano, "asa", cargas["casos"], qualidade_balsa=0.5)
     assert b["admissiveis_MPa"]["alma_cis"] == pytest.approx(0.5 * a["admissiveis_MPa"]["alma_cis"])
     assert b["critico"]["margem"] < a["critico"]["margem"]
     assert a["admissiveis_MPa"]["tubo_comp"] == pytest.approx(1480.0)
 
-def test_biplano_tem_margens_positivas_e_flecha_dentro_do_limite(biplano, cargas):
-    r = AS.verifica(biplano, "asa_inferior", cargas["casos"], fator_seguranca=1.2)
+def test_biplano_tem_margens_positivas_e_flecha_dentro_do_limite(monoplano, cargas):
+    r = AS.verifica(monoplano, "asa", cargas["casos"], fator_seguranca=1.2)
     assert r["critico"]["margem"] > 0 and r["flecha_max_pct"] < 6.0
     assert r["estacoes"]["EI"][0] > r["estacoes"]["EI"][-1] > 0
     assert len(r["casos"]) == len(cargas["casos"])
 
-def test_mais_carga_menos_margem(biplano, cargas):
-    base = AS.verifica(biplano, "asa_inferior", cargas["casos"], fator_seguranca=1.2)
-    mais = AS.verifica(biplano, "asa_inferior", cargas["casos"], fator_seguranca=2.4)
+def test_mais_carga_menos_margem(monoplano, cargas):
+    base = AS.verifica(monoplano, "asa", cargas["casos"], fator_seguranca=1.2)
+    mais = AS.verifica(monoplano, "asa", cargas["casos"], fator_seguranca=2.4)
     assert mais["critico"]["margem"] < base["critico"]["margem"]
 
-def test_modelo_sem_estrutura_diz_o_que_falta(biplano, cargas):
-    d = copy.deepcopy(biplano)
-    next(e for e in d["elementos"] if e["nome"] == "asa_inferior")["estrutura"] = {}
+def test_modelo_sem_estrutura_diz_o_que_falta(monoplano, cargas):
+    d = copy.deepcopy(monoplano)
+    next(e for e in d["elementos"] if e["nome"] == "asa")["estrutura"] = {}
     with pytest.raises(ValueError, match="estrutura"):
-        AS.verifica(d, "asa_inferior", cargas["casos"])
+        AS.verifica(d, "asa", cargas["casos"])
     with pytest.raises(ValueError, match="material"):
         propriedades("unobtainium")
 
-def test_fronteira_asa(biplano):
-    r = AN.asa({"esquema": biplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
-    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa_inferior", "asa_superior"}
-    assert r["critico"]["asa"] in ("asa_inferior", "asa_superior")
+def test_fronteira_asa(monoplano):
+    r = AN.asa({"esquema": monoplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6})
+    assert "erro" not in r and {a["nome"] for a in r["asas"]} == {"asa", "asa"}
+    assert r["critico"]["asa"] in ("asa", "asa")
     assert "erro" in AN.asa({"esquema": {"elementos": []}})

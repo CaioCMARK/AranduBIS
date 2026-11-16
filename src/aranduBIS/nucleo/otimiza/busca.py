@@ -53,7 +53,7 @@ def evolui(prob: dict, populacao: int = 24, geracoes: int = 40, F: float = 0.7, 
             reg = {"geracao": g, "melhor_objetivo": res[ib]["objetivo"], "melhor_viavel": res[ib]["violacao"] <= 0.0, "melhor_violacao": res[ib]["violacao"],
                    "media_objetivo": float(np.mean([r["objetivo"] for r in viaveis])) if viaveis else None, "n_viaveis": len(viaveis),
                    "diversidade": float(np.mean(np.std((pop - lo) / (hi - lo), axis=0))), "avaliacoes": n_aval, "tempo_s": time.perf_counter() - t0,
-                   "melhor_x": dict(res[ib]["x"])}
+                   "melhor_x": dict(res[ib]["x"]), "objetivos": [float(r["objetivo"]) for r in viaveis if r["objetivo"] is not None and np.isfinite(r["objetivo"])]}
             hist.append(reg)
             if ao_gerar:
                 ao_gerar(reg)

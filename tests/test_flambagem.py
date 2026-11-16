@@ -16,14 +16,14 @@ E, NU = 2.85e9, 0.3
 G = E / (2 * (1 + NU))
 
 @pytest.fixture(scope="module")
-def biplano():
-    d = json.loads((RAIZ / "cases/geometria/biplano/biplano_b.json").read_text(encoding="utf-8"))
-    d["_pasta"] = str(RAIZ / "cases/geometria/biplano")
+def monoplano():
+    d = json.loads((RAIZ / "cases/geometria/monoplano/monoplano_b.json").read_text(encoding="utf-8"))
+    d["_pasta"] = str(RAIZ / "cases/geometria/monoplano")
     return d
 
 @pytest.fixture(scope="module")
-def pedido(biplano):
-    return {"esquema": biplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6}
+def pedido(monoplano):
+    return {"esquema": monoplano, "Vc": 15.0, "Vd": 18.75, "CL_max": 1.6}
 
 def test_placa_isotropica_quadrada_reproduz_k4():
     t, b = 1e-3, 0.1
@@ -50,26 +50,26 @@ def test_painel_curvo_aguenta_mais_que_o_plano_e_curvatura_forte_mais_ainda():
     assert FL.sigma_cr_curvo(E, 0.12e9, 0.148e9, 0.01, t, a, b, 0.09) > plano
     assert FL.sigma_cr_curvo(E, 0.12e9, 0.148e9, 0.01, t, a, b, 0.03) > FL.sigma_cr_curvo(E, 0.12e9, 0.148e9, 0.01, t, a, b, 0.09)
 
-def test_paineis_do_modelo(biplano, pedido):
+def test_paineis_do_modelo(monoplano, pedido):
     a = AN.asa(pedido)["asas"][0]
-    r = FL.verifica(biplano, "asa_inferior", a, knockdown=0.5)
-    assert len(r["paineis"]) >= 10 and r["nervuras"][0] == pytest.approx(0.06)
+    r = FL.verifica(monoplano, "asa", a, knockdown=0.5)
+    assert len(r["paineis"]) >= 10 and r["nervuras"][0] == pytest.approx(0.081)
     p = r["pior_pele"]
     assert p["margem_pele"] == pytest.approx(p["sigma_cr_MPa"] / p["sigma_pele_MPa"] - 1, rel=1e-6)
     assert p["knockdown_para_margem_zero"] == pytest.approx(0.5 * p["sigma_pele_MPa"] / p["sigma_cr_MPa"], rel=1e-6)
-    r2 = FL.verifica(biplano, "asa_inferior", a, knockdown=1.0)
+    r2 = FL.verifica(monoplano, "asa", a, knockdown=1.0)
     assert r2["pior_pele"]["margem_pele"] > p["margem_pele"]
 
-def test_chapeado_mais_grosso_ganha_margem(biplano, pedido):
-    e2 = copy.deepcopy(biplano)
+def test_chapeado_mais_grosso_ganha_margem(monoplano, pedido):
+    e2 = copy.deepcopy(monoplano)
     for el in e2["elementos"]:
         if el.get("estrutura"):
             el["estrutura"]["chapeado"]["espessura"] = 0.002
-    a1 = FL.verifica(biplano, "asa_inferior", AN.asa(pedido)["asas"][0])["pior_pele"]["sigma_cr_MPa"]
-    a2 = FL.verifica(e2, "asa_inferior", AN.asa(dict(pedido, esquema=e2))["asas"][0])["pior_pele"]["sigma_cr_MPa"]
+    a1 = FL.verifica(monoplano, "asa", AN.asa(pedido)["asas"][0])["pior_pele"]["sigma_cr_MPa"]
+    a2 = FL.verifica(e2, "asa", AN.asa(dict(pedido, esquema=e2))["asas"][0])["pior_pele"]["sigma_cr_MPa"]
     assert a2 > 2 * a1
 
 def test_fronteira_flambagem(pedido):
     r = AN.flambagem(pedido)
-    assert "erro" not in r and r["critico"] and {a["nome"] for a in r["asas"]} == {"asa_inferior", "asa_superior"}
+    assert "erro" not in r and r["critico"] and {a["nome"] for a in r["asas"]} == {"asa", "asa"}
     assert AN.flambagem(dict(pedido, knockdown_pele=-1))["erro"]

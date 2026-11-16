@@ -19,13 +19,13 @@ test("junta: solda e o padrao e nao fica gravada", () => {
 
 test("vinculo: engaste, apoio com translacoes e ligacao convivem no mesmo no", () => {
   const pega = novo();
-  pega("Juntas.defineVinculo(e, 0, 'apoio'); Juntas.defineLigacao(e, 0, 'asa_inferior')");
-  assert.deepEqual(dado(pega, "e.vinculos"), [{ no: 0, tipo: "apoio", graus: [1, 2, 3] }, { no: 0, tipo: "ligacao", alvo: "asa_inferior" }]);
+  pega("Juntas.defineVinculo(e, 0, 'apoio'); Juntas.defineLigacao(e, 0, 'asa')");
+  assert.deepEqual(dado(pega, "e.vinculos"), [{ no: 0, tipo: "apoio", graus: [1, 2, 3] }, { no: 0, tipo: "ligacao", alvo: "asa" }]);
   assert.equal(pega("Juntas.vinculoDe(e, 0)"), "apoio");
-  assert.equal(pega("Juntas.ligacaoDe(e, 0)"), "asa_inferior");
+  assert.equal(pega("Juntas.ligacaoDe(e, 0)"), "asa");
   pega("Juntas.defineVinculo(e, 0, 'engaste')");
   assert.equal(pega("Juntas.vinculoDe(e, 0)"), "engaste");
-  assert.equal(pega("Juntas.ligacaoDe(e, 0)"), "asa_inferior");
+  assert.equal(pega("Juntas.ligacaoDe(e, 0)"), "asa");
   pega("Juntas.defineVinculo(e, 0, ''); Juntas.defineLigacao(e, 0, '')");
   assert.equal(dado(pega, "e.vinculos"), null);
 });
