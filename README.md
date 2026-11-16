@@ -1,6 +1,6 @@
 # AranduBIS
 
-Programa de projeto e otimização de aeronaves de competição SAE AeroDesign. Roda no seu computador e abre a interface no navegador.
+Programa de projeto e otimização de aeronaves de competição SAE AeroDesign. Roda no seu computador, numa janela própria ou no navegador.
 
 Reúne modelagem da aeronave (asas, cauda, fuselagem, treliças, trem de pouso), aerodinâmica (VLM com polares de perfil, UVLM no tempo, efeito solo), massa e CG, propulsão (hélices APC medidas e BEMT), decolagem, estabilidade estática e dinâmica (inclusive a resposta a um comando rápido do piloto), cargas e estrutura (viga da asa, torção, flambagem, flutter, vibração da cauda e do motor, treliças e cascas por elementos finitos, pouso dinâmico), fabricação (nervuras em DXF para corte a laser, STL da forma externa e do esqueleto estrutural, chapeado planificado em faixas) e otimização com restrições e pontuação segundo as regras da competição.
 
@@ -17,7 +17,7 @@ Reúne modelagem da aeronave (asas, cauda, fuselagem, treliças, trem de pouso),
 1. Abra a página de [Releases](https://github.com/CaioCMARK/AranduBIS/releases/latest) e baixe **AranduBIS-windows-x64.zip**.
 2. Clique com o botão direito no zip, escolha **Extrair tudo** e abra a pasta extraída `AranduBIS`.
 3. Dê dois cliques em **AranduBIS.exe**.
-4. Uma janela preta de console abre e, em seguida, o navegador abre sozinho em `http://127.0.0.1:8741/`. Se não abrir, copie esse endereço para o navegador.
+4. Uma janela preta de console abre e, em seguida, o programa abre numa janela própria. Se preferir o navegador, rode `AranduBIS.exe --navegador` e acesse `http://127.0.0.1:8741/`.
 5. Para encerrar, feche a janela de console (ou aperte Ctrl+C nela).
 
 Observações:
@@ -39,7 +39,7 @@ pip install -e .
 python -m aranduBIS
 ```
 
-A interface abre em `http://127.0.0.1:8741/`. Opções (valem também para o `AranduBIS.exe`): `--porta 8800` muda a porta e `--sem-navegador` não abre o navegador sozinho.
+A interface abre em `http://127.0.0.1:8741/`. Opções (valem também para o `AranduBIS.exe`): `--porta 8800` muda a porta, `--sem-navegador` não abre nada sozinho, `--janela` abre numa janela própria (requer `pip install pywebview`) e `--navegador` força o navegador.
 
 Para rodar os testes:
 

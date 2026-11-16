@@ -96,14 +96,26 @@ dialog.comandos{width:min(600px,94vw);margin-top:12vh}
 .cmd-tit{flex:1;min-width:0}
 .cmd.at kbd,.cmd:hover kbd{color:var(--tinta)}
 [data-interface="nova"] .barra select{max-width:172px}
+[data-interface="nova"] .titulo{display:none}
+.menubar{display:flex;align-items:stretch;background:var(--marinho);color:#fff;padding:0 4px;min-height:30px}
 .menu{position:relative;display:inline-flex}
-.menu>button::after{content:"";margin-left:7px;border:4px solid transparent;border-top-color:currentColor;border-bottom-width:0}
-.menu-pop{position:absolute;top:calc(100% + 4px);left:0;z-index:40;min-width:210px;display:flex;flex-direction:column;gap:2px;padding:5px;
- background:var(--painel);border:1px solid var(--linha);border-radius:8px;box-shadow:var(--sombra)}
+[data-interface="nova"] .menubar .menu-tit{border:0;border-radius:0;background:transparent;color:#fff;padding:2px 11px;min-height:30px;font-weight:500}
+[data-interface="nova"] .menubar .menu-tit:hover,[data-interface="nova"] .menubar .menu-tit[aria-expanded="true"]{background:rgba(255,255,255,.18)}
+.menubar-doc{margin-left:auto;align-self:center;padding:0 10px;font-size:13px;font-weight:600;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu-pop{position:absolute;top:100%;left:0;z-index:40;min-width:250px;max-height:78vh;overflow:auto;display:flex;flex-direction:column;padding:5px;
+ background:var(--painel);color:var(--tinta);border:1px solid var(--linha);border-radius:0 0 8px 8px;box-shadow:var(--sombra)}
 .menu-pop[hidden]{display:none}
-.menu-pop button,.menu-pop .botao,.menu-pop select{width:100%;max-width:none!important;justify-content:flex-start;border-color:transparent;background:transparent}
-.menu-pop select{border-color:var(--linha)}
-.menu-pop button:hover,.menu-pop .botao:hover{background:var(--marinho)!important;color:#fff;border-color:var(--marinho)}
+[data-interface="nova"] .menu-item{display:grid;grid-template-columns:18px 1fr auto;gap:6px;align-items:center;width:100%;border:0;border-radius:5px;background:transparent;
+ padding:3px 8px;min-height:28px;text-align:left;font-weight:400}
+[data-interface="nova"] .menu-item:hover:not(:disabled),[data-interface="nova"] .menu-item:focus-visible{background:var(--marinho);color:#fff;outline:0}
+.menu-item:disabled{opacity:.45;cursor:default}
+.menu-marca{font-weight:700}
+.menu-tecla{font-size:12px;opacity:.7;padding-left:18px;font-variant-numeric:tabular-nums}
+.menu-sep{height:1px;margin:4px 6px;background:var(--linha)}
+.menu-grupo{padding:5px 8px 2px 32px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--suave)}
+[data-interface="nova"] .barra .busca{margin-left:auto;gap:8px;min-width:230px;justify-content:flex-start;color:var(--suave);font-weight:400}
+[data-interface="nova"] .barra .busca span{flex:1;text-align:left}
+[data-interface="nova"] .barra .fim{display:none}
 .vgrupo select{border-color:transparent;background:transparent;min-height:var(--alt);max-width:150px}
 [data-interface="nova"] .rodape span{white-space:nowrap}
 [data-interface="nova"] #r_msg{min-width:0;overflow:hidden;text-overflow:ellipsis}

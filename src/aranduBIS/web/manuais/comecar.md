@@ -25,6 +25,7 @@ Cada vista mostra, logo acima do gráfico, uma legenda "O que você está vendo"
 
 - **Rodapé → "malha"**: abre a discretização da última análise. Mostra o que foi usado, se veio do automático ou de um valor seu e por quê. Também lista os avisos de geometria e tem o botão de teste de convergência do VLM.
 - **Configurações → Discretização**: onde você fixa um valor no lugar do automático (campo vazio = automático). Também tem o orçamento de tempo das análises pesadas.
+- **Ctrl+K**: procura qualquer comando, análise, exemplo ou elemento. **?** lista os atalhos. O manual "Interface" descreve as ferramentas da vista 3D e o editor de chapas.
 - **"? teoria e boas práticas"** embaixo de cada vista da etapa 3: abre o manual daquela análise.
 
 ## Configurações pouco convencionais

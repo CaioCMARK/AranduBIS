@@ -46,12 +46,12 @@ async function main() {
   for (const tema of TEMAS) for (const [w, h, dpr] of TAMANHOS) {
     await cdp("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: dpr, mobile: false });
     await cdp("Page.navigate", { url: URL }); await espera(1800);
-    await js(`(async()=>{ Tema.escolhe(${JSON.stringify(tema)}); carrega(await chama("/api/exemplo?nome=biplano%2Fbiplano_b.json"), "biplano"); return 1 })()`);
+    await js(`(async()=>{ try { localStorage.setItem('aranduBIS.inicio.visto', '1'); const d = document.getElementById('dlg_inicio'); if (d && d.open) d.close(); } catch (e) {} Tema.escolhe(${JSON.stringify(tema)}); carrega(await chama("/api/exemplo?nome=biplano%2Fbiplano_b.json"), "biplano"); return 1 })()`);
     await espera(2500);
     const r = JSON.parse(await js(`JSON.stringify((()=>{
       const alt = s => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().height) : -1; };
       const vis = s => [...document.querySelectorAll(s)].filter(e => { const r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; }).length;
-      return { tema: document.documentElement.dataset.tema, barra: alt("#barra"), botoes: vis("#barra button"), etapas: alt(".etapas"),
+      return { tema: document.documentElement.dataset.tema, barra: alt("#barra"), botoes: vis("#barra button, .vbarra button, .paleta button"), etapas: alt(".etapas"),
                rolaX: document.documentElement.scrollWidth > innerWidth + 1, rolaY: document.documentElement.scrollHeight > innerHeight + 1,
                vista: alt(".vista"), canvasOK: document.getElementById("cv").width > 0 };
     })())`));

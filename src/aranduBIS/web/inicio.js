@@ -43,7 +43,7 @@ const Inicio = (() => {
     const b2 = el("button", "Começar uma aeronave nova"); b2.onclick = () => { dlg.close(); $("b_novo").click(); };
     const b3 = el("button", "Ler o guia"); b3.onclick = () => { dlg.close(); if (typeof Manual !== "undefined") Manual.abre("comecar"); };
     bs.append(b1, b2, b3); c.append(bs);
-    c.append(el("div", "Para abrir esta janela de novo, use o botão Primeiros passos na barra superior.", "nota"));
+    c.append(el("div", "Para abrir esta janela de novo, use Primeiros passos no menu Ajuda (na interface clássica, o botão da barra superior). A tecla ? lista os atalhos e Ctrl+K procura qualquer comando.", "nota"));
     dlg.append(topo, c);
   }
   document.body.append(dlg);

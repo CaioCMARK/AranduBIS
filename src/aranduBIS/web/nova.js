@@ -26,6 +26,11 @@ const Interface = (() => {
     estrutura: '<path d="M3 18L9 6l6 12 6-12M3 18h18M9 6h12"/>',
     desfaz: '<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12"/>',
     refaz: '<path d="M15 7l5 5-5 5"/><path d="M20 12H10a6 6 0 000 12"/>',
+    novo: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M12 11v6M9 14h6"/>',
+    abrir: '<path d="M3 7h6l2 2h10v10H3z"/>',
+    salvar: '<path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h7V3M8 21v-7h8v7"/>',
+    config: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+    busca: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
     ajuda: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.7-2.5 2-2.5 4M12 17.2v.3"/>',
   };
   const FERR = [
@@ -166,6 +171,9 @@ const Interface = (() => {
   function clique(px, py) {
     if (cliqueCubo(px, py)) return;
     if (ferr === "selecionar") {
+      const antes = aba + "|" + Secao3D.dados().isel;
+      Secao3D.clica(px, py);
+      if (aba + "|" + Secao3D.dados().isel !== antes) return;
       const z = vista.zonaEm(px, py);
       if (z < 0 || !malha) return;
       const nome = malha.zonas[z], i = esq.elementos.findIndex(e => nome.startsWith(e.nome + "."));
@@ -238,41 +246,97 @@ const Interface = (() => {
     return false;
   }
 
-  function menu(titulo, itens, dica) {
-    const m = el("span", "menu"), b = el("button", "", titulo), pop = el("div", "menu-pop");
-    b.title = dica; b.setAttribute("aria-haspopup", "true"); b.setAttribute("aria-expanded", "false");
-    pop.hidden = true; pop.setAttribute("role", "menu");
-    itens.filter(Boolean).forEach(i => { if (i.tagName === "BUTTON" || i.classList.contains("botao")) i.setAttribute("role", "menuitem"); pop.append(i); });
-    const fecha = () => { pop.hidden = true; b.setAttribute("aria-expanded", "false"); };
-    b.onclick = ev => { ev.stopPropagation(); const abre = pop.hidden; document.querySelectorAll(".menu-pop").forEach(x => { x.hidden = true; }); pop.hidden = !abre; b.setAttribute("aria-expanded", abre ? "true" : "false"); };
-    pop.addEventListener("click", ev => { if (ev.target.tagName !== "SELECT") fecha(); });
-    pop.addEventListener("change", fecha);
-    document.addEventListener("click", ev => { if (!m.contains(ev.target)) fecha(); });
-    document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !pop.hidden) { fecha(); b.focus(); } });
-    m.append(b, pop);
-    return m;
+  const menus = [];
+  const fechaMenus = () => menus.forEach(m => { m.pop.hidden = true; m.b.setAttribute("aria-expanded", "false"); });
+  const menuAberto = () => menus.find(m => !m.pop.hidden);
+
+  function abreMenu(m, foca) {
+    fechaMenus();
+    m.pop.innerHTML = "";
+    m.itens().forEach(it => {
+      if (!it) { m.pop.append(el("div", "menu-sep")); return; }
+      if (it.grupo) { m.pop.append(el("div", "menu-grupo", it.grupo)); return; }
+      const [rot, faz, tecla, o] = it, r = el("button", "menu-item");
+      r.setAttribute("role", o && "marcado" in o ? "menuitemradio" : "menuitem");
+      if (o && "marcado" in o) r.setAttribute("aria-checked", o.marcado ? "true" : "false");
+      r.append(el("span", "menu-marca", o && o.marcado ? "✓" : ""), el("span", "menu-rot", rot), el("span", "menu-tecla", tecla || ""));
+      if (o && o.desligado) r.disabled = true;
+      r.onclick = () => { fechaMenus(); faz(); };
+      m.pop.append(r);
+    });
+    m.pop.hidden = false; m.b.setAttribute("aria-expanded", "true");
+    if (foca) { const i = m.pop.querySelector(".menu-item:not(:disabled)"); if (i) i.focus(); }
+  }
+
+  function menu(titulo, itens) {
+    const w = el("span", "menu"), b = el("button", "menu-tit", titulo), pop = el("div", "menu-pop");
+    b.setAttribute("aria-haspopup", "true"); b.setAttribute("aria-expanded", "false"); b.setAttribute("role", "menuitem");
+    pop.hidden = true; pop.setAttribute("role", "menu"); pop.setAttribute("aria-label", titulo);
+    const m = { b, pop, itens };
+    b.onclick = ev => { ev.stopPropagation(); if (pop.hidden) abreMenu(m); else fechaMenus(); };
+    b.onmouseenter = () => { const a = menuAberto(); if (a && a !== m) abreMenu(m); };
+    w.addEventListener("keydown", ev => {
+      const k = ev.key, i = menus.indexOf(m);
+      if (k === "Escape") { fechaMenus(); b.focus(); ev.stopPropagation(); ev.preventDefault(); return; }
+      if (k === "ArrowRight" || k === "ArrowLeft") { const n = menus[(i + (k === "ArrowRight" ? 1 : -1) + menus.length) % menus.length]; if (menuAberto()) abreMenu(n, true); else n.b.focus(); ev.preventDefault(); return; }
+      if (k === "ArrowDown" || k === "ArrowUp") {
+        if (pop.hidden) { abreMenu(m, true); ev.preventDefault(); return; }
+        const L = [...pop.querySelectorAll(".menu-item:not(:disabled)")], j = L.indexOf(document.activeElement);
+        const n = L[(j + (k === "ArrowDown" ? 1 : -1) + L.length) % L.length]; if (n) n.focus(); ev.preventDefault();
+      }
+    });
+    w.append(b, pop); menus.push(m);
+    return w;
   }
 
   function montaBarra() {
-    const $i = id => document.getElementById(id);
+    const $i = id => document.getElementById(id), clica = id => () => $i(id).click();
     const col = document.querySelector("#et1 > aside.col"), h = col.querySelector("h4");
     const ac = el("div", "col-acoes");
     ac.append($i("s_inserir"), $i("b_remove"));
     h.after(ac);
     const barra = $i("barra"), g1 = barra.querySelector(".g1-grupo");
     g1.querySelectorAll(".sep").forEach(x => x.remove());
-    [["b_desfaz", "desfaz"], ["b_refaz", "refaz"]].forEach(([id, ic]) => { const b = $i(id); b.setAttribute("aria-label", b.textContent); b.innerHTML = svg(ICONES[ic]); b.classList.add("icone"); });
     const cor = $i("s_cor");
     if (cor) { const g = el("span", "vgrupo"); g.append(cor); document.querySelector(".vbarra").append(g); }
-    const at = el("button", "", "Atalhos de teclado"); at.id = "b_atalhos"; at.title = "Lista de atalhos (?)"; at.onclick = atalhos;
-    const cm = el("button", "", "Procurar comando…"); cm.id = "b_comandos"; cm.title = "Procurar qualquer comando ou análise (Ctrl+K)"; cm.onclick = comandos;
+    const opcoes = id => [...$i(id).options].filter(o => o.value).map(o => [o.textContent, () => { const x = $i(id); x.value = o.value; x.dispatchEvent(new Event("change")); }]);
+    const ligado = (attr, v) => !!document.querySelector(`[data-${attr}="${v}"].on`);
+    const vistaDe = k => () => document.querySelector(`[data-vista="${k}"]`).click();
+    const tema = () => document.documentElement.dataset.tema;
+
+    const mb = el("div", "menubar"); mb.setAttribute("role", "menubar"); mb.setAttribute("aria-label", "Menu principal");
+    mb.append(
+      menu("Arquivo", () => [["Novo", clica("b_novo")], ["Abrir…", clica("b_abrir"), "Ctrl+O"], null, { grupo: "Exemplos" }, ...opcoes("s_exemplos"), null,
+        ["Salvar", clica("b_salvar"), "Ctrl+S"], ["Baixar o .json", clica("b_baixar")], ["Exportar…", clica("b_exporta"), "Ctrl+E"], null, ["Arquivos do projeto…", clica("b_arquivos")]]),
+      menu("Editar", () => [["Desfazer", clica("b_desfaz"), "Ctrl+Z"], ["Refazer", clica("b_refaz"), "Ctrl+Y"], null, { grupo: "Inserir elemento" }, ...opcoes("s_inserir"), null,
+        ["Remover o elemento selecionado", clica("b_remove"), "", { desligado: !elemento() }], null, ["Configurações…", clica("b_config")]]),
+      menu("Exibir", () => [["Isométrica", vistaDe("iso")], ["Lateral", vistaDe("lateral")], ["Topo", vistaDe("topo")], ["Frontal", vistaDe("frontal")], ["Ajustar à janela", vistaDe("ajusta")], null,
+        ["Sólido", () => document.querySelector('[data-modo="solido"]').click(), "", { marcado: ligado("modo", "solido") }], ["Malha", () => document.querySelector('[data-modo="malha"]').click(), "", { marcado: ligado("modo", "malha") }], null,
+        { grupo: "Camadas" }, ...[["tudo", "Tudo"], ["aero", "Aerodinâmica"], ["estrutura", "Estrutura"]].map(([k, n]) => [n, () => document.querySelector(`[data-camada="${k}"]`).click(), "", { marcado: ligado("camada", k) }]), null,
+        ["Painel da esquerda", () => painel("esq"), "[", { marcado: !document.body.classList.contains("sem-esq") }], ["Painel da direita", () => painel("dir"), "]", { marcado: !document.body.classList.contains("sem-dir") }], null,
+        { grupo: "Tema" }, ...[["claro", "Claro"], ["cinza", "Cinza"], ["escuro", "Escuro"]].map(([k, n]) => [n, () => Tema.escolhe(k), "", { marcado: tema() === k }]), null,
+        ["Usar a interface clássica", () => troca("classica")]]),
+      menu("Etapa", () => ["Geometria", "Análise", "Estrutura", "Otimizar", "Resultados"].map((n, i) => [`${i + 1} ${n}`, () => Etapas.vai(i + 1), String(i + 1), { marcado: Etapas.atual() === i + 1 }])),
+      menu("Ferramentas", () => [...FERR.map(f => [f[1], () => ativa(f[0]), f[2], { marcado: ferr === f[0] }]), null, ["Procurar comando…", comandos, "Ctrl+K"]]),
+      menu("Ajuda", () => [["Primeiros passos", clica("b_inicio")], ["Boas práticas (manuais)", clica("b_manual")], ["Atalhos de teclado", atalhos, "?"]]));
+    const doc = el("span", "menubar-doc"); mb.append(doc);
+    barra.before(mb);
+    const tit = $i("titulo"), espelha = () => { const t = tit.textContent.replace(/^AranduBIS\s*[—-]\s*/, ""); doc.textContent = t === "AranduBIS" ? "" : t; document.title = doc.textContent ? `${doc.textContent} · AranduBIS` : "AranduBIS"; };
+    new MutationObserver(espelha).observe(tit, { childList: true, characterData: true, subtree: true }); espelha();
+
+    const guarda = el("span"); guarda.hidden = true;
     const abrir = barra.querySelector("label.botao");
-    const arq = menu("Arquivo", [$i("b_novo"), abrir, $i("s_exemplos"), $i("b_salvar"), $i("b_baixar"), $i("b_arquivos")], "Novo, abrir, exemplos, salvar e arquivos do projeto");
-    const aj = menu("Ajuda", [$i("b_inicio"), $i("b_manual"), at, cm], "Primeiros passos, boas práticas e atalhos");
-    barra.prepend(arq);
-    arq.after(el("span", "sep"));
-    $i("b_config").before(aj);
-    $i("b_exporta").classList.add("primario");
+    guarda.append($i("b_novo"), abrir, $i("s_exemplos"), $i("b_salvar"), $i("b_baixar"), $i("b_arquivos"), $i("b_manual"), $i("b_config"));
+    if ($i("b_inicio")) guarda.append($i("b_inicio"));
+    document.body.append(guarda);
+    const icone = (ic, rot, faz, dica) => { const b = el("button", "icone"); b.innerHTML = svg(ICONES[ic]); b.title = dica || rot; b.setAttribute("aria-label", rot); b.onclick = faz; return b; };
+    [["b_desfaz", "desfaz", "Desfazer (Ctrl+Z)"], ["b_refaz", "refaz", "Refazer (Ctrl+Y)"]].forEach(([id, ic, d]) => { const x = $i(id); x.setAttribute("aria-label", x.textContent); x.innerHTML = svg(ICONES[ic]); x.classList.add("icone"); x.title = d; });
+    const busca = el("button", "busca"); busca.innerHTML = svg(ICONES.busca) + "<span>Procurar comando</span><kbd>Ctrl+K</kbd>"; busca.title = "Procurar qualquer comando, análise, exemplo ou elemento"; busca.onclick = comandos;
+    const exp = $i("b_exporta"); exp.classList.add("primario"); exp.title += " (Ctrl+E)";
+    barra.prepend(icone("novo", "Novo", clica("b_novo"), "Nova aeronave"), icone("abrir", "Abrir", clica("b_abrir"), "Abrir um arquivo .json (Ctrl+O)"), icone("salvar", "Salvar", clica("b_salvar"), "Salvar (Ctrl+S)"), el("span", "sep"));
+    exp.before(busca);
+    exp.after(icone("config", "Configurações", clica("b_config"), "Configurações"));
+    document.addEventListener("click", ev => { if (!ev.target.closest || !ev.target.closest(".menu")) fechaMenus(); });
   }
 
   const SELOS = { pendente: "ainda sem resultado", aviso: "com aviso", ok: "sem pendências" };
@@ -410,7 +474,7 @@ const Interface = (() => {
   }
 
   const ATALHOS = [
-    ["Geral", [["1 a 5", "ir para a etapa"], ["Ctrl+K", "procurar um comando"], ["?", "esta lista"], ["Ctrl+Z / Ctrl+Y", "desfazer / refazer"], ["[ e ]", "recolher os painéis laterais"], ["Esc", "sair da ferramenta"]]],
+    ["Geral", [["1 a 5", "ir para a etapa"], ["Ctrl+K", "procurar um comando"], ["?", "esta lista"], ["Ctrl+Z / Ctrl+Y", "desfazer / refazer"], ["Ctrl+S", "salvar"], ["Ctrl+O", "abrir arquivo"], ["Ctrl+E", "exportar"], ["setas nos menus", "percorrer os menus pelo teclado"], ["[ e ]", "recolher os painéis laterais"], ["Esc", "sair da ferramenta"]]],
     ["Ferramentas", FERR.map(f => [f[2], f[1]])],
     ["Vista 3D", [["arrastar", "girar"], ["Shift + arrastar", "deslocar"], ["roda do mouse", "aproximar"], ["cubo no canto", "clique numa face para alinhar a vista"]]],
     ["Nervuras", [["arrastar o anel", "mover (Alt = sem passo)"], ["Ctrl + clique", "criar (a prévia aparece ao segurar Ctrl)"], ["clique repetido", "alternar entre anéis sobrepostos"], ["N", "criar no maior vão"], ["← →", "mover 1 mm (Shift 10)"], ["Q / E", "girar 1° (Shift 5)"], ["Del", "remover"], ["Tab", "próxima"]]],
@@ -501,6 +565,10 @@ const Interface = (() => {
 
   function teclas(ev) {
     if ((ev.ctrlKey || ev.metaKey) && (ev.key === "k" || ev.key === "K")) { ev.preventDefault(); comandos(); return; }
+    if ((ev.ctrlKey || ev.metaKey) && !ev.shiftKey && !ev.altKey && !document.querySelector("dialog[open]")) {
+      const alvo = { s: "b_salvar", o: "b_abrir", e: "b_exporta" }[ev.key.toLowerCase()];
+      if (alvo) { ev.preventDefault(); document.getElementById(alvo).click(); return; }
+    }
     if (ev.ctrlKey || ev.metaKey || ev.altKey || emCampo(ev) || document.querySelector("dialog[open]")) return;
     const k = ev.key;
     if (k === "?") { ev.preventDefault(); atalhos(); return; }

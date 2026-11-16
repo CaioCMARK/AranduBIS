@@ -53,7 +53,7 @@ Na etapa 1, o seletor "Cor: desdobramento do chapeado" (ao lado dos botões Tudo
 
 ## Editar as nervuras na vista 3D
 
-Em **3 Estrutura / Estrutura da asa → Nervuras**, o botão **Editar na vista 3D** mostra cada nervura como um anel laranja sobre a asa (a selecionada fica amarela; as pontas, que são automáticas, ficam cinza).
+A ferramenta **Nervuras** da vista 3D (tecla **R**; na interface clássica, o botão **Editar na vista 3D** em Estrutura da asa → Nervuras) mostra cada nervura como um anel laranja sobre a asa (a selecionada fica amarela; as pontas, que são automáticas, ficam cinza).
 
 - **Arrastar** um anel move a nervura ao longo da envergadura, com passo de 5 mm (segure Alt para mover livremente). Ela não passa das vizinhas.
 - **Ctrl+clique** sobre a asa cria uma nervura naquele ponto; **N** cria no maior vão.
@@ -65,7 +65,7 @@ Em asa simétrica só o lado positivo é guardado; o outro lado acompanha.
 
 ## Mover nós, rodas e massas na vista 3D
 
-Selecione uma treliça, uma roda ou uma massa pontual (sem rolagem, arfagem ou guinada) e use **Mover nós / Mover na vista 3D** nas Propriedades. Cada nó vira uma bolinha laranja; a selecionada fica amarela.
+Use a ferramenta **Nós e barras** da vista 3D (tecla **B**; na interface clássica, selecione a peça e use **Mover nós / Mover na vista 3D** nas Propriedades). Vale para treliças, rodas e massas pontuais sem rolagem, arfagem ou guinada. Cada nó vira uma bolinha laranja; a selecionada fica amarela.
 
 - **Arrastar** move no plano escolhido (**P** alterna planta, perfil e frontal; **X / Y / Z** travam um eixo). O passo é de 1 mm e há um ímã nos nós das outras peças, útil para fazer juntas coincidirem. **Alt** desliga passo e ímã.
 - **Setas** movem x e z, **,** e **.** movem y (**Shift** multiplica por 10).
@@ -81,3 +81,15 @@ Em treliças:
 - **T** troca o tipo de tubo usado nas barras novas.
 - **Delete** remove o nó e as barras ligadas a ele.
 - Com a simetria (**M**) ligada, o nó e a barra espelhados em y são criados e removidos juntos.
+
+Grupo de nós, copiar e colar, espelhar e o anel com a margem da junta estão descritos no manual "Interface".
+
+## Furos de alívio das nervuras
+
+Em **3 Estrutura → Nervuras para corte a laser**, ligue **Propor furos**. O programa coloca furos redondos ao longo da linha média de cada nervura e os inclui no DXF.
+
+- **Geometria**: cada furo respeita a **borda mínima** até o contorno e a **ponte** até os outros furos (inclusive os de tubo). Furos abaixo do **diâmetro mínimo** são descartados.
+- **Conferência**: a nervura é tratada como viga ao longo da corda. A carga é a sustentação da faixa que ela sustenta (fator de carga × peso / área das asas × passo × corda), distribuída por igual, e os apoios são os furos de tubo. Em cada furo o programa calcula o cisalhamento e a flexão da seção líquida e, se a margem ficar negativa, encolhe o furo até passar ou o retira.
+- **Resultado**: número de furos, fração de área removida e a menor margem. O botão **Usar o fator de massa na asa** grava o valor em `estrutura.nervuras.alivio`, para a massa e o CG considerarem os furos.
+
+O que fica fora: esmagamento local nos apoios, flambagem da alma, cargas de manuseio e de colagem do revestimento. Trate a proposta como ponto de partida e confira a primeira nervura cortada na mão.

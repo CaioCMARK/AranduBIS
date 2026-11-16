@@ -3,6 +3,7 @@
 const Manual = (() => {
   const TOPICOS = [
     ["comecar", "Como usar estes manuais"],
+    ["interface", "Interface: ferramentas, atalhos e editores"],
     ["discretizacao", "Discretização e convergência"],
     ["vlm", "VLM: malha de vórtices"],
     ["uvlm", "UVLM: aerodinâmica no tempo"],
