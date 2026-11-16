@@ -1,0 +1,110 @@
+{
+ "versao": 1,
+ "nome": "asa_cauda_convencional",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 0.648,
+  "Cref": 0.2711,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.3,
+     "ainc": 2.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ]
+  },
+  {
+   "nome": "empenagem_h",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.95,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -0.3872983346207417,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.12909944487358058,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.12909944487358058,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.3872983346207417,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.12909944487358058,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ]
+  },
+  {
+   "nome": "deriva",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "posicao": [
+    0.95,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.22
+    },
+    {
+     "y": 0.22222222222222224,
+     "xle": 0.06,
+     "corda": 0.14
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

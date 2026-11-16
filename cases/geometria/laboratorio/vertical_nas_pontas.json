@@ -1,0 +1,98 @@
+{
+ "versao": 1,
+ "nome": "vertical_nas_pontas",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 0.888,
+  "Cref": 0.3903,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.55,
+     "zle": 0.0,
+     "corda": 0.22,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.52,
+     "ainc": 7.469133253596402,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.55,
+     "zle": 0.0,
+     "corda": 0.22,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ]
+  },
+  {
+   "nome": "deriva_esq",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "posicao": [
+    0.55,
+    -1.2,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.22
+    },
+    {
+     "y": 0.32962861731556586,
+     "xle": 0.08,
+     "corda": 0.12
+    }
+   ]
+  },
+  {
+   "nome": "deriva_dir",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "posicao": [
+    0.55,
+    1.2,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.22
+    },
+    {
+     "y": 0.32962861731556586,
+     "xle": 0.08,
+     "corda": 0.12
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

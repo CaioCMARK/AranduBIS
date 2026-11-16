@@ -1,0 +1,129 @@
+{
+ "versao": 1,
+ "nome": "bwb",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 1.085,
+  "Cref": 0.5284,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.9904499999999999,
+     "zle": 0.0,
+     "corda": 0.2,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": -0.35,
+     "xle": 0.5,
+     "zle": 0.0,
+     "corda": 0.5,
+     "ainc": 3.0861999574248937,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.9,
+     "ainc": 5.143666595708156,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.35,
+     "xle": 0.5,
+     "zle": 0.0,
+     "corda": 0.5,
+     "ainc": 3.0861999574248937,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.9904499999999999,
+     "zle": 0.0,
+     "corda": 0.2,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ],
+   "controles": [
+    {
+     "nome": "elevon",
+     "y": [
+      0.5,
+      1.18
+     ],
+     "x": 0.7,
+     "deflexao": 0.0,
+     "modo": "sim",
+     "charneira": "meio",
+     "dobradica": "chanfro",
+     "limite": 25.0
+    }
+   ]
+  },
+  {
+   "nome": "deriva_esq",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "posicao": [
+    0.9904499999999999,
+    -1.2,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.2
+    },
+    {
+     "y": 0.18,
+     "xle": 0.07,
+     "corda": 0.1
+    }
+   ]
+  },
+  {
+   "nome": "deriva_dir",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 90.0,
+   "posicao": [
+    0.9904499999999999,
+    1.2,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.2
+    },
+    {
+     "y": 0.18,
+     "xle": 0.07,
+     "corda": 0.1
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

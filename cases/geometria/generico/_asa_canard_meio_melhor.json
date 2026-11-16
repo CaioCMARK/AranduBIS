@@ -1,0 +1,607 @@
+{
+ "versao": 1,
+ "nome": "asa_canard_s1223_mh84_meio",
+ "unidade": "m",
+ "referencia": {
+  "Sref": 0.9664,
+  "Cref": 0.4316,
+  "Bref": 2.4,
+  "fonte": "geometria generica (asa voadora com canard), hipoteses de desenho"
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 60,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.4657306074439542,
+     "xle": 0.6586472393356511,
+     "zle": 0.0,
+     "corda": 0.2203363460567496,
+     "ainc": 2.4382833047826153,
+     "arquivo": "MH84.dat"
+    },
+    {
+     "y": -0.8823507379190181,
+     "xle": 0.23482551598595822,
+     "zle": 0.0,
+     "corda": 0.4971120466355735,
+     "ainc": 3.800801138226858,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": -0.33,
+     "xle": 0.14829027099311354,
+     "zle": 0.0,
+     "corda": 0.5898000380718817,
+     "ainc": 3.6944994256938832,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": -0.31,
+     "xle": 0.13930298184201573,
+     "zle": 0.0,
+     "corda": 0.4563062234224138,
+     "ainc": 3.7166211526717,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.5571520963556594,
+     "ainc": 4.059507920827863,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": 0.31,
+     "xle": 0.13930298184201573,
+     "zle": 0.0,
+     "corda": 0.4563062234224138,
+     "ainc": 3.7166211526717,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": 0.33,
+     "xle": 0.14829027099311354,
+     "zle": 0.0,
+     "corda": 0.5898000380718817,
+     "ainc": 3.6944994256938832,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": 0.8823507379190181,
+     "xle": 0.23482551598595822,
+     "zle": 0.0,
+     "corda": 0.4971120466355735,
+     "ainc": 3.800801138226858,
+     "arquivo": "S1223.dat"
+    },
+    {
+     "y": 1.4657306074439542,
+     "xle": 0.6586472393356511,
+     "zle": 0.0,
+     "corda": 0.2203363460567496,
+     "ainc": 2.4382833047826153,
+     "arquivo": "MH84.dat"
+    }
+   ],
+   "estrutura": {
+    "nervuras": {
+     "y": [
+      0.061072108643498095,
+      0.16611613551031482,
+      0.27116016237713153,
+      0.3762041892439482,
+      0.4824696582836349,
+      0.5875136851504517,
+      0.6925577120172682,
+      0.7976017388840851,
+      0.9026457657509017,
+      1.0076897926177184,
+      1.1139552616574053,
+      1.2189992885242218,
+      1.3240433153910387,
+      1.4290873422578552
+     ],
+     "espessura": 0.00238,
+     "material": "balsa",
+     "alivio": 0.45
+    },
+    "cruzadas": [
+     {
+      "n": 12,
+      "y": [
+       0.0,
+       0.7328653037219771
+      ],
+      "area_m2": 0.003,
+      "espessura": 0.00238,
+      "material": "balsa"
+     },
+     {
+      "n": 10,
+      "y": [
+       0.7328653037219771,
+       1.3924440770717563
+      ],
+      "area_m2": 0.0015,
+      "espessura": 0.00238,
+      "material": "balsa"
+     }
+    ],
+    "longarinas": [
+     {
+      "xc_y": [
+       [
+        0.0,
+        0.3
+       ],
+       [
+        1.4657306074439542,
+        0.3
+       ]
+      ],
+      "largura": 0.00238,
+      "material": "balsa"
+     }
+    ],
+    "tubos": [
+     {
+      "xc_y": [
+       [
+        0.0,
+        0.3
+       ],
+       [
+        1.4657306074439542,
+        0.3
+       ]
+      ],
+      "lado": "extradorso",
+      "de": 0.012,
+      "di": 0.01,
+      "y": [
+       -1.4657306074439542,
+       0.0
+      ]
+     },
+     {
+      "xc_y": [
+       [
+        0.0,
+        0.3
+       ],
+       [
+        1.4657306074439542,
+        0.3
+       ]
+      ],
+      "lado": "extradorso",
+      "de": 0.012,
+      "di": 0.01,
+      "y": [
+       0.0,
+       1.4657306074439542
+      ]
+     },
+     {
+      "xc_y": [
+       [
+        0.0,
+        0.3
+       ],
+       [
+        1.4657306074439542,
+        0.3
+       ]
+      ],
+      "lado": "intradorso",
+      "de": 0.012,
+      "di": 0.01,
+      "y": [
+       -1.4657306074439542,
+       0.0
+      ]
+     },
+     {
+      "xc_y": [
+       [
+        0.0,
+        0.3
+       ],
+       [
+        1.4657306074439542,
+        0.3
+       ]
+      ],
+      "lado": "intradorso",
+      "de": 0.012,
+      "di": 0.01,
+      "y": [
+       0.0,
+       1.4657306074439542
+      ]
+     }
+    ],
+    "chapeado": {
+     "ate_xc": 0.3,
+     "ate_xc_y": [
+      [
+       0.0,
+       0.31
+      ],
+      [
+       1.4657306074439542,
+       0.31
+      ]
+     ],
+     "espessura": 0.001,
+     "material": "balsa"
+    }
+   },
+   "controles": [
+    {
+     "nome": "elevon",
+     "y": [
+      0.8061518340941748,
+      1.4217586892206355
+     ],
+     "x": 0.3,
+     "deflexao": 0.0,
+     "modo": "anti",
+     "charneira": "meio",
+     "dobradica": "chanfro",
+     "limite": 20.0
+    }
+   ],
+   "entelagem": {
+    "de_xc": 0.0,
+    "gramatura_g_m2": 40.0,
+    "coef_abaulamento": 0.0
+   }
+  },
+  {
+   "nome": "canard",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "posicao": [
+    -0.34,
+    0.0,
+    0.07
+   ],
+   "secoes": [
+    {
+     "y": -0.5384883221877101,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.2500878284697258,
+     "ainc": 7.339900613823715
+    },
+    {
+     "y": 0.5384883221877101,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.2500878284697258,
+     "ainc": 7.339900613823715
+    }
+   ],
+   "estrutura": {
+    "nervuras": {
+     "y": [
+      0.02,
+      0.1,
+      0.2,
+      0.3,
+      0.38
+     ],
+     "espessura": 0.00238,
+     "material": "balsa"
+    },
+    "longarinas": [
+     {
+      "xc": 0.25,
+      "largura": 0.00238,
+      "material": "balsa"
+     },
+     {
+      "xc": 0.75,
+      "largura": 0.00238,
+      "material": "balsa"
+     }
+    ],
+    "chapeado": {
+     "ate_xc": 0.22,
+     "espessura": 0.001,
+     "material": "balsa"
+    }
+   },
+   "entelagem": {
+    "de_xc": 0.0,
+    "gramatura_g_m2": 40.0,
+    "coef_abaulamento": 0.0
+   },
+   "controles": [
+    {
+     "nome": "profundor",
+     "y": [
+      0.0,
+      0.5384883221877101
+     ],
+     "x": 0.1500526970818355,
+     "deflexao": 0.0,
+     "modo": "sim",
+     "charneira": "meio",
+     "dobradica": "chanfro",
+     "limite": 25.0
+    }
+   ]
+  },
+  {
+   "nome": "deriva_esq",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -90.0,
+   "posicao": [
+    0.5168,
+    -0.62,
+    0.03
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.2
+    },
+    {
+     "y": 0.24,
+     "xle": 0.05,
+     "corda": 0.13
+    }
+   ],
+   "estrutura": {
+    "nervuras": {
+     "y": [
+      0.0,
+      0.08,
+      0.16,
+      0.23
+     ],
+     "espessura": 0.00238,
+     "material": "balsa"
+    },
+    "chapeado": {
+     "ate_xc": 0.25,
+     "espessura": 0.001,
+     "material": "balsa"
+    }
+   },
+   "entelagem": {
+    "de_xc": 0.0,
+    "gramatura_g_m2": 40.0,
+    "coef_abaulamento": 0.0
+   },
+   "controles": [
+    {
+     "nome": "leme_esq",
+     "y": [
+      0.0,
+      0.24
+     ],
+     "xc": 0.3,
+     "deflexao": 0.0,
+     "modo": "lado",
+     "charneira": "meio",
+     "movel": true,
+     "dobradica": "pivo",
+     "limite": 20.0
+    }
+   ]
+  },
+  {
+   "nome": "deriva_dir",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -90.0,
+   "posicao": [
+    0.5168,
+    0.62,
+    0.03
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.2
+    },
+    {
+     "y": 0.24,
+     "xle": 0.05,
+     "corda": 0.13
+    }
+   ],
+   "estrutura": {
+    "nervuras": {
+     "y": [
+      0.0,
+      0.08,
+      0.16,
+      0.23
+     ],
+     "espessura": 0.00238,
+     "material": "balsa"
+    },
+    "chapeado": {
+     "ate_xc": 0.25,
+     "espessura": 0.001,
+     "material": "balsa"
+    }
+   },
+   "entelagem": {
+    "de_xc": 0.0,
+    "gramatura_g_m2": 40.0,
+    "coef_abaulamento": 0.0
+   },
+   "controles": [
+    {
+     "nome": "leme_dir",
+     "y": [
+      0.0,
+      0.24
+     ],
+     "xc": 0.3,
+     "deflexao": 0.0,
+     "modo": "lado",
+     "charneira": "meio",
+     "movel": true,
+     "dobradica": "pivo",
+     "limite": 20.0
+    }
+   ]
+  },
+  {
+   "nome": "fuselagem",
+   "tipo": "corpo",
+   "camada": "estrutura",
+   "n_secao": 24,
+   "estacoes": [
+    {
+     "x": -0.44,
+     "a": 0.02,
+     "b": 0.02,
+     "zc": 0.0
+    },
+    {
+     "x": -0.36,
+     "a": 0.06,
+     "b": 0.06,
+     "zc": 0.0
+    },
+    {
+     "x": -0.15,
+     "a": 0.095,
+     "b": 0.095,
+     "zc": 0.0
+    },
+    {
+     "x": 0.25,
+     "a": 0.095,
+     "b": 0.095,
+     "zc": 0.0
+    },
+    {
+     "x": 0.45,
+     "a": 0.05,
+     "b": 0.05,
+     "zc": 0.0
+    },
+    {
+     "x": 0.52,
+     "a": 0.03,
+     "b": 0.03,
+     "zc": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "helice",
+   "tipo": "asa",
+   "camada": "estrutura",
+   "perfil": "NACA 0012",
+   "n_perfil": 14,
+   "rolagem": 90.0,
+   "guinada": 90.0,
+   "posicao": [
+    0.58,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -0.3048,
+     "corda": 0.03
+    },
+    {
+     "y": -0.17,
+     "corda": 0.05
+    },
+    {
+     "y": 0.17,
+     "corda": 0.05
+    },
+    {
+     "y": 0.3048,
+     "corda": 0.03
+    }
+   ]
+  },
+  {
+   "diametro": 0.092,
+   "largura": 0.0084,
+   "d_furo": 0.016,
+   "d_cubo": 0.028,
+   "anel": 0.006,
+   "n_aros": 6,
+   "aro": 0.005,
+   "material": "nylon",
+   "camada": "estrutura",
+   "tipo": "roda",
+   "nome": "roda_esq",
+   "y": -0.3,
+   "posicao": [
+    0.42,
+    0.0,
+    -0.374
+   ]
+  },
+  {
+   "diametro": 0.092,
+   "largura": 0.0084,
+   "d_furo": 0.016,
+   "d_cubo": 0.028,
+   "anel": 0.006,
+   "n_aros": 6,
+   "aro": 0.005,
+   "material": "nylon",
+   "camada": "estrutura",
+   "tipo": "roda",
+   "nome": "roda_dir",
+   "y": 0.3,
+   "posicao": [
+    0.42,
+    0.0,
+    -0.374
+   ]
+  },
+  {
+   "diametro": 0.06,
+   "largura": 0.0074,
+   "d_furo": 0.0,
+   "d_cubo": 0.016,
+   "anel": 0.005,
+   "n_aros": 6,
+   "aro": 0.004,
+   "material": "nylon",
+   "camada": "estrutura",
+   "tipo": "roda",
+   "nome": "bequilha",
+   "y": 0.0,
+   "posicao": [
+    -0.3,
+    0.0,
+    -0.39
+   ]
+  }
+ ],
+ "marcas": [],
+ "_pasta": "cases/geometria/generico"
+}

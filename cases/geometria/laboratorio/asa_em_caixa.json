@@ -1,0 +1,86 @@
+{
+ "versao": 1,
+ "nome": "asa_em_caixa",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 0.864,
+  "Cref": 0.18,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa_frente",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 3.0,
+     "perfil": "NACA 4412"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 3.0,
+     "perfil": "NACA 4412"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 3.0,
+     "perfil": "NACA 4412"
+    }
+   ]
+  },
+  {
+   "nome": "asa_tras",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.35,
+    0.0,
+    0.4
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 1.0,
+     "perfil": "NACA 4412"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 1.0,
+     "perfil": "NACA 4412"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.18,
+     "ainc": 1.0,
+     "perfil": "NACA 4412"
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AranduBIS</title>
+<link rel="stylesheet" href="/web/estilo.css">
+<script src="/web/tema.js"></script>
+</head>
+<body>
+<div class="titulo" id="titulo">AranduBIS</div>
+<div class="barra" id="barra" role="toolbar" aria-label="Arquivo, edição e vista">
+  <button id="b_novo" title="Aeronave vazia">Novo</button>
+  <label class="botao" title="Abrir um arquivo .json de aeronave">Abrir<input type="file" id="b_abrir" accept=".json,application/json" hidden></label>
+  <select id="s_exemplos" title="Aeronaves que acompanham o programa"><option value="">Exemplos…</option></select>
+  <button id="b_salvar" title="Grava em dados/aeronaves">Salvar</button>
+  <button id="b_baixar" title="Baixar o .json">Baixar</button>
+  <span class="g1-grupo"><span class="sep"></span>
+  <select id="s_inserir" title="Inserir um elemento novo"><option value="">Inserir…</option></select>
+  <button id="b_remove" title="Remove o elemento selecionado">Remover</button>
+  <button id="b_desfaz" title="Desfazer (Ctrl+Z)">Desfazer</button>
+  <button id="b_refaz" title="Refazer (Ctrl+Y)">Refazer</button>
+  <span class="sep"></span>
+  <button data-vista="iso">Iso</button><button data-vista="lateral">Lateral</button>
+  <button data-vista="topo">Topo</button><button data-vista="frontal">Frontal</button>
+  <button data-vista="ajusta">Ajustar</button>
+  <span class="sep"></span>
+  <button data-modo="solido" class="on">Sólido</button><button data-modo="malha">Malha</button>
+  <span class="sep"></span>
+  <button data-camada="tudo" class="on">Tudo</button><button data-camada="aero">Aero</button><button data-camada="estrutura">Estrutura</button>
+  </span>
+  <span class="fim"></span>
+  <button id="b_exporta" title="Exportar gráficos e relatório (PDF, JPG, PNG), animação dos modos (MP4, GIF) e geometria (perfis .dat, nervuras .dxf/.csv, AVL)">Exportar…</button>
+  <button id="b_arquivos" title="Base de dados, relatórios e desenhos">Arquivos</button>
+  <button id="b_manual" title="Manuais curtos: a teoria de cada análise, como operar, como conferir o resultado">Boas práticas</button>
+  <button id="b_config" title="Velocidades, critério de cargas, materiais, tração, pastas, discretização">Configurações</button>
+</div>
+<div class="etapas" role="tablist" aria-label="Etapas do projeto">
+  <div class="at" data-etapa="1">1 Geometria</div>
+  <div data-etapa="2">2 Análise</div>
+  <div data-etapa="3">3 Estrutura</div>
+  <div data-etapa="4">4 Otimizar</div>
+  <div data-etapa="5">5 Resultados</div>
+</div>
+<div class="corpo" id="et1" role="tabpanel" aria-label="Geometria">
+  <aside class="col"><h4>Elementos</h4><div id="lista"></div></aside>
+  <section class="centro">
+    <div class="vista"><canvas id="cv" role="img" aria-label="Vista 3D da aeronave. Arraste para girar, Shift e arraste para deslocar, roda do mouse para aproximar."></canvas></div>
+    <div class="baixo">
+      <div class="abas" id="abas"></div>
+      <div class="conteudo" id="aba_conteudo"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_props">Propriedades</h4><div id="props"></div></aside>
+</div>
+<div class="corpo" id="et2" role="tabpanel" aria-label="Análise" hidden>
+  <aside class="col"><h4>Análises</h4><div id="lista2"></div></aside>
+  <section class="centro dois">
+    <div class="veredito" id="veredito" hidden></div>
+    <div class="graficos" id="graficos2"></div>
+    <div class="baixo">
+      <div class="abas" id="abas2"></div>
+      <div class="conteudo" id="conteudo2"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_par2">Parâmetros</h4><div id="par2"></div></aside>
+</div>
+<div class="corpo" id="et3" role="tabpanel" aria-label="Estrutura" hidden>
+  <aside class="col"><h4>Estrutura</h4><div id="lista3"></div></aside>
+  <section class="centro dois">
+    <div class="veredito" id="veredito3" hidden></div>
+    <details class="legenda" id="legenda3" open hidden><summary>O que você está vendo</summary><div id="legenda3_txt"></div></details>
+    <div class="graficos" id="graficos3"></div>
+    <div class="baixo">
+      <div class="abas" id="abas3"></div>
+      <div class="conteudo" id="conteudo3"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_par3">Cargas</h4><div id="par3"></div></aside>
+</div>
+<div class="corpo" id="et4" role="tabpanel" aria-label="Otimizar" hidden>
+  <aside class="col"><h4>Problema</h4><div id="lista4"></div></aside>
+  <section class="centro dois">
+    <div class="veredito" id="veredito4" hidden></div>
+    <div class="graficos" id="graficos4"></div>
+    <div class="baixo">
+      <div class="abas" id="abas4"></div>
+      <div class="conteudo" id="conteudo4"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_par4">Execução</h4><div id="par4"></div></aside>
+</div>
+<div class="corpo" id="et5" role="tabpanel" aria-label="Resultados" hidden>
+  <aside class="col"><h4>Finalistas</h4><div id="lista5"></div></aside>
+  <section class="centro dois">
+    <div class="veredito" id="veredito5" hidden></div>
+    <div class="graficos" id="graficos5"></div>
+    <div class="baixo">
+      <div class="abas" id="abas5"></div>
+      <div class="conteudo" id="conteudo5"></div>
+    </div>
+  </section>
+  <aside class="col dir"><h4 id="tit_par5">Projeto</h4><div id="par5"></div></aside>
+</div>
+<div class="rodape" role="contentinfo"><span id="r_massa">massa —</span><span id="r_cg">CG —</span><span id="r_env">envergadura —</span><span id="r_tri"></span><span id="r_malha" class="link-rodape" title="O que o programa escolheu de malha, passo e modos na última análise, por quê, e os avisos de geometria">malha —</span><span class="fim" id="r_msg" role="status" aria-live="polite">Pronto</span></div>
+
+<dialog id="dlg_arquivos">
+  <div class="dlg-topo"><b>Arquivos do projeto</b><button id="arq_fechar">Fechar</button></div>
+  <div class="abas" id="arq_abas"></div>
+  <div id="arq_corpo"></div>
+</dialog>
+
+<dialog id="dlg_config">
+  <div class="dlg-topo"><b>Configurações</b><button id="dlg_fechar">Fechar</button></div>
+  <div id="cfg_aviso" class="aviso" hidden></div>
+  <div id="cfg_corpo"></div>
+</dialog>
+
+<dialog id="dlg_malha">
+  <div class="dlg-topo"><b>Discretização da última análise</b><span><button id="malha_cfg">Configurar</button> <button id="malha_manual">Boas práticas</button> <button id="malha_fechar">Fechar</button></span></div>
+  <div class="abas" id="malha_abas"></div>
+  <div id="malha_corpo"></div>
+</dialog>
+
+<dialog id="dlg_visor" class="visor">
+  <div class="dlg-topo"><b id="visor_tit">Esteira</b><span class="visor-bt">
+    <button data-visor-vista="iso">Iso</button><button data-visor-vista="lateral">Lateral</button><button data-visor-vista="topo">Topo</button><button data-visor-vista="frontal">Frontal</button>
+    <label><input type="checkbox" data-visor-mostra="corpo" checked> corpo</label><label><input type="checkbox" data-visor-mostra="aneis" checked> anéis</label><label><input type="checkbox" data-visor-mostra="part" checked> partículas</label>
+    <button id="visor_fechar">Fechar</button></span></div>
+  <div class="visor-palco"><canvas id="visor_cv"></canvas>
+    <div class="visor-info" id="visor_info"></div>
+    <div class="visor-leg" id="visor_leg"><span>|α| fraco</span><i></i><span>forte</span></div>
+    <div class="visor-ajuda">arrastar: girar · Shift+arrastar: deslocar · roda: zoom · duplo clique: reajustar · espaço: tocar · ← →: quadro</div>
+  </div>
+  <div class="visor-tempo"><button id="visor_play" title="Tocar / pausar (espaço)">▶</button><input type="range" id="visor_t" min="0" max="0" value="0">
+    <select id="visor_vel" title="Velocidade"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></div>
+  <canvas id="visor_cl" title="CL no tempo: clique para ir ao instante"></canvas>
+</dialog>
+
+<dialog id="dlg_manual" class="largo">
+  <div class="dlg-topo"><b>Boas práticas</b><button id="manual_fechar">Fechar</button></div>
+  <div class="manual"><div id="manual_lista"></div><div id="manual_texto"></div></div>
+</dialog>
+
+<script src="/web/padroes.js"></script>
+<script src="/web/vista3d.js"></script>
+<script src="/web/configuracao.js"></script>
+<script src="/web/arquivos.js"></script>
+<script src="/web/modelos.js"></script>
+<script src="/web/juntas.js"></script>
+<script src="/web/estrutura.js"></script>
+<script src="/web/construtor.js"></script>
+<script src="/web/ocupado.js"></script>
+<script src="/web/app.js"></script>
+<script src="/web/inicio.js"></script>
+<script src="/web/manual.js"></script>
+<script src="/web/visor.js"></script>
+<script src="/web/secao3d.js"></script>
+<script src="/web/grafico.js"></script>
+<script src="/web/analise.js"></script>
+<script src="/web/equilibrio.js"></script>
+<script src="/web/dinamica.js"></script>
+<script src="/web/controle.js"></script>
+<script src="/web/polares.js"></script>
+<script src="/web/tracao.js"></script>
+<script src="/web/helice.js"></script>
+<script src="/web/pontuacao.js"></script>
+<script src="/web/etapa3.js"></script>
+<script src="/web/cargas.js"></script>
+<script src="/web/asa.js"></script>
+<script src="/web/torcao.js"></script>
+<script src="/web/massaasa.js"></script>
+<script src="/web/flutter.js"></script>
+<script src="/web/uvlm.js"></script>
+<script src="/web/aeroelastica.js"></script>
+<script src="/web/calibracao.js"></script>
+<script src="/web/flambagem.js"></script>
+<script src="/web/nervurasdxf.js"></script>
+<script src="/web/planificacao.js"></script>
+<script src="/web/pelecor.js"></script>
+<script src="/web/nervura3d.js"></script>
+<script src="/web/nos3d.js"></script>
+<script src="/web/juncao.js"></script>
+<script src="/web/cauda.js"></script>
+<script src="/web/vibracao.js"></script>
+<script src="/web/trem.js"></script>
+<script src="/web/pousodin.js"></script>
+<script src="/web/massa.js"></script>
+<script src="/web/otimiza.js"></script>
+<script src="/web/resultados.js"></script>
+<script src="/web/exporta.js"></script>
+<script src="/web/a11y.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+ "versao": 1,
+ "nome": "monoplano_equivalente",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 1.008,
+  "Cref": 0.4457,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.5,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.6,
+     "ainc": 7.894446734499184,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.5,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}

@@ -1,0 +1,242 @@
+{
+ "versao": 1,
+ "nome": "asa_com_duto_na_cauda",
+ "unidade": "m",
+ "referencia": {
+  "fonte": "laboratorio de configuracoes",
+  "Sref": 0.648,
+  "Cref": 0.2711,
+  "Bref": 2.4
+ },
+ "elementos": [
+  {
+   "nome": "asa",
+   "tipo": "asa",
+   "n_perfil": 40,
+   "posicao": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": -1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.3,
+     "ainc": 2.0,
+     "perfil": "REFLEX-10.dat"
+    },
+    {
+     "y": 1.2,
+     "xle": 0.0,
+     "zle": 0.0,
+     "corda": 0.24,
+     "ainc": 0.0,
+     "perfil": "REFLEX-10.dat"
+    }
+   ]
+  },
+  {
+   "nome": "duto_0",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 112.5,
+   "posicao": [
+    0.95,
+    0.15,
+    0.0
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952691,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_1",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 157.5,
+   "posicao": [
+    0.95,
+    0.10606601717798213,
+    0.10606601717798211
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952693,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_2",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -157.5,
+   "posicao": [
+    0.95,
+    9.184850993605149e-18,
+    0.15
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952693,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_3",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -112.50000000000001,
+   "posicao": [
+    0.95,
+    -0.10606601717798211,
+    0.10606601717798213
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952693,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_4",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -67.50000000000001,
+   "posicao": [
+    0.95,
+    -0.15,
+    1.8369701987210297e-17
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952691,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_5",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": -22.500000000000007,
+   "posicao": [
+    0.95,
+    -0.10606601717798216,
+    -0.10606601717798211
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952694,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_6",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 22.499999999999986,
+   "posicao": [
+    0.95,
+    -2.7554552980815445e-17,
+    -0.15
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952691,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  },
+  {
+   "nome": "duto_7",
+   "tipo": "asa",
+   "perfil": "NACA 0012",
+   "n_perfil": 40,
+   "rolagem": 67.49999999999999,
+   "posicao": [
+    0.95,
+    0.1060660171779821,
+    -0.10606601717798216
+   ],
+   "secoes": [
+    {
+     "y": 0.0,
+     "xle": 0.0,
+     "corda": 0.3
+    },
+    {
+     "y": 0.11480502970952693,
+     "xle": 0.0,
+     "corda": 0.3
+    }
+   ]
+  }
+ ],
+ "marcas": []
+}
