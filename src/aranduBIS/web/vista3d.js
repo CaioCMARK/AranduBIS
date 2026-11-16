@@ -278,7 +278,7 @@ class Vista3D {
     let arr = null;
     cv.addEventListener("mousedown", e => {
       arr = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button === 1 || e.button === 2, dist: 0 };
-      if (!arr.pan && this.ferramenta) { const r = cv.getBoundingClientRect(); if (this.ferramenta.baixo(e.clientX - r.left, e.clientY - r.top, e)) arr.ferr = true; }
+      if (e.button === 0 && this.ferramenta) { const r = cv.getBoundingClientRect(); if (this.ferramenta.baixo(e.clientX - r.left, e.clientY - r.top, e)) { arr.ferr = true; arr.pan = false; } }
       e.preventDefault();
     });
     window.addEventListener("mouseup", e => {

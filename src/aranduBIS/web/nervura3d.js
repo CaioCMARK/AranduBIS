@@ -2,7 +2,7 @@
 
 const Nervura3D = (() => {
   const PASSO = 0.005, MARGEM = 0.005;
-  let ativo = false, sel = null, arr = null;
+  let ativo = false, sel = null, arr = null, meu = false, previa = null, ultimo = null;
 
   const ehAsa = e => e && (e.tipo || "asa") === "asa" && Array.isArray(e.secoes);
   const iguais = (a, b) => Math.abs(a - b) < 1e-6;
@@ -54,7 +54,8 @@ const Nervura3D = (() => {
   function atualiza() { pinta(); if (typeof Estado !== "undefined") Estado.avisa("ferramenta"); }
   function pinta() {
     const e = elemento(), S = ativo && ehAsa(e) ? secoes() : null;
-    if (!ativo || !ehAsa(e)) { vista.extra = null; vista.hud = null; vista.desenha(); return; }
+    if (!ativo || !ehAsa(e)) { if (meu) { meu = false; vista.extra = null; vista.hud = null; } vista.desenha(); return; }
+    meu = true;
     if (!S) { vista.extra = null; vista.hud = ["Carregando as seções…"]; vista.desenha(); return; }
     const n = cfg(e, false) || { y: [] }, L = limites(e), ex = [];
     const fim = L.simetrica ? [L.hi, -L.hi] : [L.lo, L.hi];
@@ -63,6 +64,15 @@ const Nervura3D = (() => {
       const s = sel !== null && iguais(it.y0, sel);
       ex.push({ pts: anel(S, it.y, it.ang), cor: s ? "#ffd447" : "#ff9f43", larg: s ? 3 : 1.6 });
     });
+    const lim = n.passo_max_mm > 0 ? n.passo_max_mm / 1000 : null, longos = [];
+    if (lim) {
+      const ys = [L.lo, ...n.y.map((v, k) => (arr && arr.arrasta && arr.k === k ? arr.y : v)).filter(v => v > L.lo + 1e-9 && v < L.hi - 1e-9), L.hi].sort((a, b) => a - b);
+      for (let i = 0; i + 1 < ys.length; i++) if (ys[i + 1] - ys[i] > lim + 1e-6) {
+        longos.push(ys[i + 1] - ys[i]);
+        (L.simetrica ? [1, -1] : [1]).forEach(sg => ex.push({ pts: [centro(S, sg * ys[i]), centro(S, sg * ys[i + 1])], cor: "#e0b84a", larg: 5 }));
+      }
+    }
+    if (previa !== null) ex.push({ pts: anel(S, previa, 0), cor: "rgba(255,212,71,.7)", larg: 1.4 });
     vista.extra = ex;
     const h = [];
     if (sel !== null && n.y.some(v => iguais(v, sel))) {
@@ -71,6 +81,7 @@ const Nervura3D = (() => {
       h.push(`Nervura em y = ${y.toFixed(3)} m · ângulo ${(+angDe(n, sel)).toFixed(1)}°`);
       h.push(`vão: ${mm(y - Math.max(v.baixo, L.lo - 0))} mm atrás · ${mm(Math.min(v.cima, L.hi) - y)} mm à frente`);
     } else h.push(`Editando nervuras: ${n.y.length}${L.simetrica ? " por semi-asa" : ""}`);
+    if (longos.length) h.push(`${longos.length} vão${longos.length === 1 ? "" : "s"} acima do passo máximo de ${n.passo_max_mm} mm (maior: ${Math.round(1000 * Math.max(...longos))} mm), em dourado`);
     h.push("Arraste um anel laranja (Alt = sem passo)");
     h.push("Ctrl+clique cria · N cria no maior vão");
     h.push("←/→ move 1 mm (Shift 10) · Q/E gira 1° (Shift 5)");
@@ -82,6 +93,8 @@ const Nervura3D = (() => {
     ativo = !!v;
     if (ativo && typeof No3D !== "undefined" && No3D.ativo()) No3D.liga(false);
     vista.ferramenta = ativo ? ferramenta : null;
+    if (ativo) vista.aoMover = aoMover; else if (vista.aoMover === aoMover) vista.aoMover = null;
+    previa = null;
     if (ativo) { const n = cfg(elemento() || {}, false); if (n && n.y.length && (sel === null || !n.y.some(q => iguais(q, sel)))) sel = n.y[0]; }
     atualiza();
   }
@@ -103,6 +116,19 @@ const Nervura3D = (() => {
     return 0.5 * (pts[k] + pts[k + 1]);
   }
 
+  function aoMover(px, py, ev) {
+    const e = elemento(), S = ativo && ehAsa(e) ? secoes() : null;
+    if (!S || !(ev.ctrlKey || ev.metaKey)) { if (previa !== null) { previa = null; atualiza(); } return; }
+    const L = limites(e);
+    let mel = null, d0 = 60;
+    for (let i = 0; i <= 240; i++) {
+      const y = L.lo + (L.hi - L.lo) * i / 240, q = proj(centro(S, y)); if (!q) continue;
+      const d = Math.hypot(q[0] - px, q[1] - py); if (d < d0) { d0 = d; mel = y; }
+    }
+    const novo = mel === null ? null : Math.round(mel / PASSO) * PASSO;
+    if (novo !== previa) { previa = novo; atualiza(); }
+  }
+
   const ferramenta = {
     baixo(px, py, ev) {
       const e = elemento(), S = ativo && ehAsa(e) ? secoes() : null; if (!S) return false;
@@ -117,11 +143,20 @@ const Nervura3D = (() => {
         return true;
       }
       const n = cfg(e, false); if (!n) return false;
-      let mel = null, d0 = 12;
+      const perto = [];
       itens(e, n, L, null).forEach(it => {
-        for (const p of anel(S, it.y, it.ang)) { const q = proj(p); if (q) { const d = Math.hypot(q[0] - px, q[1] - py); if (d < d0) { d0 = d; mel = it; } } }
+        let d0 = 12;
+        for (const p of anel(S, it.y, it.ang)) { const q = proj(p); if (q) d0 = Math.min(d0, Math.hypot(q[0] - px, q[1] - py)); }
+        if (d0 < 12) perto.push({ it, d: d0 });
       });
-      if (!mel) return false;
+      if (!perto.length) { ultimo = null; return false; }
+      perto.sort((a, b) => a.d - b.d);
+      let mel = perto[0].it;
+      if (ultimo && Math.hypot(ultimo.px - px, ultimo.py - py) < 5 && perto.length > 1) {
+        const i = perto.findIndex(q => iguais(q.it.y0, sel) && q.it.esp === ultimo.esp);
+        if (i >= 0) mel = perto[(i + 1) % perto.length].it;
+      }
+      ultimo = { px, py, esp: mel.esp };
       sel = mel.y0;
       const c0 = centro(S, mel.y), c1 = centro(S, mel.y + 0.05), q0 = proj(c0), q1 = proj(c1);
       arr = { k: mel.k, y0: mel.y0, y: mel.y0, px, py, sinal: mel.esp ? -1 : 1, sx: q1[0] - q0[0], sy: q1[1] - q0[1], arrasta: false };

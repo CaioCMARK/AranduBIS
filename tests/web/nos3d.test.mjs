@@ -55,3 +55,27 @@ test("resolve: o arrasto na tela vira deslocamento no plano ou no eixo escolhido
   const e = dado(pega, "P.resolve({ p: [0, 0, 0] }, 30, 999)");
   assert.ok(Math.abs(e[0] - 0.3) < 1e-9 && e[1] === 0 && e[2] === 0);
 });
+
+test("copiar e colar: o trecho entra deslocado 20 mm, com as barras internas", () => {
+  const pega = novo();
+  pega("P.grupo.add(1); P.grupo.add(3); P.copia(t); P.cola(t)");
+  assert.equal(pega("t.nos.length"), 6);
+  assert.deepEqual(dado(pega, "t.nos.slice(4)"), [[0.02, 0.2, 0], [0.52, 0, 0.1]]);
+  assert.deepEqual(dado(pega, "t.barras[t.barras.length - 1]"), [4, 5, "T"]);
+  assert.deepEqual(dado(pega, "[...P.grupo]"), [4, 5]);
+});
+
+test("espelhar: cria o lado oposto em y e reaproveita o no que ja existe", () => {
+  const pega = novo();
+  pega("t.nos.push([0.3, 0.1, 0.05]); t.barras.push([1, 4, 'T']); P.grupo.add(1); P.grupo.add(4); P.espelha(t)");
+  assert.equal(pega("t.nos.length"), 6);
+  assert.deepEqual(dado(pega, "t.nos[5]"), [0.3, -0.1, 0.05]);
+  assert.equal(pega("P.temBarra(t, 2, 5) >= 0"), true);
+});
+
+test("espelhar com eixo travado usa o no selecionado como pivo", () => {
+  const pega = novo();
+  pega("P.define({ eixo: 'x' }); P.seleciona(0); P.grupo.add(0); P.grupo.add(3); P.espelha(t)");
+  assert.deepEqual(dado(pega, "t.nos[4]"), [-0.5, 0, 0.1]);
+  assert.equal(pega("P.temBarra(t, 0, 4)"), -1);
+});

@@ -32,7 +32,7 @@ const Interface = (() => {
     ["nervuras", "Nervuras", "R", "Arraste, crie e remova nervuras da asa."],
     ["nos", "Nós e barras", "B", "Mova nós, ligue barras e defina juntas e apoios."],
     ["secao", "Seção", "S", "Clique num anel para editar a seção da asa."],
-    ["medir", "Medir", "D", "Clique em dois pontos para medir a distância."],
+    ["medir", "Medir", "D", "Clique em dois pontos para medir a distância; o terceiro mede o ângulo."],
   ];
   const sem = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const emCampo = ev => { const t = ev.target, g = t && t.tagName; return g === "INPUT" || g === "TEXTAREA" || g === "SELECT" || (t && t.isContentEditable); };
@@ -72,7 +72,7 @@ const Interface = (() => {
     baixo(px, py) {
       const p = candidato(px, py);
       if (!p) return false;
-      if (medida.pts.length >= 2) medida.pts = [];
+      if (medida.pts.length >= 3) medida.pts = [];
       medida.pts.push(p);
       pintaMedida();
       return true;
@@ -95,16 +95,22 @@ const Interface = (() => {
 
   function resultadoMedida() {
     if (medida.pts.length < 2) return null;
-    const [a, b] = medida.pts, d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-    return { dist: Math.hypot(...d), d };
+    const [a, b, c] = medida.pts, d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], r = { dist: Math.hypot(...d), d };
+    if (c) {
+      const u = [a[0] - b[0], a[1] - b[1], a[2] - b[2]], w = [c[0] - b[0], c[1] - b[1], c[2] - b[2]], nu = Math.hypot(...u), nw = Math.hypot(...w);
+      r.dist2 = nw;
+      r.angulo = nu > 1e-9 && nw > 1e-9 ? Math.acos(Math.max(-1, Math.min(1, (u[0] * w[0] + u[1] * w[1] + u[2] * w[2]) / (nu * nw)))) * 180 / Math.PI : null;
+    }
+    return r;
   }
 
   function pintaMedida() {
     const r = resultadoMedida(), mm = v => (v * 1000).toFixed(1);
     vista.pontos = medida.pts.map((p, i) => ({ p, sel: i === medida.pts.length - 1, forma: "solda" }));
-    vista.extra = r ? [{ pts: medida.pts, cor: "#ffd447", larg: 2 }] : null;
+    vista.extra = r ? medida.pts.slice(1).map((p, i) => ({ pts: [medida.pts[i], p], cor: "#ffd447", larg: 2 })) : null;
     vista.hud = r
-      ? [`Distância: ${mm(r.dist)} mm`, `Δx ${mm(r.d[0])} · Δy ${mm(r.d[1])} · Δz ${mm(r.d[2])} mm`, "Clique de novo para outra medida · Esc sai"]
+      ? [`Distância: ${mm(r.dist)} mm`, `Δx ${mm(r.d[0])} · Δy ${mm(r.d[1])} · Δz ${mm(r.d[2])} mm`,
+        r.angulo != null ? `Ângulo no 2º ponto: ${r.angulo.toFixed(1)}° · 2º trecho ${mm(r.dist2)} mm` : "Terceiro clique mede o ângulo no 2º ponto", "Depois, clique de novo para outra medida · Esc sai"]
       : [medida.pts.length ? "Clique no segundo ponto" : "Medir: clique no primeiro ponto", "O cursor gruda em nós e vértices · Esc sai"];
     vista.desenha();
     Estado.avisa("ferramenta");
@@ -383,7 +389,9 @@ const Interface = (() => {
       I.append(el("h5", "", "Medida"));
       if (md) {
         const mm = v => (v * 1000).toFixed(1) + " mm";
-        [["distância", mm(md.dist)], ["Δx", mm(md.d[0])], ["Δy", mm(md.d[1])], ["Δz", mm(md.d[2])]].forEach(([a, b]) => G.append(el("label", "", a), el("span", "", b)));
+        const linhas = [["distância", mm(md.dist)], ["Δx", mm(md.d[0])], ["Δy", mm(md.d[1])], ["Δz", mm(md.d[2])]];
+        if (md.angulo != null) linhas.push(["2º trecho", mm(md.dist2)], ["ângulo", md.angulo.toFixed(1) + "°"]);
+        linhas.forEach(([a, b]) => G.append(el("label", "", a), el("span", "", b)));
         I.append(G);
       } else I.append(el("div", "nota", "Clique em dois pontos da vista."));
     }
@@ -398,9 +406,9 @@ const Interface = (() => {
     ["Geral", [["1 a 5", "ir para a etapa"], ["Ctrl+K", "procurar um comando"], ["?", "esta lista"], ["Ctrl+Z / Ctrl+Y", "desfazer / refazer"], ["[ e ]", "recolher os painéis laterais"], ["Esc", "sair da ferramenta"]]],
     ["Ferramentas", FERR.map(f => [f[2], f[1]])],
     ["Vista 3D", [["arrastar", "girar"], ["Shift + arrastar", "deslocar"], ["roda do mouse", "aproximar"], ["cubo no canto", "clique numa face para alinhar a vista"]]],
-    ["Nervuras", [["arrastar o anel", "mover (Alt = sem passo)"], ["Ctrl + clique", "criar"], ["N", "criar no maior vão"], ["← →", "mover 1 mm (Shift 10)"], ["Q / E", "girar 1° (Shift 5)"], ["Del", "remover"], ["Tab", "próxima"]]],
+    ["Nervuras", [["arrastar o anel", "mover (Alt = sem passo)"], ["Ctrl + clique", "criar (a prévia aparece ao segurar Ctrl)"], ["clique repetido", "alternar entre anéis sobrepostos"], ["N", "criar no maior vão"], ["← →", "mover 1 mm (Shift 10)"], ["Q / E", "girar 1° (Shift 5)"], ["Del", "remover"], ["Tab", "próxima"]]],
     ["Nós e barras", [["arrastar o nó", "mover (Alt = sem passo e sem ímã)"], ["X / Y / Z", "travar o eixo"], ["P", "trocar o plano"], ["M", "simetria"], ["← → ↑ ↓ , .", "mover 1 mm (Shift 10)"],
-      ["Ctrl + clique", "criar nó, ou ligar/desligar barra"], ["1 / 2 / 3", "solda / parafuso / rótula"], ["4 / 5 / 0", "engaste / apoio / livre"], ["6", "ligar à asa mais próxima"], ["T", "trocar o tubo"], ["L", "ligar automaticamente"], ["Del", "remover"], ["Tab", "próximo"]]],
+      ["Ctrl + clique", "criar nó, ou ligar/desligar barra"], ["Shift + clique", "juntar o nó ao grupo"], ["Ctrl+C / Ctrl+V", "copiar / colar o grupo"], ["I", "espelhar o grupo (em y, ou no eixo travado)"], ["1 / 2 / 3", "solda / parafuso / rótula"], ["4 / 5 / 0", "engaste / apoio / livre"], ["6", "ligar à asa mais próxima"], ["T", "trocar o tubo"], ["L", "ligar automaticamente"], ["Del", "remover"], ["Tab", "próximo"]]],
   ];
 
   function dialogo(id, titulo, classe) {
