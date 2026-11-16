@@ -102,6 +102,11 @@ const Cauda3 = (() => {
         + `<td>${c.rotacao_h_graus ? fmt(c.rotacao_h_graus[0], 2) + " / " + fmt(c.rotacao_h_graus[1], 2) + " / " + fmt(c.rotacao_h_graus[2], 2) : "—"}</td></tr>`; }).join("");
     C.append(t);
     const juntas = res.casos.flatMap(c => (c.juntas || []).map(j => Object.assign({ caso: c.caso }, j))).sort((a, b) => a.margem - b.margem);
+    if (typeof No3D !== "undefined" && No3D.defineMargens) {
+      const M = {};
+      res.casos.forEach(c => (c.juntas_pos || []).forEach(q => { const k = No3D.chave(q); if (!(k in M) || q[3] < M[k]) M[k] = q[3]; }));
+      No3D.defineMargens(M);
+    }
     const vistos = new Set(), top = juntas.filter(j => (vistos.has(j.no) ? false : vistos.add(j.no))).slice(0, 8);
     if (top.length) {
       const NJ = { solda: "solda", parafuso: "parafuso", rotula: "rótula" }, MJ = { forca: "força na cola", momento: "momento na cola", torcao: "torção na cola", corte_parafuso: "corte do parafuso", esmagamento: "esmagamento do tubo" };

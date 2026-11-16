@@ -337,7 +337,7 @@ def analisa(esq: dict, casos_cargas: list | None = None, peso_N: float = 0.0, rh
         curtas = sorted((b for b in lista if b["curta"]), key=lambda b: b["margem"])[:3]
         u_p = r["u"][no_ponta]
         resultados.append({"caso": nome_c, "descricao": desc, "margem": piores[0]["margem"], "piores": piores, "juntas": [{**j, "pos": [float(x) for x in m.nos[j["no"]]]} for j in lj[:8]],
-                           "margem_junta": lj[0]["margem"] if lj else None, "curtas": curtas, "perfil": perfil, "margem_x": margem_x,
+                           "margem_junta": lj[0]["margem"] if lj else None, "juntas_pos": [[float(x) for x in m.nos[j["no"]]] + [float(j["margem"])] for j in lj], "curtas": curtas, "perfil": perfil, "margem_x": margem_x,
                            "flecha_ponta_mm": 1000 * float(abs(u_p[2])), "deslocamento_ponta_mm": [1000 * float(x) for x in u_p[:3]],
                            "rotacao_h_graus": None if u_h is None else [float(np.degrees(x)) for x in u_h[3:]],
                            "rotacao_v_graus": None if u_v is None else [float(np.degrees(x)) for x in u_v[3:]]})

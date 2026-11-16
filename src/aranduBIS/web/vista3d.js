@@ -216,6 +216,12 @@ class Vista3D {
         else { g.moveTo(x, y - R); g.lineTo(x + R, y + R); g.lineTo(x - R, y + R); g.closePath(); }
         g.fillStyle = "rgba(90,110,60,.55)"; g.fill(); g.strokeStyle = "#e9d48a"; g.lineWidth = 1.6; g.stroke();
       }
+      if (typeof a.margem === "number") {
+        g.beginPath(); g.arc(x, y, r + 4, 0, 7);
+        g.strokeStyle = a.margem < 0 ? "#7a4300" : a.margem < 0.5 ? "#e0b84a" : "#7d9440"; g.lineWidth = a.margem < 0 ? 4 : 2.6;
+        if (a.margem < 0) g.setLineDash([4, 2]);
+        g.stroke(); g.setLineDash([]);
+      }
       if (a.ligacao) { g.beginPath(); g.arc(x, y, r + 8, 0, 7); g.strokeStyle = "#e9d48a"; g.lineWidth = 1.6; g.setLineDash([3, 3]); g.stroke(); g.setLineDash([]); }
       g.beginPath();
       if (a.forma === "parafuso") { g.moveTo(x, y - r - 1); g.lineTo(x + r + 1, y); g.lineTo(x, y + r + 1); g.lineTo(x - r - 1, y); g.closePath(); }

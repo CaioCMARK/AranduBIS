@@ -375,6 +375,7 @@ const Interface = (() => {
           const asas = esq.elementos.filter(e => (e.tipo || "asa") === "asa" && Array.isArray(e.secoes)).map(e => [e.nome, e.nome]);
           linha("liga a", sele([["", "nenhuma asa"]].concat(asas), no.ligacao, v => No3D.defineJunta("ligacao", v)), "Asa presa à treliça neste nó.");
           G.append(el("label", "", "barras"), el("span", "", String(no.barras)));
+          if (typeof no.margem === "number") { const l = el("label", "", "margem da junta"); l.title = "Da última análise da cauda (etapa 3). Anel verde: folgada; dourado: abaixo de 50 %; tracejado escuro: insuficiente."; G.append(l, el("span", "", (100 * no.margem).toFixed(0) + " %")); }
         }
       }
       I.append(G);

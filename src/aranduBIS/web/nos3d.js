@@ -4,7 +4,8 @@ const No3D = (() => {
   const PASSO = 0.001, IMA = 9;
   const PLANOS = [["xy", "planta (x, y)", [0, 1]], ["xz", "perfil (x, z)", [0, 2]], ["yz", "frontal (y, z)", [1, 2]]];
   let ativo = false, sel = null, arr = null, plano = 0, eixo = null, sim = true, tubo = null, autoLiga = true;
-  let meu = false, previa = null, area = null, grupoDe = null;
+  let meu = false, previa = null, area = null, grupoDe = null, margens = null;
+  const chave = p => [0, 1, 2].map(k => Math.round(p[k] * 1000)).join(",");
   const grupo = new Set();
 
   const TIPOS = ["trelica", "roda", "ponto"];
@@ -51,7 +52,7 @@ const No3D = (() => {
     const A = alcas(e);
     if (grupoDe !== e.nome) { grupo.clear(); grupoDe = e.nome; }
     grupo.forEach(i => { if (!A.some(a => a.id === i)) grupo.delete(i); });
-    const pts = A.map(a => ({ p: posDe(e, a), sel: sel === a.id || grupo.has(a.id), forma: e.tipo === "trelica" ? Juntas.de(e, a.id).split(":")[0] : "solda", vinculo: e.tipo === "trelica" ? Juntas.vinculoDe(e, a.id) : "", ligacao: e.tipo === "trelica" && !!Juntas.ligacaoDe(e, a.id) }));
+    const pts = A.map(a => ({ p: posDe(e, a), margem: margens && e.tipo === "trelica" ? margens[chave(a.p)] : undefined, sel: sel === a.id || grupo.has(a.id), forma: e.tipo === "trelica" ? Juntas.de(e, a.id).split(":")[0] : "solda", vinculo: e.tipo === "trelica" ? Juntas.vinculoDe(e, a.id) : "", ligacao: e.tipo === "trelica" && !!Juntas.ligacaoDe(e, a.id) }));
     vista.pontos = pts;
     const ex = [];
     if (e.tipo === "trelica") {
@@ -65,6 +66,7 @@ const No3D = (() => {
       const p = arr && arr.arrasta ? arr.p : a.p, lig = e.tipo === "trelica" ? e.barras.filter(b => b[0] === sel || b[1] === sel).length : 0;
       h.push(`${e.tipo === "trelica" ? "Nó " + sel : e.nome} · x ${(p[0] * 1000).toFixed(0)}  y ${(p[1] * 1000).toFixed(0)}  z ${(p[2] * 1000).toFixed(0)} mm`);
       h.push(e.tipo === "trelica" ? `liga ${lig} barra${lig === 1 ? "" : "s"} · ${A.length} nós` : "arraste a bolinha para reposicionar");
+      if (margens && e.tipo === "trelica" && chave(a.p) in margens) h.push(`margem da junta na última análise da cauda: ${(100 * margens[chave(a.p)]).toFixed(0)} %`);
       if (grupo.size > 1) h.push(`grupo de ${grupo.size} nós: arraste um deles para mover todos`);
       if (e.tipo === "trelica") h.push(`junta: ${Juntas.rotulo(Juntas.de(e, sel))} · vínculo: ${Juntas.vinculoDe(e, sel) || "livre"}${Juntas.ligacaoDe(e, sel) ? " · liga a " + Juntas.ligacaoDe(e, sel) : ""}`);
     } else h.push(`Editando ${e.nome}`);
@@ -351,6 +353,7 @@ const No3D = (() => {
     const a = alcas(e).find(q => q.id === sel);
     if (!a) return { elemento: e.nome, tipo: e.tipo, id: null, total: alcas(e).length };
     const r = { elemento: e.nome, tipo: e.tipo, id: a.id, p: a.p.slice(), total: alcas(e).length };
+    if (e.tipo === "trelica" && margens && chave(a.p) in margens) r.margem = margens[chave(a.p)];
     if (e.tipo === "trelica") Object.assign(r, { junta: Juntas.de(e, a.id), vinculo: Juntas.vinculoDe(e, a.id), ligacao: Juntas.ligacaoDe(e, a.id), barras: e.barras.filter(b => b[0] === a.id || b[1] === a.id).length });
     return r;
   };
@@ -368,5 +371,5 @@ const No3D = (() => {
     atualiza();
   }
 
-  return { liga, atualiza, ativo: () => ativo, suportado, selecao, defineSel, defineJunta, puro: { alcas, escreve, espelho, temBarra, removeNos, resolve, grupo, copia, cola, espelha, seleciona: i => { sel = i; }, define: o => { if ("plano" in o) plano = o.plano; if ("eixo" in o) eixo = o.eixo; if ("sim" in o) sim = o.sim; } } };
+  return { liga, atualiza, ativo: () => ativo, suportado, chave, defineMargens: m => { margens = m; if (ativo) atualiza(); }, selecao, defineSel, defineJunta, puro: { alcas, escreve, espelho, temBarra, removeNos, resolve, grupo, copia, cola, espelha, seleciona: i => { sel = i; }, define: o => { if ("plano" in o) plano = o.plano; if ("eixo" in o) eixo = o.eixo; if ("sim" in o) sim = o.sim; } } };
 })();
