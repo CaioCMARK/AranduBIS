@@ -11,6 +11,7 @@ const Interface = (() => {
     nos: '<circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><path d="M6 16.3l5-8.6M18 16.3l-5-8.6M7 18h10"/>',
     secao: '<path d="M3 13c2-5 12-6 18-1-6 2-14 3-18 1z"/><path d="M12 3v18" stroke-dasharray="3 3"/>',
     chapa: '<path d="M4 20V8l6-4h10v12l-6 4z"/><circle cx="13" cy="12" r="2.2"/>',
+    perfil: '<path d="M3 13c2-6 12-7 18-1-6 3-14 4-18 1z"/><circle cx="9" cy="11.5" r="1.4"/><circle cx="15" cy="11.5" r="1.4"/>',
     medir: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/>',
     esq: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
     dir: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/>',
@@ -39,6 +40,7 @@ const Interface = (() => {
     ["nos", "Nós e barras", "B", "Mova nós, ligue barras e defina juntas e apoios."],
     ["secao", "Seção", "S", "Clique num anel para editar a seção da asa."],
     ["chapa", "Chapa 2D", "C", "Abre o editor 2D da chapa selecionada."],
+    ["perfil", "Perfil 2D", "F", "Abre o editor 2D do perfil da asa selecionada: pontos, NACA, importar e exportar .dat."],
     ["medir", "Medir", "D", "Clique em dois pontos para medir a distância; o terceiro mede o ângulo."],
   ];
   const sem = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -65,6 +67,7 @@ const Interface = (() => {
   const medida = { pts: [] };
   const V = document.querySelector("#et1 .vista");
   vista.estilo = "nova";
+  vista.contorno = true;
 
   function garante(teste) {
     if (!esq) return false;
@@ -144,6 +147,10 @@ const Interface = (() => {
     } else if (nome === "secao") {
       if (garante(temSecoes)) { aba = "Seção"; abas(); abaConteudo(); Secao3D.atualiza(); }
       else { msg("Não há asa com seções no modelo.", true); nome = "selecionar"; }
+    } else if (nome === "perfil") {
+      if (garante(e => !!e && (e.tipo || "asa") === "asa" && Array.isArray(e.secoes)) || garante(e => !!Nervura3D.ehAsa(e))) Perfil2D.abre(elemento());
+      else msg("Não há asa no modelo para editar o perfil.", true);
+      nome = "selecionar";
     } else if (nome === "chapa") {
       if (garante(e => !!e && e.tipo === "placa")) Chapa2D.abre(elemento());
       else msg("Não há chapa no modelo: insira um elemento do tipo Placa.", true);
@@ -250,22 +257,94 @@ const Interface = (() => {
   const fechaMenus = () => menus.forEach(m => { m.pop.hidden = true; m.b.setAttribute("aria-expanded", "false"); });
   const menuAberto = () => menus.find(m => !m.pop.hidden);
 
-  function abreMenu(m, foca) {
-    fechaMenus();
-    m.pop.innerHTML = "";
-    m.itens().forEach(it => {
-      if (!it) { m.pop.append(el("div", "menu-sep")); return; }
-      if (it.grupo) { m.pop.append(el("div", "menu-grupo", it.grupo)); return; }
+  function preenche(pop, itens, fecha) {
+    itens.forEach(it => {
+      if (!it) { pop.append(el("div", "menu-sep")); return; }
+      if (it.grupo) { pop.append(el("div", "menu-grupo", it.grupo)); return; }
       const [rot, faz, tecla, o] = it, r = el("button", "menu-item");
       r.setAttribute("role", o && "marcado" in o ? "menuitemradio" : "menuitem");
       if (o && "marcado" in o) r.setAttribute("aria-checked", o.marcado ? "true" : "false");
       r.append(el("span", "menu-marca", o && o.marcado ? "✓" : ""), el("span", "menu-rot", rot), el("span", "menu-tecla", tecla || ""));
       if (o && o.desligado) r.disabled = true;
-      r.onclick = () => { fechaMenus(); faz(); };
-      m.pop.append(r);
+      r.onclick = () => { fecha(); faz(); };
+      pop.append(r);
     });
+  }
+
+  function abreMenu(m, foca) {
+    fechaMenus();
+    m.pop.innerHTML = "";
+    preenche(m.pop, m.itens(), fechaMenus);
     m.pop.hidden = false; m.b.setAttribute("aria-expanded", "true");
     if (foca) { const i = m.pop.querySelector(".menu-item:not(:disabled)"); if (i) i.focus(); }
+  }
+
+  let ctx = null;
+  function fechaContexto() { if (ctx) { ctx.remove(); ctx = null; } }
+
+  function contexto(x, y, itens, rotulo) {
+    fechaMenus(); fechaContexto();
+    const pop = el("div", "menu-pop contexto"); pop.setAttribute("role", "menu"); pop.setAttribute("aria-label", rotulo || "Menu de contexto");
+    preenche(pop, itens, fechaContexto);
+    document.body.append(pop); ctx = pop;
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    pop.style.left = Math.max(4, Math.min(x, window.innerWidth - w - 6)) + "px";
+    pop.style.top = Math.max(4, Math.min(y, window.innerHeight - h - 6)) + "px";
+    const L = () => [...pop.querySelectorAll(".menu-item:not(:disabled)")];
+    if (L()[0]) L()[0].focus();
+    pop.addEventListener("keydown", ev => {
+      const k = ev.key, a = L(), j = a.indexOf(document.activeElement);
+      if (k === "Escape") { fechaContexto(); ev.preventDefault(); ev.stopPropagation(); }
+      else if (k === "ArrowDown" || k === "ArrowUp") { const n = a[(j + (k === "ArrowDown" ? 1 : -1) + a.length) % a.length]; if (n) n.focus(); ev.preventDefault(); }
+    });
+  }
+
+  function itensElemento(i) {
+    const e = esq.elementos[i], nome = e.nome, tipo = e.tipo || "asa", asa = tipo === "asa" && Array.isArray(e.secoes);
+    const alvoSel = () => { if (sel !== i) seleciona(i); };
+    const oculto = ocultos.has(nome), L = [];
+    L.push({ grupo: nome });
+    if (asa) L.push(["Editar o perfil (2D)…", () => { alvoSel(); Perfil2D.abre(e); }, "F"]);
+    if (tipo === "placa") L.push(["Editar a chapa (2D)…", () => { alvoSel(); Chapa2D.abre(e); }, "C"]);
+    if (asa) L.push(["Editar as seções…", () => { alvoSel(); ativa("secao"); }, "S"], ["Editar nervuras…", () => { alvoSel(); ativa("nervuras"); }, "R"]);
+    if (tipo === "trelica") L.push(["Mover nós e barras…", () => { alvoSel(); ativa("nos"); }, "B"]);
+    if (L.length > 1) L.push(null);
+    L.push([oculto ? "Mostrar" : "Ocultar", () => { oculto ? ocultos.delete(nome) : ocultos.add(nome); lista(); aplicaVisibilidade(); }]);
+    L.push(["Mostrar só este", () => { ocultos.clear(); esq.elementos.forEach(x => { if (x.nome !== nome) ocultos.add(x.nome); }); lista(); aplicaVisibilidade(); }]);
+    L.push(["Mostrar todos", () => { ocultos.clear(); lista(); aplicaVisibilidade(); }, "", { desligado: !ocultos.size }]);
+    L.push(null);
+    L.push(["Duplicar", () => { muda(() => { const c = JSON.parse(JSON.stringify(e)); c.nome = nomeUnico(e.nome); esq.elementos.push(c); }); seleciona(esq.elementos.length - 1); }]);
+    L.push(["Remover", () => { alvoSel(); document.getElementById("b_remove").click(); }, "Del"]);
+    return L;
+  }
+
+  function itensVista() {
+    const v = k => () => document.querySelector(`[data-vista="${k}"]`).click();
+    return [{ grupo: "Vista" }, ["Isométrica", v("iso")], ["Lateral", v("lateral")], ["Topo", v("topo")], ["Frontal", v("frontal")], ["Ajustar à janela", v("ajusta")], null,
+      ["Mostrar todos os elementos", () => { ocultos.clear(); lista(); aplicaVisibilidade(); }, "", { desligado: !ocultos.size }],
+      ["Procurar comando…", comandos, "Ctrl+K"]];
+  }
+
+  function contextoVista(px, py, ev) {
+    const z = vista.zonaEm(px, py);
+    const i = z >= 0 && malha ? esq.elementos.findIndex(e => malha.zonas[z].startsWith(e.nome + ".")) : -1;
+    if (i >= 0) { if (i !== sel) seleciona(i); contexto(ev.clientX, ev.clientY, itensElemento(i), esq.elementos[i].nome); }
+    else contexto(ev.clientX, ev.clientY, itensVista(), "Vista");
+  }
+
+  function ligaContextos() {
+    vista.aoContexto = contextoVista;
+    const L = document.getElementById("lista");
+    L.addEventListener("contextmenu", ev => {
+      const d = ev.target.closest && ev.target.closest("#lista > div");
+      if (!d) return;
+      ev.preventDefault();
+      const i = [...L.children].indexOf(d);
+      if (i >= 0 && esq.elementos[i]) { if (i !== sel) seleciona(i); contexto(ev.clientX, ev.clientY, itensElemento(i), esq.elementos[i].nome); }
+    });
+    document.addEventListener("mousedown", ev => { if (ctx && !ctx.contains(ev.target)) fechaContexto(); }, true);
+    window.addEventListener("blur", fechaContexto);
+    window.addEventListener("resize", fechaContexto);
   }
 
   function menu(titulo, itens) {
@@ -337,6 +416,7 @@ const Interface = (() => {
     exp.before(busca);
     exp.after(icone("config", "Configurações", clica("b_config"), "Configurações"));
     document.addEventListener("click", ev => { if (!ev.target.closest || !ev.target.closest(".menu")) fechaMenus(); });
+    ligaContextos();
   }
 
   const SELOS = { pendente: "ainda sem resultado", aviso: "com aviso", ok: "sem pendências" };

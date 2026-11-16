@@ -80,6 +80,7 @@ function aplicaVisibilidade() {
       ? "Esta aeronave não tem estrutura declarada: adicione nervuras, longarinas ou tubos na aba Estrutura de uma asa, ou uma treliça."
       : "Nada na camada aero.", true);
   const e = elemento();
+  vista.camadaZona = malha.camadas;
   vista.destaque = e ? new Set(malha.zonas.map((z, k) => z.startsWith(e.nome + ".") ? k : -1).filter(k => k >= 0)) : null;
   vista.desenha();
 }
@@ -130,6 +131,13 @@ function restaura(f) {
 function desfaz() { if (!passado.length) return; futuro.push(foto()); restaura(passado.pop()); }
 function refaz() { if (!futuro.length) return; passado.push(foto()); restaura(futuro.pop()); }
 
+function perfilCampo(campo, abre) {
+  if (typeof Perfil2D === "undefined" || document.documentElement.dataset.interface !== "nova") return campo;
+  const w = document.createElement("span"); w.className = "perfil-campo";
+  const b = document.createElement("button"); b.textContent = "✎"; b.title = "Editar o perfil no editor 2D"; b.setAttribute("aria-label", "Editar o perfil no editor 2D"); b.onclick = abre;
+  w.append(campo, b); return w;
+}
+
 function muda(fn) { guarda(); fn(); agenda(); lista(); }
 
 function linha(P, rotulo, w) {
@@ -179,7 +187,7 @@ function props() {
   cam.onchange = () => muda(() => { e.camada = cam.value; });
   linha(G, "camada", cam);
   if ((e.tipo || "asa") === "asa" && typeof e.perfil !== "undefined")
-    linha(G, "perfil", entrada("text", e.perfil, v => muda(() => { e.perfil = v; })));
+    linha(G, "perfil", perfilCampo(entrada("text", e.perfil, v => muda(() => { e.perfil = v; })), () => Perfil2D.abre(e)));
   if (e.tipo === "ponto") linha(G, "massa (kg)", entrada("number", e.massa, v => muda(() => { e.massa = v ?? 0; })));
   if (e.tipo === "placa") linha(G, "espessura (m)", entrada("number", e.espessura, v => muda(() => { e.espessura = v; })));
   const trio = (rot, chave, padrao) => {
@@ -277,7 +285,7 @@ function abaSecoes(C, e) {
       td.append(entrada("number", s[c], v => muda(() => { s[c] = v ?? 0; })));
       tr.append(td);
     });
-    if (comPerfil) { const td = document.createElement("td"); td.append(entrada("text", s.perfil || "", v => muda(() => { s.perfil = v; }))); tr.append(td); }
+    if (comPerfil) { const td = document.createElement("td"); td.append(perfilCampo(entrada("text", s.perfil || "", v => muda(() => { s.perfil = v; })), () => Perfil2D.abre(e, i))); tr.append(td); }
     const rm = document.createElement("td"); const b = document.createElement("button"); b.textContent = "✕"; b.title = "Remover seção";
     b.onclick = () => { if (e.secoes.length <= 2) return msg("Uma asa precisa de pelo menos 2 seções.", true); muda(() => e.secoes.splice(i, 1)); abaConteudo(); };
     rm.append(b); tr.append(rm); t.append(tr);

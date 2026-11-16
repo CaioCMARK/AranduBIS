@@ -60,6 +60,31 @@ def abre_exemplo(nome: str) -> dict:
     d["_pasta"] = str(p.parent)
     return d
 
+def perfil_pontos(spec: str, pasta, n: int = 81) -> list:
+    try:
+        x, zs, zi = ES.perfil_xy(spec, int(n), pasta or ".")
+    except (ValueError, OSError) as e:
+        raise ErroDeGeometria(str(e))
+    return [[float(a), float(b)] for a, b in np.vstack([np.c_[x, zs][::-1], np.c_[x, zi][1:]])]
+
+def grava_perfil(nome: str, pontos, pasta_aeronave, pasta_aeronaves) -> dict:
+    if not nome or not nome.replace("_", "").replace("-", "").isalnum():
+        raise ErroDeGeometria("nome do perfil: só letras, números, _ e -")
+    try:
+        P = np.array(pontos, float)
+    except (ValueError, TypeError):
+        raise ErroDeGeometria("pontos inválidos")
+    if P.ndim != 2 or P.shape[1] != 2 or len(P) < 10 or not np.isfinite(P).all():
+        raise ErroDeGeometria("o perfil precisa de pelo menos 10 pontos (x, z)")
+    pa = Path(pasta_aeronaves).resolve()
+    ap = Path(pasta_aeronave).resolve() if pasta_aeronave else None
+    propria = ap is not None and (ap == pa or pa in ap.parents)
+    pasta = ap if propria else pa / "perfis"
+    pasta.mkdir(parents=True, exist_ok=True)
+    alvo = pasta / f"{nome}.dat"
+    alvo.write_text(nome + chr(10) + chr(10).join(f"{a:.6f} {b:.6f}" for a, b in P) + chr(10), encoding="utf8")
+    return {"perfil": alvo.name if propria else str(alvo), "caminho": str(alvo)}
+
 def grava(esquema: dict, pasta, nome: str | None = None) -> str:
     nome = nome or esquema.get("nome", "aeronave")
     if not nome.replace("_", "").replace("-", "").isalnum():

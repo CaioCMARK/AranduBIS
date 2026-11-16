@@ -145,3 +145,6 @@ dialog.chapa2d[open]{display:flex}
 .c2-cota{font:500 11px "Inter","Segoe UI",sans-serif;fill:var(--tinta);text-anchor:middle;paint-order:stroke;stroke:var(--vista);stroke-width:3px;font-variant-numeric:tabular-nums}
 [data-interface="nova"] .dlg-topo button.primario{background:var(--ouro);color:#1f2518;border-color:var(--ouro)}
 .c2-cota.esq{text-anchor:start}
+
+.perfil-campo{display:flex;gap:4px;align-items:center}.perfil-campo input{flex:1;min-width:92px}.perfil-campo button{padding:2px 7px}
+.menu-pop.contexto{position:fixed;top:auto;left:auto;z-index:60;border-radius:8px;min-width:230px}

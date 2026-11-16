@@ -169,3 +169,22 @@ def test_janela_propria_so_quando_pedida_ou_no_executavel():
     assert quer_janela([], congelado=True) is True
     assert quer_janela(["--navegador"], congelado=True) is False
     assert quer_janela(["--janela", "--sem-navegador"]) is False
+
+def test_perfil_le_e_grava(srv):
+    porta, pasta = srv
+    st, b = pede(porta, "POST", "/api/perfil/le", {"perfil": "NACA 4412", "n": 41})
+    assert st == 200
+    pts = json.loads(b)["pontos"]
+    assert len(pts) == 81 and pts[0][0] == pytest.approx(1.0) and pts[40][0] == pytest.approx(0.0, abs=1e-9)
+    st, b = pede(porta, "POST", "/api/perfil/grava", {"nome": "meu_perfil", "pontos": pts, "pasta": str(pasta / "aeronaves")})
+    assert st == 200
+    r = json.loads(b)
+    assert r["perfil"] == "meu_perfil.dat" and (pasta / "aeronaves" / "meu_perfil.dat").is_file()
+    st, b = pede(porta, "POST", "/api/perfil/le", {"perfil": r["perfil"], "pasta": str(pasta / "aeronaves"), "n": 41})
+    assert st == 200 and len(json.loads(b)["pontos"]) == 81
+    st, _ = pede(porta, "POST", "/api/perfil/grava", {"nome": "../x", "pontos": pts})
+    assert st == 400
+    st, _ = pede(porta, "POST", "/api/perfil/grava", {"nome": "ok", "pontos": [[0, 0]]})
+    assert st == 400
+    st, b = pede(porta, "POST", "/api/perfil/grava", {"nome": "fora", "pontos": pts, "pasta": str(pasta)})
+    assert st == 200 and (pasta / "aeronaves" / "perfis" / "fora.dat").is_file() or (pasta / "fora.dat").is_file()

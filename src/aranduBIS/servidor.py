@@ -274,6 +274,10 @@ def fazer_handler(est: Estado):
                     return self._json(AN.propulsao(d))
                 if self.path == "/api/decolagem":
                     return self._json(AN.decolagem(d))
+                if self.path == "/api/perfil/le":
+                    return self._json({"pontos": G.perfil_pontos(d.get("perfil", ""), d.get("pasta"), d.get("n", 81))})
+                if self.path == "/api/perfil/grava":
+                    return self._json(G.grava_perfil(d.get("nome", ""), d.get("pontos"), d.get("pasta"), est.pasta_aeronaves))
                 if self.path == "/api/grava":
                     return self._json({"caminho": G.grava(d, est.pasta_aeronaves)})
                 if self.path == "/api/configuracao":

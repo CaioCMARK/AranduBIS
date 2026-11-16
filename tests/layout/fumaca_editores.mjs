@@ -25,7 +25,7 @@ const PREPARA = `(() => {
 })()`;
 
 const TESTES = [
-  ["interface nova carregada", `JSON.stringify({ ok: Interface.nova && document.querySelectorAll(".paleta button").length === 6 && !!document.getElementById("inspetor") })`],
+  ["interface nova carregada", `JSON.stringify({ ok: Interface.nova && document.querySelectorAll(".paleta button").length === 7 && !!document.getElementById("inspetor") })`],
   ["nos: inspetor move o no e o par simetrico, e desfaz", `(async () => {
     Interface.ativa("nos"); await pausa(300);
     const e = elemento(), s = No3D.selecao(), antes = e.nos[s.id].slice(), i = document.querySelector("#inspetor input");
@@ -58,6 +58,22 @@ const TESTES = [
     const ok = (vista.hud || [""])[0].includes(esperado);
     Interface.ativa("selecionar");
     return JSON.stringify({ ok, hud: vista.hud, esperado });
+  })()`],
+  ["perfil 2D: abre, gera NACA e aplica; menu de contexto", `(async () => {
+    const e = esq.elementos.findIndex(x => (x.tipo || "asa") === "asa" && Array.isArray(x.secoes)); seleciona(e); await pausa(300);
+    Interface.ativa("perfil"); await pausa(1200);
+    const d = document.getElementById("dlg_perfil"), abriu = d.open, n = Perfil2D.estado().P.length;
+    const ent = [...d.querySelectorAll(".c2-painel input")];
+    ent[2].value = 3; ent[2].dispatchEvent(new Event("change")); ent[4].value = 10; ent[4].dispatchEvent(new Event("change"));
+    [...d.querySelectorAll("button")].find(b => b.textContent === "Gerar").click(); await pausa(200);
+    const cod = Perfil2D.estado().nacaCod;
+    [...d.querySelectorAll("button")].find(b => b.textContent === "Aplicar").click(); await pausa(600);
+    const perfil = elemento().perfil;
+    document.querySelectorAll("#lista > div")[e].dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, clientX: 100, clientY: 260 })); await pausa(200);
+    const itens = document.querySelectorAll(".menu-pop.contexto .menu-item").length;
+    document.querySelector(".menu-pop.contexto .menu-item").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); await pausa(100);
+    const fechou = !document.querySelector(".menu-pop.contexto");
+    return JSON.stringify({ ok: abriu && n > 20 && cod === "3010" && perfil === "NACA 3010" && itens >= 6 && fechou, abriu, n, cod, perfil, itens, fechou });
   })()`],
   ["chapa 2D: abre, cria furo e aplica", `(async () => {
     const s = document.getElementById("s_inserir"); s.value = "placa"; s.dispatchEvent(new Event("change")); await pausa(400);

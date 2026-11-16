@@ -26,6 +26,11 @@ class Vista3D {
     this.aoDesenhar = null;
     this.estilo = null;
     this.solo = null;
+    this.contorno = false;
+    this.camadaZona = null;
+    this.aoContexto = null;
+    this._dist = 0;
+    this._arest = null;
     this._liga();
     new ResizeObserver(() => this.desenha()).observe(canvas.parentElement);
     Tema.aoMudar(() => this.desenha());
@@ -42,6 +47,7 @@ class Vista3D {
       const l = Math.hypot(nx, ny, nz) || 1;
       N[3 * t] = nx / l; N[3 * t + 1] = ny / l; N[3 * t + 2] = nz / l;
     }
+    this._arest = null;
     this.malha = { V, T, N, zona: Int32Array.from(m.zona), nt };
     this.cores = cores;
     this.sobreId = null;
@@ -139,6 +145,7 @@ class Vista3D {
       if (this.modo === "solido") { g.fillStyle = cor; g.fill(); g.strokeStyle = cor; g.lineWidth = 0.6; g.stroke(); }
       else { g.strokeStyle = this.destaque && this.destaque.has(z) ? "#ca835c" : "#6f86a6"; g.lineWidth = 0.5; g.stroke(); }
     }
+    if (this.contorno && this.destaque && this.destaque.size) this._desenhaContorno(g, P);
     if (this.aneis || this.extra) this._desenhaAneis(g, B, esc, W, H);
     this._eixos(g, B, W, H);
     if (this.pontos) this._desenhaPontos(g, B, esc, W, H);
@@ -146,6 +153,52 @@ class Vista3D {
     if (this.hud) this._desenhaHud(g, W, H);
     if (this.cg) this._marcaCG(g, B, esc, W, H);
     if (this.aoDesenhar) this.aoDesenhar(g, B, esc, W, H);
+  }
+
+  _arestasDe(dest, aero) {
+    if (this._arest && this._arest.dest === dest && this._arest.aero === aero) return this._arest;
+    const { V, T, zona, nt } = this.malha, soldado = new Map(), canon = new Map(), mapa = new Map();
+    const id = i => {
+      let c = canon.get(i);
+      if (c === undefined) {
+        const k = Math.round(V[3 * i] * 1e5) + "," + Math.round(V[3 * i + 1] * 1e5) + "," + Math.round(V[3 * i + 2] * 1e5);
+        c = soldado.get(k); if (c === undefined) { c = soldado.size; soldado.set(k, c); }
+        canon.set(i, c);
+      }
+      return c;
+    };
+    const a = [], b = [], c1 = [], c2 = [], z = [];
+    for (let t = 0; t < nt; t++) {
+      if (!dest.has(zona[t]) || (aero && this.camadaZona[zona[t]] !== "aero")) continue;
+      for (let k = 0; k < 3; k++) {
+        const u = T[3 * t + k], v = T[3 * t + (k + 1) % 3], w = T[3 * t + (k + 2) % 3], cu = id(u), cv = id(v);
+        if (cu === cv) continue;
+        const ch = Math.min(cu, cv) * 4194304 + Math.max(cu, cv), j = mapa.get(ch);
+        if (j === undefined) { mapa.set(ch, a.length); a.push(u); b.push(v); c1.push(w); c2.push(-1); z.push(zona[t]); }
+        else if (c2[j] === -1) c2[j] = w;
+        else c2[j] = -2;
+      }
+    }
+    const abertas = c2.reduce((n, x) => n + (x === -1 ? 1 : 0), 0);
+    return (this._arest = { dest, aero, a, b, c1, c2, z, abertas: abertas < 0.05 * a.length });
+  }
+
+  _desenhaContorno(g, P) {
+    let aero = false;
+    if (this.camadaZona) for (const k of this.destaque) if (this.visivel[k] && this.camadaZona[k] === "aero") { aero = true; break; }
+    const A = this._arestasDe(this.destaque, aero), cr = (a, b, c) => (P[3 * b] - P[3 * a]) * (P[3 * c + 1] - P[3 * a + 1]) - (P[3 * b + 1] - P[3 * a + 1]) * (P[3 * c] - P[3 * a]);
+    g.save(); g.beginPath();
+    for (let e = 0; e < A.a.length; e++) {
+      const c2 = A.c2[e];
+      if (c2 === -2 || !this.visivel[A.z[e]]) continue;
+      if (c2 === -1) { if (!A.abertas) continue; }
+      else if (cr(A.a[e], A.b[e], A.c1[e]) * cr(A.a[e], A.b[e], c2) <= 0) continue;
+      g.moveTo(P[3 * A.a[e]], P[3 * A.a[e] + 1]); g.lineTo(P[3 * A.b[e]], P[3 * A.b[e] + 1]);
+    }
+    g.lineJoin = "round"; g.lineCap = "round";
+    g.strokeStyle = "rgba(20,24,12,.5)"; g.lineWidth = 4.4; g.stroke();
+    g.strokeStyle = Tema.cor("--ouro") || "#e0b84a"; g.lineWidth = 2.2; g.stroke();
+    g.restore();
   }
 
   _desenhaSolo(g, B, esc, W, H) {
@@ -283,11 +336,13 @@ class Vista3D {
     const cv = this.cv;
     let arr = null;
     cv.addEventListener("mousedown", e => {
+      this._dist = 0;
       arr = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button === 1 || e.button === 2, dist: 0 };
       if (e.button === 0 && this.ferramenta) { const r = cv.getBoundingClientRect(); if (this.ferramenta.baixo(e.clientX - r.left, e.clientY - r.top, e)) { arr.ferr = true; arr.pan = false; } }
       e.preventDefault();
     });
     window.addEventListener("mouseup", e => {
+      this._dist = arr ? arr.dist : 0;
       if (arr && arr.ferr) { const r = cv.getBoundingClientRect(); this.ferramenta && this.ferramenta.solta(e.clientX - r.left, e.clientY - r.top, e); arr = null; return; }
       if (arr && arr.dist < 4 && !arr.pan && this.aoClicar) { const r = cv.getBoundingClientRect(); this.aoClicar(e.clientX - r.left, e.clientY - r.top); }
       arr = null;
@@ -310,6 +365,9 @@ class Vista3D {
       this.cam.zoom = Math.max(0.2, Math.min(12, this.cam.zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
       this.desenha();
     }, { passive: false });
-    cv.addEventListener("contextmenu", e => e.preventDefault());
+    cv.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      if (this.aoContexto && this._dist < 4 && !this.ferramenta) { const r = cv.getBoundingClientRect(); this.aoContexto(e.clientX - r.left, e.clientY - r.top, e); }
+    });
   }
 }

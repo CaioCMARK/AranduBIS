@@ -4,7 +4,8 @@ O programa tem duas interfaces sobre os mesmos cálculos. A **nova** (padrão) r
 
 ## O que há na tela
 
-- **Barra superior**: menu **Arquivo** (novo, abrir, exemplos, salvar, baixar, arquivos do projeto), desfazer e refazer, **Exportar**, menu **Ajuda** e **Configurações**.
+- **Barra de menus**: **Arquivo**, **Editar**, **Exibir**, **Etapa**, **Ferramentas** e **Ajuda**, com os atalhos ao lado de cada item. Abrem com o clique, passam de um para o outro com o mouse ou com as setas e fecham com Esc. À direita fica o nome da aeronave.
+- **Barra de ícones**: novo, abrir, salvar, desfazer, refazer, a busca de comandos (Ctrl+K), **Exportar** e as configurações.
 - **Abas das etapas**, de 1 a 5. O selo ao lado do nome indica o estado: anel vazio = ainda sem resultado; círculo cheio = sem pendências; losango dourado = a etapa tem aviso. O selo muda quando você visita a etapa e ela mostra um veredito.
 - **Vista 3D**, com a paleta de ferramentas à esquerda, a barra de câmera, sombreado e camadas no alto e o cubo de orientação no canto. Clique numa face do cubo para alinhar a vista.
 - **Inspetor**, no alto do painel direito: mostra o nó, a nervura ou a medida selecionada e aceita valores digitados.
@@ -20,9 +21,21 @@ O programa tem duas interfaces sobre os mesmos cálculos. A **nova** (padrão) r
 | Nós e barras | B | Move nós, cria barras, define juntas, apoios e ligações. |
 | Seção | S | Clique num anel da asa para editar aquela seção. |
 | Chapa 2D | C | Abre o editor 2D da chapa selecionada. |
+| Perfil 2D | F | Abre o editor 2D do perfil da asa selecionada. |
 | Medir | D | Dois cliques medem a distância; o terceiro mede o ângulo no segundo ponto. |
 
 Se a peça selecionada não serve para a ferramenta, o programa seleciona a primeira que serve. **Esc** volta para Selecionar.
+
+## Contorno e menus de contexto
+
+A peça selecionada ganha um **contorno dourado** na vista 3D, além do realce de cor, para achá-la no meio da aeronave.
+
+O **botão direito** abre um menu no lugar do clique:
+
+- numa peça da vista ou numa linha da lista de elementos: editar o perfil (asas), a chapa (placas), as seções, as nervuras ou os nós (treliças), ocultar, mostrar só este, mostrar todos, duplicar e remover;
+- no vazio da vista: vistas padrão, mostrar todos e a busca de comandos.
+
+Para deslocar a vista continue usando Shift+arrastar ou o botão direito arrastando; o menu só abre se o mouse não se moveu.
 
 ## Atalhos gerais
 
@@ -64,7 +77,18 @@ Abre pela ferramenta **Chapa 2D** ou pelo botão na aba **Contorno** de uma plac
 - **Importar DXF** lê polilinhas fechadas, linhas encadeadas e círculos; o maior laço vira o contorno e os demais viram furos. **Exportar DXF** grava em milímetros.
 - **Aplicar** grava na aeronave (e entra no Desfazer geral). O programa recusa contorno que se cruza.
 
-Limites: arcos viram segmentos de reta; não há cotas de ângulo nem restrições geométricas. Para perfis de asa, use a ferramenta Seção.
+Limites: arcos viram segmentos de reta; não há cotas de ângulo nem restrições geométricas.
+
+## Editor 2D de perfis
+
+Abre pela ferramenta **Perfil 2D**, pelo menu de contexto da asa ou pelo botão ✎ ao lado do campo **perfil** (nas Propriedades vale para a asa inteira; na tabela de seções vale só para aquela seção). O perfil aparece normalizado pela corda, com a forma de origem tracejada para comparação.
+
+- **Mover (V)** e **Ponto (P)** como no editor de chapa; setas movem 0,1 % da corda (Shift: 1 %). A opção "x travado" deixa o ponto correr só na vertical.
+- **Gerar NACA de 4 dígitos** substitui o desenho; **Simetrizar** espelha a superfície superior na inferior.
+- O painel mostra espessura e curvatura máximas com a posição de cada uma.
+- **Importar .dat** lê os formatos Selig e Lednicer (UIUC); **Exportar .dat** grava em formato Selig.
+- **Aplicar**: se o desenho ainda é um NACA, o campo vira "NACA mptt"; se você mexeu nos pontos, o programa grava um arquivo `.dat` (na pasta da aeronave, quando ela é sua; senão em `aeronaves/perfis`) e o campo passa a apontar para ele. O desenho que se cruza é recusado.
+- As polares vêm do banco de perfis. Um perfil fora do banco (inclusive um desenhado aqui) usa as polares de perfis do banco com ângulo de sustentação nula parecido, e a análise registra esse aviso; confira o resultado com cuidado.
 
 ## Janela própria
 
