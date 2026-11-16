@@ -317,7 +317,7 @@
       "tipo": "asa",
       "perfil": "NACA 0012",
       "n_perfil": 40,
-      "rolagem": -90.0,
+      "rolagem": 90.0,
       "posicao": [
         1.25,
         0.0,
