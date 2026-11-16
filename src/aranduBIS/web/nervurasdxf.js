@@ -2,7 +2,7 @@
 
 const NervurasDxf3 = (() => {
   const CHAVE = "aranduBIS.nervuras_dxf";
-  let v = { asa: "", kerf_mm: 0.15, folga_tubo_mm: 0.1, folga_longarina_mm: 0.1, bf_min_mm: 1.0, parede_min_mm: 1.2, recesso_chapeado: true, folha_largura_mm: 600, folha_altura_mm: 300, espaco_mm: 4, rotulos: true };
+  let v = { asa: "", kerf_mm: 0.15, folga_tubo_mm: 0.1, folga_longarina_mm: 0.1, bf_min_mm: 1.0, parede_min_mm: 1.2, recesso_chapeado: true, folha_largura_mm: 600, folha_altura_mm: 300, espaco_mm: 4, rotulos: true, alivio: false, alivio_borda_mm: 6, alivio_ponte_mm: 6, alivio_d_min_mm: 8, alivio_d_max_mm: 60, alivio_n: 3.8, alivio_fs: 1.5, alivio_massa_kg: 0 };
   let res = null, tempo = null, seq = 0;
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "nervuras_dxf";
@@ -34,6 +34,19 @@ const NervurasDxf3 = (() => {
     const c = document.createElement("input"); c.type = "checkbox"; c.checked = !!v.recesso_chapeado;
     c.onchange = () => { v.recesso_chapeado = c.checked; guarda(); agenda(); };
     const lc = el("label", "Recesso do chapeado"); lc.title = "Do bordo de ataque até o fim do chapeado a nervura entra a espessura dele, para o chapeado assentar rente."; G.append(lc, c);
+    G = document.createElement("div"); G.className = "prop"; P.append(el("div", "Furos de alívio", "grupo-par"), G);
+    const ca = document.createElement("input"); ca.type = "checkbox"; ca.checked = !!v.alivio;
+    ca.onchange = () => { v.alivio = ca.checked; guarda(); parametros(); agenda(); };
+    const la = el("label", "Propor furos"); la.title = "Propõe furos redondos ao longo da linha média de cada nervura, respeitando a borda e a ponte mínimas, e confere a seção líquida em cada furo."; G.append(la, ca);
+    if (v.alivio) {
+      campo(G, "Borda mínima (mm)", "Material que sobra entre o furo e o contorno da nervura.", "alivio_borda_mm", 0.5);
+      campo(G, "Ponte entre furos (mm)", "Material que sobra entre dois furos (inclusive os de tubo).", "alivio_ponte_mm", 0.5);
+      campo(G, "Diâmetro mínimo (mm)", "Furos menores que isso não compensam o corte e são descartados.", "alivio_d_min_mm", 1);
+      campo(G, "Diâmetro máximo (mm)", "", "alivio_d_max_mm", 1);
+      campo(G, "Fator de carga", "Fator de carga limite usado na conferência da seção líquida.", "alivio_n", 0.1);
+      campo(G, "Fator de segurança", "", "alivio_fs", 1);
+      campo(G, "Massa (kg, 0 = modelo)", "Massa da aeronave para a carga na nervura. Zero usa a massa do modelo.", "alivio_massa_kg");
+    }
     G = document.createElement("div"); G.className = "prop"; P.append(el("div", "Chapa", "grupo-par"), G);
     campo(G, "Largura da chapa (mm)", "Chapa de balsa ou compensado.", "folha_largura_mm", 1);
     campo(G, "Altura da chapa (mm)", "", "folha_altura_mm", 1);
@@ -85,7 +98,7 @@ const NervurasDxf3 = (() => {
       res.pecas.forEach(p => {
         const pts = p.contorno.map(q => `${q[0].toFixed(2)},${Y(p.folha, q[1]).toFixed(2)}`).join(" ");
         svg.append(sv("polygon", { points: pts, fill: "#d98a3d", "fill-opacity": .18, stroke: "#b9831a", "stroke-width": 1.2 / esc }));
-        p.furos.forEach(f => svg.append(sv("circle", { cx: f.c[0], cy: Y(p.folha, f.c[1]), r: f.d / 2, fill: "none", stroke: "#b9831a", "stroke-width": 1.2 / esc })));
+        p.furos.forEach(f => svg.append(sv("circle", { cx: f.c[0], cy: Y(p.folha, f.c[1]), r: f.d / 2, fill: "none", stroke: f.tipo === "alivio" ? "#6a7d2e" : "#b9831a", "stroke-width": 1.2 / esc })));
         const m = p.contorno.reduce((a, q) => [a[0] + q[0] / p.contorno.length, a[1] + q[1] / p.contorno.length], [0, 0]);
         const t = sv("text", { x: m[0], y: Y(p.folha, m[1]), "text-anchor": "middle", fill: "currentColor", "font-size": Math.min(8, Math.max(3, p.altura_mm * 0.28)), opacity: .75 }); t.textContent = p.nome; svg.append(t);
       });
@@ -101,11 +114,22 @@ const NervurasDxf3 = (() => {
     if (!res) return;
     const t = document.createElement("table");
     t.innerHTML = "<tr><th>peça</th><th>y (mm)</th><th>chapa</th><th>largura (mm)</th><th>altura (mm)</th><th>furos</th></tr>"
-      + res.pecas.map(p => `<tr><td>${p.nome}</td><td>${fmt(1000 * p.y_m, 0)}</td><td>${p.folha + 1}</td><td>${fmt(p.largura_mm, 1)}</td><td>${fmt(p.altura_mm, 1)}</td><td>${p.furos.length ? p.furos.map(f => "Ø" + fmt(f.d, 2)).join(", ") : "—"}</td></tr>`).join("");
+      + res.pecas.map(p => `<tr><td>${p.nome}</td><td>${fmt(1000 * p.y_m, 0)}</td><td>${p.folha + 1}</td><td>${fmt(p.largura_mm, 1)}</td><td>${fmt(p.altura_mm, 1)}</td><td>${p.furos.length ? p.furos.map(f => (f.tipo === "alivio" ? "alívio Ø" : "Ø") + fmt(f.d, 1)).join(", ") : "—"}</td></tr>`).join("");
+    if (res.alivio) {
+      const a = res.alivio, R = el("div", "", "nota");
+      R.append(el("b", `Furos de alívio: ${a.n_furos} furos, ${fmt(100 * a.fracao_removida, 1)} % da área das nervuras removida. `),
+        `Margem mínima da seção líquida: ${a.margem_min == null ? "sem carga relevante" : fmt(100 * a.margem_min, 0) + " %"} (n = ${fmt(a.n, 2)}, FS = ${fmt(a.fs, 2)}, massa ${fmt(a.massa_kg, 2)} kg, ` +
+        `τ adm ${fmt(a.tau_adm_MPa, 2)} MPa, σ adm ${fmt(a.sigma_adm_MPa, 1)} MPa; ${a.apoios.join("; ")}). `);
+      const b = el("button", `Usar o fator de massa ${fmt(a.fator_massa, 3)} na asa`);
+      b.title = "Grava estrutura.nervuras.alivio na asa, para a massa e o CG considerarem os furos.";
+      b.onclick = () => { const e = esq.elementos.find(x => x.nome === res.asa); if (!e) return; muda(() => { e.estrutura.nervuras.alivio = +a.fator_massa.toFixed(4); }); msg("Fator de massa das nervuras gravado na asa."); };
+      R.append(b);
+      C.append(R, el("div", a.hipoteses, "nota"));
+    }
     C.append(t);
     res.avisos.forEach(a => C.append(el("div", a, "nota")));
     C.append(el("div", "O perfil e a corda são os da estação de cada nervura, sem a torção (washout): a nervura é cortada plana e a incidência vem da montagem na longarina. A nervura se parte em duas peças onde a alma da longarina passa. "
-      + "Ficam fora: nervuras cruzadas (em X), recorte do aileron e alívios. Confira o primeiro corte em refugo antes da chapa boa.", "nota"));
+      + "Ficam fora: nervuras cruzadas (em X) e o recorte do aileron. Os furos de alívio entram quando a opção está ligada. Confira o primeiro corte em refugo antes da chapa boa.", "nota"));
   }
 
   function mostra(forca) { if (!ativa()) return; if (forca || !document.activeElement || document.activeElement.tagName !== "INPUT") { parametros(); veredito(); previa(); baixo(); } }

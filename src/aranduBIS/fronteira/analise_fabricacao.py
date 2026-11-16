@@ -35,6 +35,51 @@ def nervuras_posicoes(p: dict) -> dict:
     except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, TypeError) as e:
         return {"erro": _erro(e)}
 
+def _alivio(p: dict, esq: dict, conj: dict) -> dict:
+    from ..nucleo.estrutura import alivio as AL
+    from ..nucleo.estrutura import materiais as MT
+    from .analise_voo import resumo_aero
+
+    mat = MT.propriedades(conj["material"], esq, p.get("materiais"))
+    n, fs = _num(p, "alivio_n", 3.8, positivo=True), _num(p, "alivio_fs", 1.5, positivo=True)
+    massa = _num(p, "alivio_massa_kg", 0.0)
+    if not massa > 0:
+        massa = float(AG.massa_e_cg(AG.constroi(esq))["massa_kg"])
+    S = float(resumo_aero(esq).get("area_m2") or 0.0)
+    if not (massa > 0 and S > 0):
+        raise ValueError("furos de alívio: informe a massa da aeronave (o modelo não tem massa ou área de asa)")
+    pressao = n * massa * 9.80665 / S
+    kerf = _num(p, "kerf_mm", 0.0)
+    ys = [q["y_m"] for q in conj["nervuras"]]
+    total, removida, margens, n_furos, apoios = 0.0, 0.0, [], 0, set()
+    for k, nv in enumerate(conj["nervuras"]):
+        viz = [abs(ys[j] - ys[k]) for j in (k - 1, k + 1) if 0 <= j < len(ys)]
+        passo = 0.5 * sum(viz) if len(viz) == 2 else (viz[0] if viz else 0.1)
+        carga = pressao * passo * nv["corda_mm"] / 1000.0
+        comp = sum(q["x1"] - q["x0"] for q in nv["pecas"]) or 1.0
+        for q in nv["pecas"]:
+            r = AL.propoe(q["contorno"], q["furos"], conj["espessura_mm"], carga_N=carga * (q["x1"] - q["x0"]) / comp, tau_adm_MPa=mat["S"] / 1e6,
+                          sigma_adm_MPa=min(mat["X"], mat["XC"]) / 1e6, fs=fs, borda_mm=_num(p, "alivio_borda_mm", 6.0, positivo=True),
+                          ponte_mm=_num(p, "alivio_ponte_mm", 6.0, positivo=True), d_min_mm=_num(p, "alivio_d_min_mm", 8.0, positivo=True),
+                          d_max_mm=_num(p, "alivio_d_max_mm", 60.0, positivo=True))
+            total += r["area_mm2"]
+            apoios.add(r["apoio"])
+            for f in r["furos"]:
+                removida += 0.25 * 3.141592653589793 * f["d"] ** 2
+                if f["margem"] is not None:
+                    margens.append(f["margem"])
+                n_furos += 1
+                g = dict(f)
+                if kerf:
+                    g["d"] = g["dx"] = max(f["d"] - kerf, 0.1)
+                q["furos"].append(g)
+                q["area_mm2"] -= 0.25 * 3.141592653589793 * f["d"] ** 2
+    fr = removida / total if total > 0 else 0.0
+    return {"n_furos": n_furos, "fracao_removida": fr, "fator_massa": 1.0 - fr, "margem_min": min(margens) if margens else None, "pressao_Pa": pressao,
+            "massa_kg": massa, "n": n, "fs": fs, "tau_adm_MPa": mat["S"] / 1e6, "sigma_adm_MPa": min(mat["X"], mat["XC"]) / 1e6, "apoios": sorted(a for a in apoios if a),
+            "hipoteses": "Nervura tratada como viga ao longo da corda, com a carga de sustentação da faixa (n × peso / área × passo × corda) distribuída por igual e apoiada nos furos de tubo. "
+                         "Em cada furo confere o cisalhamento e a flexão da seção líquida. Não cobre esmagamento local, flambagem da alma nem cargas de manuseio."}
+
 def nervuras_dxf(p: dict) -> dict:
     from ..nucleo.estrutura import nervuras as NV
     from ..nucleo.modelador.aeronave_geometria import GeometriaInvalida
@@ -47,6 +92,7 @@ def nervuras_dxf(p: dict) -> dict:
         nome = p.get("asa") or com[0]
         conj = NV.pecas(esq, str(nome), kerf_mm=_num(p, "kerf_mm", 0.0), folga_tubo_mm=_num(p, "folga_tubo_mm", 0.1), folga_longarina_mm=_num(p, "folga_longarina_mm", 0.1),
                         bf_min_mm=_num(p, "bf_min_mm", 1.0), recesso_chapeado=bool(p.get("recesso_chapeado", True)), parede_min_mm=_num(p, "parede_min_mm", 1.2))
+        alivio = _alivio(p, esq, conj) if p.get("alivio") else None
         org = NV.organiza(conj, (_num(p, "folha_largura_mm", 600.0, positivo=True), _num(p, "folha_altura_mm", 300.0, positivo=True)), espaco_mm=_num(p, "espaco_mm", 4.0))
         texto = NV.dxf(conj, org, folha=bool(p.get("moldura", True)), rotulos=bool(p.get("rotulos", True)))
         W = org["folha_mm"][0]
@@ -55,11 +101,11 @@ def nervuras_dxf(p: dict) -> dict:
             for q in n["pecas"]:
                 ox, oy = q["pos"]
                 pecas.append({"nome": q["nome"], "i": n["i"], "y_m": n["y_m"], "angulo": n.get("angulo", 0.0), "folha": q["folha"], "contorno": [[x + ox, z + oy] for x, z in q["contorno"]],
-                              "furos": [{"c": [f["c"][0] + ox, f["c"][1] + oy], "d": f["d"], "dx": f.get("dx", f["d"])} for f in q["furos"]], "largura_mm": q["x1"] - q["x0"], "altura_mm": q["z1"] - q["z0"],
+                              "furos": [{"c": [f["c"][0] + ox, f["c"][1] + oy], "d": f["d"], "dx": f.get("dx", f["d"]), "tipo": f.get("tipo", "tubo"), "margem": f.get("margem")} for f in q["furos"]], "largura_mm": q["x1"] - q["x0"], "altura_mm": q["z1"] - q["z0"],
                               "area_mm2": q["area_mm2"]})
         return {"asa": conj["asa"], "asas": com, "dxf": texto, "espessura_mm": conj["espessura_mm"], "material": conj["material"], "n_nervuras": len(conj["nervuras"]),
                 "n_pecas": len(pecas), "pecas": pecas, "folhas": org["folhas"], "folha_mm": org["folha_mm"], "avisos": conj["avisos"] + org["avisos"],
-                "area_total_cm2": sum(q["area_mm2"] for q in pecas) / 100.0}
+                "area_total_cm2": sum(q["area_mm2"] for q in pecas) / 100.0, "alivio": alivio}
     except (GeometriaInvalida, ValueError, FileNotFoundError, KeyError, TypeError) as e:
         return {"erro": _erro(e)}
 
