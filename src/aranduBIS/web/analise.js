@@ -13,7 +13,7 @@ const Etapas = (() => {
     entra[n]();
   }
   document.querySelectorAll(".etapas div[data-etapa]").forEach(d => { d.onclick = () => vai(+d.dataset.etapa); });
-  return { vai };
+  return { vai, atual: () => atual };
 })();
 
 const Analise = (() => {
@@ -52,6 +52,8 @@ const Analise = (() => {
     registra(nome, m) { MODULOS[nome] = m; },
     entra() { lista(); pinta(); },
     nome: () => ativo,
+    itens: () => ITENS.map(([k, n]) => ({ chave: k, titulo: n, grupo: GRUPOS[k] })),
+    abre(k) { if (!MODULOS[k]) return; ativo = k; if (document.body.dataset.etapa === "2") { lista(); pinta(); } else Etapas.vai(2); },
   };
 })();
 
@@ -173,7 +175,7 @@ const Decolagem = (() => {
       const f = s.forcas;
       Grafico.desenha(b, {
         titulo: "Forças na corrida", xlab: "distância (m)", ylab: "força (N)", yMin: 0,
-        series: [{ nome: "tração", x: s.x, y: f.T, cor: "#6aa84f" }, { nome: "arrasto", x: s.x, y: f.D, cor: "#c85a5a" },
+        series: [{ nome: "tração", x: s.x, y: f.T, cor: "#6aa84f" }, { nome: "arrasto", x: s.x, y: f.D, cor: "#b9831a" },
           { nome: "atrito", x: s.x, y: f.atrito, cor: "#a278c8" }, { nome: "sustentação", x: s.x, y: f.L, cor: "#4a86c5" },
           { nome: "peso", x: s.x, y: f.W, cor: "#999", tracejado: true }],
         refs: [{ tipo: "v", valor: res.distancia_rotacao_m, rotulo: "saída do solo", cor: "#6aa84f" }].filter(r => Number.isFinite(r.valor)),

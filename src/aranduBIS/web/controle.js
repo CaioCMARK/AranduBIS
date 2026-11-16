@@ -76,13 +76,13 @@ const Controle = (() => {
       const k = res.curva;
       Grafico.desenha(a, { titulo: "Taxa de rolagem × deflexão", xlab: "deflexão do aileron (°)", ylab: "pb/2V",
         series: ["sobe_desce", "so_sobe"].map(n => ({ nome: NOMES[n], x: k.deflexao, y: k[n], cor: COR[n] })),
-        refs: [{ tipo: "h", valor: res.criterios.pb2V_min, rotulo: "mínimo", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: res.criterios.pb2V_min, rotulo: "mínimo", cor: "#b9831a" }] });
       const t = Array.from({ length: 61 }, (_, i) => i * 0.05), tau = res.tau_rolagem_s;
       const phi = o => t.map(x => (o.p_regime_graus_s || 0) * (x - tau * (1 - Math.exp(-x / tau))));
       Grafico.desenha(b, { titulo: "Inclinação × tempo (comando total)", xlab: "t (s)", ylab: "ângulo de rolagem (°)",
         series: Object.keys(res.opcoes).map(n => ({ nome: NOMES[n], x: t, y: phi(res.opcoes[n]), cor: COR[n] })),
         refs: [{ tipo: "h", valor: res.criterios.inclinacao, rotulo: `${fmt(res.criterios.inclinacao, 0)}°`, cor: "#999" },
-               { tipo: "v", valor: res.criterios.t_inclinacao_max, rotulo: "tempo máx.", cor: "#c85a5a" }] });
+               { tipo: "v", valor: res.criterios.t_inclinacao_max, rotulo: "tempo máx.", cor: "#b9831a" }] });
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && Analise.nome() === "controle") desenha(); }); }

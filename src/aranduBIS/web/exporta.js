@@ -1,8 +1,5 @@
 "use strict";
 
-// Exportação de gráficos e relatório da etapa aberta (2 a 5).
-// PDF (A4, uma ou mais páginas) ou imagens JPG/PNG, com resolução e cores à escolha.
-// Tudo é gerado no navegador: não há dependência extra nem envio de dados.
 const Exporta = (() => {
   const id = x => document.getElementById(x);
   const CHAVE = "aranduBIS.exporta";
@@ -17,9 +14,8 @@ const Exporta = (() => {
   const padrao = { formato: "pdf", tema: "claro", dpi: 150, largura: 1600, qualidade: 90, resumo: true };
   let opc = { ...padrao };
   try { opc = { ...padrao, ...JSON.parse(localStorage.getItem(CHAVE) || "{}") }; } catch (e) { opc = { ...padrao }; }
-  const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(opc)); } catch (e) { /* sem armazenamento */ } };
+  const guarda = () => { try { localStorage.setItem(CHAVE, JSON.stringify(opc)); } catch (e) { } };
 
-  // ---------- coleta do que está na tela ----------
   const semAcento = t => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "");
   const slug = t => semAcento(t).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "arquivo";
 
@@ -50,7 +46,6 @@ const Exporta = (() => {
     };
   }
 
-  // ---------- desenho ----------
   const FONTE = "Inter, 'Segoe UI', Arial, sans-serif";
 
   function svgParaCanvas(svg, tema, largura) {
@@ -98,7 +93,6 @@ const Exporta = (() => {
     return linhas;
   }
 
-  // ---------- relatório em páginas A4 (coordenadas lógicas de 96 dpi: 794 x 1123) ----------
   const PW = 794, PH = 1123, MG = 48;
 
   async function paginas(dados, tema, dpi) {
@@ -127,7 +121,7 @@ const Exporta = (() => {
       const linhas = quebra(ctx, dados.vis.texto, PW - 2 * MG - 20);
       const h = linhas.length * 18 + 14;
       garante(h);
-      ctx.fillStyle = dados.vis.ruim ? "#c85050" : dados.vis.ok ? "#46a05a" : tema.linha;
+      ctx.fillStyle = dados.vis.ruim ? "#b9831a" : dados.vis.ok ? "#46a05a" : tema.linha;
       ctx.fillRect(MG, y, 5, h);
       ctx.fillStyle = tema.faixa; ctx.fillRect(MG + 5, y, PW - 2 * MG - 5, h);
       ctx.fillStyle = tema.tinta;
@@ -195,7 +189,6 @@ const Exporta = (() => {
     return out;
   }
 
-  // ---------- empacotamento ----------
   const enc = new TextEncoder();
   const juntar = partes => {
     const n = partes.reduce((s, p) => s + p.length, 0), r = new Uint8Array(n);
@@ -261,7 +254,6 @@ const Exporta = (() => {
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
 
-  // ---------- geração ----------
   async function gera(dados, aviso) {
     const tema = TEMAS[opc.tema] || TEMAS.claro;
     const base = [slug(dados.aeronave), slug(dados.analise || dados.etapaNome)].filter(Boolean).join("_");
@@ -288,7 +280,6 @@ const Exporta = (() => {
     return `${arqs.length} imagens em um arquivo .zip.`;
   }
 
-  // ---------- janela ----------
   let dlg = null;
 
   function monta() {

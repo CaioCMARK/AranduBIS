@@ -6,7 +6,7 @@ const Flamb3 = (() => {
     { k: "balsa_E_transv", cfg: "estrutura.balsa_E_transv", r: "E transversal (GPa)", d: "Estimativa: balsa, 3 a 5 % do E na fibra." },
   ];
   const CHAVE = "aranduBIS.flamb";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e"];
   let v = {}, res = null, tempo = null, seq = 0, sel = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
@@ -74,10 +74,10 @@ const Flamb3 = (() => {
       Grafico.desenha(g[1], { titulo: "Margem por painel", xlab: "y (m)", ylab: "margem (%)", yMin: -100, yMax: 300,
         series: [{ nome: "chapeado", x: P.map(ym), y: P.map(p => Math.min(300, 100 * p.margem_pele)), cor: COR[0] },
                  { nome: "alma (cisalhamento)", x: a.paineis.filter(p => p.margem_alma !== undefined).map(ym), y: a.paineis.filter(p => p.margem_alma !== undefined).map(p => Math.min(300, 100 * p.margem_alma)), cor: COR[2] }],
-        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#b9831a" }] });
       if (a.sensibilidade) Grafico.desenha(g[2], { titulo: "Margem do pior painel × vão entre nervuras", xlab: "vão (m)", ylab: "margem (%)", yMin: -100, yMax: 300,
         series: [{ nome: "chapeado", x: a.sensibilidade.a, y: a.sensibilidade.margem.map(m => Math.min(300, 100 * m)), cor: COR[0] }],
-        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#c85a5a" }, { tipo: "v", valor: a.pior_pele.a, rotulo: "vão atual", cor: "#999" }] });
+        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#b9831a" }, { tipo: "v", valor: a.pior_pele.a, rotulo: "vão atual", cor: "#999" }] });
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && ativa()) desenha(); }); }
@@ -103,7 +103,6 @@ const Flamb3 = (() => {
     casca(C);
   }
 
-  // ---- baia em casca no CalculiX ----
   let fe = null, feRodando = false;
   function casca(C) {
     const B = el("div", "", "bloco"); C.append(B);
@@ -134,12 +133,12 @@ const Flamb3 = (() => {
     const g1 = el("div", "", "graf"), g2 = el("div", "", "graf"); B.append(g1, g2);
     Grafico.desenha(g1, { titulo: "Pele: deslocamento máximo × carga (só compressão, com imperfeição)", xlab: "fração da carga de ruptura", ylab: "mm",
       series: [{ nome: "w máx", x: fe.curva.fator, y: fe.curva.w_max_mm, cor: "#4a86c5" }],
-      refs: [{ tipo: "h", valor: 1000 * fe.ts, rotulo: "1 espessura", cor: "#c85a5a" }, { tipo: "v", valor: 1, rotulo: "ruptura", cor: "#999" }] });
+      refs: [{ tipo: "h", valor: 1000 * fe.ts, rotulo: "1 espessura", cor: "#b9831a" }, { tipo: "v", valor: 1, rotulo: "ruptura", cor: "#999" }] });
     if (fe.perfil_meio) {
       const P = fe.perfil_meio, k = Math.min(20, 0.03 * Math.max(...P.x) / Math.max(1e-6, ...P.x.map((x, i) => Math.hypot(P.x_def[i] - x, P.z_def[i] - P.z[i]))));
       Grafico.desenha(g2, { titulo: `Seção no meio da baia (deslocamento × ${fmt(k, 0)})`, xlab: "x (mm)", ylab: "z (mm)", igualEscala: true,
         series: [{ nome: "original", x: P.x.map(v => 1000 * v), y: P.z.map(v => 1000 * v), cor: "#999" },
-                 { nome: "deformada", x: P.x.map((x, i) => 1000 * (x + k * (P.x_def[i] - x))), y: P.z.map((z, i) => 1000 * (z + k * (P.z_def[i] - z))), cor: "#c85a5a" }] });
+                 { nome: "deformada", x: P.x.map((x, i) => 1000 * (x + k * (P.x_def[i] - x))), y: P.z.map((z, i) => 1000 * (z + k * (P.z_def[i] - z))), cor: "#b9831a" }] });
     }
     fe.avisos.forEach(x => B.append(el("div", x, "nota")));
   }

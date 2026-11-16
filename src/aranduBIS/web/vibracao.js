@@ -2,7 +2,7 @@
 
 const Vibracao3 = (() => {
   const CHAVE = "aranduBIS.vibracao";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
   let v = { usar_curva: true, rpm_min: 3000, rpm_max: 9000, n_pas: 2, margem_min: 20, ordens_extra: "", incluir_asas: true, massa_empenagem_h_kg: null, massa_deriva_kg: null,
     massa_motor_kg: null, pos_motor: [null, null, null], suporte_usar: false, suporte: { comprimento_m: 0.08, de_m: 0.02, di_m: 0.018 }, adicionais: [] };
   let res = null, tempo = null, seq = 0;
@@ -99,7 +99,7 @@ const Vibracao3 = (() => {
     const desenha = () => {
       const ords = c.ordens.map((o, i) => ({ nome: o.nome, x: c.rpm, y: o.f_hz, cor: COR[i % COR.length] }));
       const modos = c.modos.map((m, i) => ({ nome: "", x: [a, b], y: [m.f_hz, m.f_hz], cor: "#888", tracejado: true }));
-      const pontos = res.ressonancias.filter(r => r.situacao === "dentro").map(r => ({ x: r.rpm_ressonancia, y: r.f_modo_hz, cor: "#c85a5a" }));
+      const pontos = res.ressonancias.filter(r => r.situacao === "dentro").map(r => ({ x: r.rpm_ressonancia, y: r.f_modo_hz, cor: "#b9831a" }));
       const ymax = Math.max(...c.ordens.map(o => o.f_hz[o.f_hz.length - 1])) * 1.6;
       Grafico.desenha(g[0], { titulo: "Diagrama de Campbell (linhas cinza = modos)", xlab: "rotação (rpm)", ylab: "Hz", yMin: 0, yMax: ymax, series: ords.concat(modos), pontos });
       if (res.rpm_v) {

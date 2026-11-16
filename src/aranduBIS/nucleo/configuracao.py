@@ -38,8 +38,8 @@ class Opcao:
         return "texto" if isinstance(self.padrao, str) else "numero"
 
 OPCOES: tuple[Opcao, ...] = (
-    Opcao("aparencia.tema", "Aparência", "Tema da interface", "cinza",
-          "auto: segue o claro/escuro do sistema. escuro: preto azulado. cinza: cinza médio, menos contraste e menos cansativo. claro: fundo claro.",
+    Opcao("aparencia.tema", "Aparência", "Tema da interface", "claro",
+          "auto: segue o claro/escuro do sistema. claro: fundo claro (padrão). cinza: cinza médio, menos contraste. escuro: fundo escuro.",
           escolhas=("auto", "escuro", "cinza", "claro")),
     Opcao("polares.fonte", "Polares", "De onde vêm as polares", "banco",
           "banco: usa as polares já calculadas (rápido, funciona sem instalar nada). "

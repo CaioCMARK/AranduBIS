@@ -50,7 +50,6 @@ const Otimiza = (() => {
   }
   const caminhosDoEsquema = () => folhasDoEsquema().map(f => f.caminho);
 
-  // ---- Escolha de parâmetros direto da aeronave (sem digitar caminho) ----
   let escolhaAberta = false, escolhaFiltro = "", escolhaPct = 20;
   const escolhidos = new Set();
 

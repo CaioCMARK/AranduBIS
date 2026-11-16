@@ -10,7 +10,7 @@ const Trem3 = (() => {
     { k: "raio_inercia", cfg: "estrutura.raio_inercia", r: "Raio da massa (m)", d: "Estimativa: a massa se espalha igual nos nós da treliça a menos deste raio do CG." },
   ];
   const CHAVE = "aranduBIS.trem";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e"];
   let v = {}, res = null, tempo = null, seq = 0;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
@@ -66,7 +66,7 @@ const Trem3 = (() => {
     const desenha = () => {
       Grafico.desenha(g[0], { titulo: "Margem das 8 barras mais críticas por caso (ruptura)", xlab: "posição na lista", ylab: "margem (%)", yMin: -100, yMax: 300,
         series: res.casos.map((c, i) => ({ nome: nome(c.caso), x: c.piores.map((_, j) => j + 1), y: c.piores.map(b => Math.min(300, 100 * b.margem)), cor: COR[i % COR.length] })),
-        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#b9831a" }] });
       const nomes = Object.keys(res.casos[0].rodas);
       Grafico.desenha(g[1], { titulo: "Reação vertical por roda (carga limite)", xlab: "caso (1 = 3 pontos, 2 = 2 pontos, 3 = taxi)", ylab: "N",
         series: nomes.map((n, i) => ({ nome: n, x: res.casos.map((_, j) => j + 1), y: res.casos.map(c => c.rodas[n].R), cor: COR[i % COR.length] })) });

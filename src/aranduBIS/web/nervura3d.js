@@ -51,7 +51,8 @@ const Nervura3D = (() => {
   }
   const prende = (n, L, y0, y) => { const v = vizinhos(n, L, y0); return Math.max(v.baixo + MARGEM, Math.min(v.cima - MARGEM, Math.max(L.lo, Math.min(L.hi, y)))); };
 
-  function atualiza() {
+  function atualiza() { pinta(); if (typeof Estado !== "undefined") Estado.avisa("ferramenta"); }
+  function pinta() {
     const e = elemento(), S = ativo && ehAsa(e) ? secoes() : null;
     if (!ativo || !ehAsa(e)) { vista.extra = null; vista.hud = null; vista.desenha(); return; }
     if (!S) { vista.extra = null; vista.hud = ["Carregando as seções…"]; vista.desenha(); return; }
@@ -172,5 +173,31 @@ const Nervura3D = (() => {
     }
   });
 
-  return { liga, atualiza, ativo: () => ativo };
+  const selecao = () => {
+    const e = elemento(); if (!ativo || !ehAsa(e)) return null;
+    const n = cfg(e, false); if (!n || sel === null || !n.y.some(v => iguais(v, sel))) return { asa: e.nome, y: null, total: n ? n.y.length : 0 };
+    return { asa: e.nome, y: sel, angulo: +angDe(n, sel), total: n.y.length };
+  };
+  function defineSel(o) {
+    const e = elemento(), n = ehAsa(e) && cfg(e, false); if (!ativo || !n || sel === null) return;
+    const y0 = sel;
+    if (typeof o.y === "number" && isFinite(o.y)) {
+      const y = +prende(n, limites(e), y0, o.y).toFixed(4);
+      if (!iguais(y, y0)) { muda(() => aplicaY(cfg(e, true), y0, y)); sel = y; }
+    }
+    if (typeof o.angulo === "number" && isFinite(o.angulo)) {
+      const ys = sel, a = Math.max(-79, Math.min(79, o.angulo));
+      muda(() => { const m = cfg(e, true); m.angulos = (m.angulos || []).filter(q => !iguais(q[0], ys)); m.angulos.push([ys, a]); });
+    }
+    atualiza();
+  }
+  function criaNoVao() { const e = elemento(); if (ativo && ehAsa(e)) adiciona(e, maiorVao(e)); }
+  function removeSel() {
+    const e = elemento(), n = ehAsa(e) && cfg(e, false); if (!ativo || !n || sel === null) return;
+    const y0 = sel;
+    muda(() => { const m = cfg(e, true); m.y = m.y.filter(v => !iguais(v, y0)); m.angulos = (m.angulos || []).filter(a => !iguais(a[0], y0)); if (!m.angulos.length) delete m.angulos; });
+    const r = (cfg(e, false) || { y: [] }).y.slice().sort((a, b) => a - b); sel = r.length ? r[0] : null; atualiza();
+  }
+
+  return { liga, atualiza, ativo: () => ativo, ehAsa, selecao, defineSel, criaNoVao, removeSel, puro: { cfg, limites, angDe, anel, itens, vizinhos, prende, aplicaY, maiorVao } };
 })();

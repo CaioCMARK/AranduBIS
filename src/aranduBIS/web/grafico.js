@@ -2,7 +2,7 @@
 
 const Grafico = (() => {
   const NS = "http://www.w3.org/2000/svg";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8", "#5aaaaa"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8", "#5aaaaa"];
 
   const no = (tag, attrs = {}, txt) => {
     const e = document.createElementNS(NS, tag);
@@ -100,7 +100,7 @@ const Grafico = (() => {
     }
     o.series.forEach((s, k) => {
       const cor = s.cor || COR[k % COR.length];
-      if (s.marcador === "ponto") {            // nuvem de pontos (partículas): sem linha, um ponto pequeno por par x, y
+      if (s.marcador === "ponto") {
         const g = no("g", { fill: cor, "fill-opacity": s.opacidade ?? .8 });
         s.x.forEach((x, i) => { if (vale(x) && vale(s.y[i])) g.append(no("circle", { cx: px(x).toFixed(1), cy: py(s.y[i]).toFixed(1), r: s.raio || 1.6 })); });
         svg.append(g); return;

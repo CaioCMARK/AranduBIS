@@ -11,7 +11,7 @@ const Inicio = (() => {
   ];
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
   const ler = c => { try { return localStorage.getItem(c); } catch (e) { return null; } };
-  const gravar = (c, v) => { try { localStorage.setItem(c, v); } catch (e) { /* sem armazenamento */ } };
+  const gravar = (c, v) => { try { localStorage.setItem(c, v); } catch (e) { } };
 
   const dlg = el("dialog");
   dlg.id = "dlg_inicio";

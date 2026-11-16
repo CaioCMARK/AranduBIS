@@ -11,7 +11,7 @@ const Torcao3 = (() => {
     { g: "Requisito", k: "margem_aeroelastica", cfg: "estrutura.margem_aeroelastica", r: "Margem (× Vd)", d: "Reversão e divergência acima de 1,2 × Vd." },
   ];
   const CHAVE = "aranduBIS.torcao";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e"];
   let v = {}, res = null, fe = null, tempo = null, seq = 0, seqFe = 0, sel = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
@@ -99,13 +99,13 @@ const Torcao3 = (() => {
         series: [{ nome: "linha elástica", x: a.y, y: a.ea_c, cor: COR[1] }, { nome: "centro aerodinâmico", x: a.y, y: a.y.map(() => a.ca_c), cor: COR[2], tracejado: true }] });
       const cv = a.curva;
       if (cv.V.length) {
-        const refs = [{ tipo: "v", valor: a.V_requerida, rotulo: `${fmt(a.fator, 2)} Vd`, cor: "#c85a5a" }, { tipo: "h", valor: 0, rotulo: "", cor: "#999" }];
+        const refs = [{ tipo: "v", valor: a.V_requerida, rotulo: `${fmt(a.fator, 2)} Vd`, cor: "#b9831a" }, { tipo: "h", valor: 0, rotulo: "", cor: "#999" }];
         Grafico.desenha(g[2], { titulo: "Efetividade do aileron L / L rígido", xlab: "V (m/s)", ylab: "razão", yMin: -1, yMax: 1.1,
           series: [{ nome: "L / L rígido", x: cv.V, y: cv.razao.map(r => Math.max(-1, r)), cor: COR[0] }], refs });
         const fg = Array.from({ length: 40 }, (_, i) => 0.25 + i * 0.1), base = a.VR === null ? null : a.VR / Math.sqrt(a.calib_GJ);
         if (base) Grafico.desenha(g[3], { titulo: "Reversão em função do GJ", xlab: "GJ (× modelo)", ylab: "VR (m/s)",
           series: [{ nome: "VR", x: fg, y: fg.map(k => base * Math.sqrt(k)), cor: COR[3] }],
-          refs: [{ tipo: "h", valor: a.V_requerida, rotulo: "exigido", cor: "#c85a5a" }, { tipo: "v", valor: a.calib_GJ, rotulo: "atual", cor: "#999" }] });
+          refs: [{ tipo: "h", valor: a.V_requerida, rotulo: "exigido", cor: "#b9831a" }, { tipo: "v", valor: a.calib_GJ, rotulo: "atual", cor: "#999" }] });
       } else { g[2].textContent = "Sem aileron declarado nesta asa."; }
       if (f) {
         Grafico.desenha(g[4], { titulo: `Flecha sob carga limite, ${f.nome} (${f.caso})`, xlab: "y (m)", ylab: "m",

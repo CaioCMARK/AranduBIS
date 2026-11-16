@@ -81,7 +81,6 @@ const Config = (() => {
     }
   }
 
-  // velocidade medida deste computador: é ela que transforma o tamanho da malha em segundos nas estimativas
   function maquina() {
     const l = document.createElement("div"); l.className = "opc";
     const rot = document.createElement("label"); rot.textContent = "Este computador";

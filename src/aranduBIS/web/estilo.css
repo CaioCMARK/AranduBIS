@@ -86,7 +86,7 @@ body[data-etapa="2"] .g1-grupo,body[data-etapa="3"] .g1-grupo,body[data-etapa="4
 .centro.dois{grid-template-rows:auto 1fr 36%}
 .veredito{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--linha);font-size:13px}
 .veredito.ok{background:rgba(70,160,90,.2);border-left:5px solid #46a05a}
-.veredito.ruim{background:rgba(200,80,80,.2);border-left:5px solid #c85050}
+.veredito.ruim{background:rgba(201,154,30,.2);border-left:5px solid #b9831a}
 .veredito.neutro{background:var(--painel)}
 .veredito.ocupado{animation:pulso 1.6s ease-in-out infinite}
 @keyframes pulso{0%,100%{opacity:1}50%{opacity:.6}}

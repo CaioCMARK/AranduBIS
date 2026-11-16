@@ -10,7 +10,7 @@ const Planifica3 = (() => {
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
   const NS = "http://www.w3.org/2000/svg";
   const sv = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
-  const COR = { ok: "#5fa86a", atencao: "#d6a93b", nao: "#c85a5a" };
+  const COR = { ok: "#5fa86a", atencao: "#d6a93b", nao: "#8c7a2e" };
   const ROTULO = { ok: "desdobra bem", atencao: "pede cuidado", nao: "emendar" };
   const MODOS = [["", "automático"], ["envolvente", "envolvendo o bordo de ataque"], ["separado", "extradorso e intradorso"]];
 

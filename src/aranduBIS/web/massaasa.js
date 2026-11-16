@@ -2,7 +2,7 @@
 
 const MassaAsa3 = (() => {
   const CHAVE = "aranduBIS.massa_asa";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
   let v = { usar: false, adicionais: [], medidas: {} }, res = null, tempo = null, seq = 0, sel = null;
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "massa_asa";
@@ -75,7 +75,7 @@ const MassaAsa3 = (() => {
       Grafico.desenha(g[0], { titulo: "Massa por metro de envergadura (semi-asa)", xlab: "y (m)", ylab: "kg/m",
         series: [{ nome: "total", x: a.y, y: a.m_lin, cor: "#222" }].concat(a.categorias.map((c, i) => ({ nome: c.nome, x: a.y, y: c.m_lin, cor: COR[i % COR.length], tracejado: true }))) });
       Grafico.desenha(g[1], { titulo: "Centro de massa na corda local", xlab: "y (m)", ylab: "x/c", series: [{ nome: "centro de massa", x: a.y, y: a.x_cg_c_local, cor: COR[0] }],
-        refs: a.validacao && a.validacao.x_cg_c ? [{ tipo: "h", valor: a.validacao.x_cg_c.medido, rotulo: "medido", cor: "#c85a5a" }] : [] });
+        refs: a.validacao && a.validacao.x_cg_c ? [{ tipo: "h", valor: a.validacao.x_cg_c.medido, rotulo: "medido", cor: "#b9831a" }] : [] });
       Grafico.desenha(g[2], { titulo: "Raio de giração em torno do CG (× corda)", xlab: "y (m)", ylab: "r/c", series: [{ nome: "r/c", x: a.y, y: a.r_cg_c, cor: COR[1] }] });
     };
     desenha();

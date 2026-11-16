@@ -161,3 +161,11 @@ def test_opcoes_da_linha():
     assert opcoes_da_linha(["--sem-navegador"]) == (PORTA, False)
     assert opcoes_da_linha(["--porta", "8800", "--sem-navegador"]) == (8800, False)
     assert opcoes_da_linha(["--porta=8801"]) == (8801, True)
+
+def test_janela_propria_so_quando_pedida_ou_no_executavel():
+    from aranduBIS.servidor import quer_janela
+    assert quer_janela([]) is False
+    assert quer_janela(["--janela"]) is True
+    assert quer_janela([], congelado=True) is True
+    assert quer_janela(["--navegador"], congelado=True) is False
+    assert quer_janela(["--janela", "--sem-navegador"]) is False

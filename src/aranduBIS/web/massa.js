@@ -1,7 +1,7 @@
 "use strict";
 
 const Massa3 = (() => {
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8"];
   let res = null, tempo = null, seq = 0;
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "massa";
   const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt || "", className: cls || "" });
@@ -42,7 +42,7 @@ const Massa3 = (() => {
         series: [{ nome: "kg", x: res.grupos.filter(q => q.grupo !== "ponto").map((_, i) => i + 1), y: res.grupos.filter(q => q.grupo !== "ponto").map(q => q.massa_kg), cor: COR[0] }] });
       Grafico.desenha(g[1], { titulo: "CG em x × massa da estrutura desenhada", xlab: "fator sobre a estrutura", ylab: "x do CG (m)",
         series: [{ nome: "MTOW fixo", x: S.map(s => s.fator_estrutura), y: S.map(s => s.cg_x_mtow_fixo), cor: COR[0] }, { nome: "MTOW livre", x: S.map(s => s.fator_estrutura), y: S.map(s => s.cg_x_mtow_livre), cor: COR[1] }],
-        refs: res.envelope ? [{ tipo: "h", valor: res.envelope.x[0], rotulo: "", cor: "#c85a5a" }, { tipo: "h", valor: res.envelope.x[1], rotulo: "", cor: "#c85a5a" }] : [] });
+        refs: res.envelope ? [{ tipo: "h", valor: res.envelope.x[0], rotulo: "", cor: "#b9831a" }, { tipo: "h", valor: res.envelope.x[1], rotulo: "", cor: "#b9831a" }] : [] });
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && ativa()) desenha(); }); }
@@ -67,7 +67,6 @@ const Massa3 = (() => {
     peso(C);
   }
 
-  // ---- calculadora de peso vazio ----
   const CH_PESO = "aranduBIS.peso";
   let po = {}, pres = null, seqPeso = 0;
   try { po = JSON.parse(localStorage.getItem(CH_PESO) || "{}"); } catch (e) { po = {}; }

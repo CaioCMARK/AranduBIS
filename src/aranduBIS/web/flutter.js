@@ -1,7 +1,6 @@
 "use strict";
 
 const Flutter3 = (() => {
-  // rótulo da rotação do aileron no modo: relativa à torção, ou "aileron sozinho" quando a asa quase não torce
   const rotAileron = (beta, alfaMax) => {
     const r = alfaMax > 0 ? Math.abs(beta) / alfaMax : Infinity;
     return r > 100 ? " · aileron girando sozinho (a asa quase não torce)" : ` · aileron ${fmt(beta / (alfaMax || 1), 1)} × a torção máx.`;
@@ -14,7 +13,7 @@ const Flutter3 = (() => {
     { k: "V_max_rel", r: "Velocidade máxima (× Vd)", d: "Até onde varrer a velocidade." },
   ];
   const CHAVE = "aranduBIS.flutter";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#8e6bbf", "#3aa6a6", "#b09040", "#777"];
   const CAMPOS_AIL = [
     { k: "massa_g", r: "Massa de um aileron (g)", d: "Pese o aileron com a dobradiça e o horn. Vazio = estimada pela fração de área da semi-asa.", vazio: true },
     { k: "x_cg_pct", r: "CG atrás da dobradiça (% da corda do aileron)", d: "33 % = cunha de balsa (centroide do triângulo). 0 = balanceado; negativo = contrapeso à frente da dobradiça.", neg: true },
@@ -103,7 +102,7 @@ const Flutter3 = (() => {
     if (!res) return;
     const a = asaSel(), g = [0, 1, 2].map(() => el("div", "", "graf")); C.append(...g);
     const desenha = () => {
-      const refs = [{ tipo: "v", valor: a.V_requerida, rotulo: `${fmt(a.fator, 2)} Vd`, cor: "#c85a5a" }];
+      const refs = [{ tipo: "v", valor: a.V_requerida, rotulo: `${fmt(a.fator, 2)} Vd`, cor: "#b9831a" }];
       if (a.VF !== null) refs.push({ tipo: "v", valor: a.VF, rotulo: "flutter", cor: "#999" });
       Grafico.desenha(g[0], { titulo: `Frequência × velocidade, ${a.nome}`, xlab: "V (m/s)", ylab: "Hz",
         series: a.freq_hz.map((f, i) => ({ nome: `modo ${i + 1} (${a.natureza[i]})`, x: a.V, y: f, cor: COR[i % COR.length] })), refs });
@@ -144,7 +143,7 @@ const Flutter3 = (() => {
         else {
           const g1 = el("div", "", "graf"), g2 = el("div", "", "graf"); C.append(g1, g2);
           const teto = asaSel().V[asaSel().V.length - 1], vv = arr => arr.map(x => x === null ? teto : x);
-          const ref = [{ tipo: "h", valor: asaSel().V_requerida, rotulo: "exigida", cor: "#c85a5a" }];
+          const ref = [{ tipo: "h", valor: asaSel().V_requerida, rotulo: "exigida", cor: "#b9831a" }];
           Grafico.desenha(g1, { titulo: "Flutter × rigidez do comando", xlab: "frequência do aileron com a asa parada (Hz)", ylab: "V de flutter (m/s)",
             series: [{ nome: "V flutter (topo = não houve)", x: varr.f_b, y: vv(varr.VF_f_b), cor: COR[0] }], refs: ref });
           Grafico.desenha(g2, { titulo: "Flutter × balanceamento de massa", xlab: "CG atrás da dobradiça (fração da corda do aileron)", ylab: "V de flutter (m/s)",
@@ -158,7 +157,6 @@ const Flutter3 = (() => {
       + "As frequências em vácuo são as que o ensaio de vibração mede: use-as para calibrar massa, centro de massa, raio de giração e o GJ da vista Torção antes de confiar na velocidade de flutter.", "nota"));
   }
 
-  // conferencia no tempo: UVLM 3D acoplado aos mesmos modos (flutter_tempo.py)
   function tempo3d(C) {
     const a = asaSel();
     C.append(el("div", "Flutter no tempo com o UVLM 3D", "grupo-par"));
@@ -175,13 +173,12 @@ const Flutter3 = (() => {
     if (!t3d || t3d === "rodando") return;
     if (t3d.erro) { C.append(el("div", t3d.erro, "nota erro")); return; }
     const r = t3d, ms = r.marchas, V0 = ms[0].V, V1 = ms[ms.length - 1].V;
-    const TINTA = getComputedStyle(document.documentElement).getPropertyValue("--tinta").trim() || "#222";   // claro no tema escuro
+    const TINTA = getComputedStyle(document.documentElement).getPropertyValue("--tinta").trim() || "#222";
     const txt = r.VF !== null
       ? `UVLM 3D: flutter a ${fmt(r.VF, 1)} m/s e ${fmt(r.f_flutter_hz, 1)} Hz`
       : `UVLM 3D: sem flutter entre ${fmt(V0, 1)} e ${fmt(V1, 1)} m/s (o amortecimento não cruzou zero)`;
     const pk = r.VF_pk !== null ? ` · p-k de faixas: ${fmt(r.VF_pk, 1)} m/s a ${fmt(r.f_flutter_pk_hz, 1)} Hz` : " · p-k de faixas: sem flutter até 3 Vd";
     C.append(el("div", `${txt}${pk} · ${r.nome}, ${r.simetria === "anti" ? "modos antissimétricos (com o aileron)" : "modos simétricos"}, ${fmt(r.tempo_s, 0)} s.`, "nota"));
-    // divergencia: estatica 3D (rigidez aerodinamica do UVLM) e conferida pelo polo real das marchas
     const ds = r.VD_3d_simetrias || {}, VD = r.VD_3d;
     if (VD !== null && VD !== undefined) {
       const antes = r.VF === null || VD < r.VF, abaixo = VD < r.V_requerida;
@@ -196,14 +193,14 @@ const Flutter3 = (() => {
     const ser = r.pk.amortecimento.map((z, i) => ({ nome: `p-k modo ${i + 1}`, x: r.pk.V.filter((_, j) => dentro[j]),
       y: z.filter((_, j) => dentro[j]).map(q => Math.max(-0.2, Math.min(0.3, q))), cor: COR[i % COR.length], tracejado: true }));
     ser.push({ nome: "UVLM no tempo (modo menos amortecido)", x: ms.map(m => m.V), y: ms.map(m => m.zeta), cor: TINTA, marcador: "ponto", raio: 4.5, opacidade: 1 });
-    const refs = [{ tipo: "h", valor: 0, rotulo: "", cor: "#999" }, { tipo: "v", valor: r.V_requerida, rotulo: "exigida", cor: "#c85a5a" }];
+    const refs = [{ tipo: "h", valor: 0, rotulo: "", cor: "#999" }, { tipo: "v", valor: r.V_requerida, rotulo: "exigida", cor: "#b9831a" }];
     if (r.VF !== null) refs.push({ tipo: "v", valor: r.VF, rotulo: "flutter (UVLM)", cor: TINTA });
     Grafico.desenha(g1, { titulo: "Amortecimento: p-k de faixas (tracejado) × UVLM 3D no tempo (pontos)", xlab: "V (m/s)", ylab: "ζ", series: ser, refs,
       yMin: -0.2, yMax: 0.3 });
     const pr = ms.filter(m => m.divergencia);
     if (pr.length) {
       const sr = pr.map(m => m.divergencia.s_real), lim = Math.max(1, ...sr.map(Math.abs));
-      const rr = [{ tipo: "h", valor: 0, rotulo: "", cor: "#999" }, { tipo: "v", valor: r.V_requerida, rotulo: "exigida", cor: "#c85a5a" }];
+      const rr = [{ tipo: "h", valor: 0, rotulo: "", cor: "#999" }, { tipo: "v", valor: r.V_requerida, rotulo: "exigida", cor: "#b9831a" }];
       const Vs3 = ds[r.simetria === "anti" ? "anti" : "simetrico"];
       if (Vs3) rr.push({ tipo: "v", valor: Vs3, rotulo: "V_D estática 3D", cor: TINTA });
       if (r.VD_faixas && r.VD_faixas < 1.1 * V1) rr.push({ tipo: "v", valor: r.VD_faixas, rotulo: "V_D faixas", cor: "#888" });
@@ -211,7 +208,6 @@ const Flutter3 = (() => {
         series: [{ nome: "UVLM no tempo", x: pr.map(m => m.V), y: sr, cor: TINTA, marcador: "ponto", raio: 4.5, opacidade: 1 }], refs: rr, yMin: -lim, yMax: lim });
     }
     const cresce = m => (m.zeta !== null && m.zeta <= 0) || (m.divergencia && m.divergencia.diverge);
-    // para desenhar, a primeira marcha em que o crescimento aparece na janela (e^1,5 = 4,5 vezes)
     const visivel = m => (m.zeta !== null && m.zeta <= 0) || (m.divergencia && m.divergencia.s_real * m.t[m.t.length - 1] > 1.5);
     const baixa = ms.filter(m => !cresce(m)).pop() || ms[0], alta = ms.find(visivel) || ms.find(cresce) || ms[ms.length - 1];
     Grafico.desenha(g2, { titulo: "Torção na ponta no tempo (relativa ao começo: o modelo é linear, a amplitude é arbitrária)", xlab: "t (s)", ylab: "α ponta / α inicial",

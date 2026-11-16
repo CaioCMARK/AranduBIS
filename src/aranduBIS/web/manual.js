@@ -1,7 +1,5 @@
 "use strict";
 
-// Manuais de boas práticas (web/manuais/*.md) e o painel "malha" do rodapé: o que cada análise escolheu de discretização,
-// por quê, os avisos de geometria e o estudo de convergência. A ideia é ensinar a conferir, não esconder a escolha.
 const Manual = (() => {
   const TOPICOS = [
     ["comecar", "Como usar estes manuais"],
@@ -27,7 +25,6 @@ const Manual = (() => {
       .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<i>$2</i>")
       .replace(/\[([^\]]+)\]\(#([a-z_]+)\)/g, '<a href="#" data-topico="$2">$1</a>');
   }
-  // markdown mínimo: títulos, parágrafos, listas, blocos de equação/código (```), tabelas simples, citações
   function md(txt) {
     const out = [], ls = txt.replace(/\r/g, "").split("\n");
     let i = 0;

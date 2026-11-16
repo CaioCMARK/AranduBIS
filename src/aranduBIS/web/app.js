@@ -1,27 +1,21 @@
 "use strict";
 
 const $ = id => document.getElementById(id);
-const PALETA = [[74, 134, 197], [217, 138, 61], [106, 168, 79], [162, 120, 200], [200, 90, 90],
+const PALETA = [[74, 134, 197], [217, 138, 61], [106, 168, 79], [162, 120, 200], [150, 130, 60],
   [90, 170, 170], [200, 180, 70], [150, 150, 160], [220, 130, 170], [120, 190, 120]];
 
 const vista = new Vista3D($("cv"));
-let esq = null;
-let sel = -1;
-let malha = null;
-let aba = "Seções";
-let filtroCamada = "tudo";
 let seq = 0, tempo = null;
 
 const fmt = (x, d = 3) => x == null ? "—" : Number(x).toLocaleString("pt-BR", { maximumFractionDigits: d });
 let ultimaMsg = { t: "", erro: false };
 const msg = (t, erro = false) => { ultimaMsg = { t, erro }; const s = $("r_msg"); s.textContent = t; s.className = "fim" + (erro ? " erro" : ""); };
-// Faixa de veredito quando ainda não há resultado: mostra o motivo (se o último aviso foi um erro) em vez de um traço.
 const vazio = V => {
   V.hidden = false;
   if (ultimaMsg.erro) { V.className = "veredito ruim"; V.textContent = ultimaMsg.t; }
   else { V.className = "veredito neutro"; V.textContent = "Calculando… ou ainda sem resultado."; }
 };
-const elemento = () => (esq && esq.elementos[sel]) || null;
+const elemento = Estado.elemento;
 const corDe = i => PALETA[i % PALETA.length];
 
 async function chama(url, corpo) {
@@ -199,7 +193,7 @@ function props() {
   if (e.tipo !== "ponto") ["rolagem", "arfagem", "guinada"].forEach(c =>
     linha(G, `${c} (°)`, entrada("number", e[c] || 0, v => muda(() => { e[c] = v ?? 0; }))));
   P.append(G);
-  if (typeof No3D !== "undefined" && No3D.suportado(e)) {
+  if (typeof No3D !== "undefined" && No3D.suportado(e) && document.documentElement.dataset.interface !== "nova") {
     const be = document.createElement("button"); be.textContent = No3D.ativo() ? "Terminar edição na vista 3D" : (e.tipo === "trelica" ? "Mover nós na vista 3D" : "Mover na vista 3D");
     be.title = "Arraste a peça (ou os nós) direto na vista 3D, com passo de 1 mm, ímã nos outros nós e simetria em y.";
     be.onclick = () => { No3D.liga(!No3D.ativo()); props(); }; be.style.margin = "4px 8px"; P.append(be);

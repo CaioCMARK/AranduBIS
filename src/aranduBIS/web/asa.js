@@ -4,12 +4,12 @@ const Asa3 = (() => {
   const ITENS = [["tubo_comp", "Carbono (tubos), compressão", "#4a86c5"], ["tubo_tr", "Carbono (tubos), tração", "#6aa84f"],
                  ["mesa_comp", "Mesas de madeira, compressão", "#3f6f9f"], ["mesa_tr", "Mesas de madeira, tração", "#4f8a3a"],
                  ["pele_comp", "Chapeado, compressão", "#d98a3d"], ["pele_tr", "Chapeado, tração", "#a278c8"],
-                 ["alma_cis", "Almas, cisalhamento", "#c85a5a"], ["tubo_cis", "Tubo-longarina, cisalhamento", "#8a5a3a"]];
+                 ["alma_cis", "Almas, cisalhamento", "#b9831a"], ["tubo_cis", "Tubo-longarina, cisalhamento", "#8a5a3a"]];
   const itensDe = a => ITENS.filter(i => !a.itens || a.itens.includes(i[0]));
   const CAMPOS = [{ k: "qualidade_balsa", cfg: "estrutura.qualidade_balsa", r: "Qualidade da balsa (×)", d: "Multiplica as tensões admissíveis da balsa. 1 = valor de referência." },
                   { k: "qualidade_carbono", cfg: "estrutura.qualidade_carbono", r: "Qualidade do carbono (×)", d: "Multiplica as tensões admissíveis do tubo. 1 = valor de referência." }];
   const CHAVE = "aranduBIS.asa";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8", "#5aaaaa"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8", "#5aaaaa"];
   let v = {}, res = null, tempo = null, seq = 0, sel = null, caso = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = null; });
@@ -91,11 +91,11 @@ const Asa3 = (() => {
       const minimo = it => a.y.map((_, j) => Math.min(...a.casos.map(c => c.margens[it][j])) * 100);
       Grafico.desenha(g[0], { titulo: `Margem de segurança por estação, ${a.nome}`, xlab: "y (m)", ylab: "margem (%)", yMin: 0, yMax: 300,
         series: itensDe(a).map(([it, n, cor]) => ({ nome: n, x: a.y, y: minimo(it).map(x => Math.min(x, 300)), cor })),
-        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#b9831a" }] });
       const gr = (a.itens || []).includes("tubo_comp") || !(a.itens || []).includes("mesa_comp") ? "tubo" : "mesa";
       Grafico.desenha(g[1], { titulo: `Tensão ${gr === "tubo" ? "no carbono" : "nas mesas"} (${k.caso.replace("_", " ")})`, xlab: "y (m)", ylab: "MPa",
         series: [{ nome: "compressão", x: a.y, y: k.tensao_MPa[gr + "_comp"], cor: ITENS[0][2] }, { nome: "tração", x: a.y, y: k.tensao_MPa[gr + "_tr"], cor: ITENS[1][2] }],
-        refs: [{ tipo: "h", valor: a.admissiveis_MPa[gr + "_comp"], rotulo: "admissível", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: a.admissiveis_MPa[gr + "_comp"], rotulo: "admissível", cor: "#b9831a" }] });
       Grafico.desenha(g[2], { titulo: "Flecha da semi-asa em carga limite", xlab: "y (m)", ylab: "mm",
         series: a.casos.map((c, i) => ({ nome: c.caso.replace("_", " "), x: a.y, y: c.flecha.map(w => 1000 * w), cor: COR[i % COR.length] })) });
       Grafico.desenha(g[3], { titulo: "Rigidez de flexão EI", xlab: "y (m)", ylab: "N·m²",

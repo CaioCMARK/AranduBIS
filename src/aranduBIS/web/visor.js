@@ -1,13 +1,9 @@
 "use strict";
 
-// Visualizador expandido da esteira: corpo (painéis do VLM), anéis e partículas em 3D, com vistas, giro, zoom e a
-// linha do tempo (deslizante, tocar/pausar, velocidade) e o CL do instante embaixo. Canvas 2D com projeção ortográfica:
-// sem dependências, roda em qualquer navegador e no .exe.
 const Visor = (() => {
   const dlg = $("dlg_visor"), cv = $("visor_cv"), cl = $("visor_cl"), sl = $("visor_t"), info = $("visor_info");
   const ctx = cv.getContext("2d"), cctx = cl.getContext("2d");
   const VISTAS = { iso: [-135, 24], lateral: [-90, 0], topo: [-90, 89.9], frontal: [180, 0] };
-  // plasma: fraco (azul-roxo) a forte (amarelo)
   const STOPS = [[0, [13, 8, 135]], [0.25, [126, 3, 168]], [0.5, [204, 71, 120]], [0.75, [248, 149, 64]], [1, [240, 249, 33]]];
   const PAL = Array.from({ length: 256 }, (_, i) => {
     const t = i / 255; let k = 0; while (k < STOPS.length - 2 && t > STOPS[k + 1][0]) k++;
@@ -20,7 +16,7 @@ const Visor = (() => {
 
   function base() {
     const a = az * Math.PI / 180, e = el * Math.PI / 180;
-    const d = [Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e)];        // do alvo para a câmera
+    const d = [Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e)];
     let r = [-d[1], d[0], 0]; const nr = Math.hypot(r[0], r[1]) || 1; r = [r[0] / nr, r[1] / nr, 0];
     if (Math.abs(e) > 1.5) r = [Math.sin(a), -Math.cos(a), 0].map(v => -v);
     const u = [d[1] * r[2] - d[2] * r[1], d[2] * r[0] - d[0] * r[2], d[0] * r[1] - d[1] * r[0]];
@@ -67,7 +63,6 @@ const Visor = (() => {
       }
     }
     if (f.solo) {
-      // chão: grade no plano (ponto p0, normal n), cobrindo o corpo e a esteira
       const n = f.solo.n, p0 = f.solo.p0, e1 = [n[2], 0, -n[0]], e2 = [0, 1, 0];
       const L = escala * 0.75, nl = 12, pt = (a, b) => proj(p0[0] + a * e1[0] + b * e2[0], p0[1] + a * e1[1] + b * e2[1], p0[2] + a * e1[2] + b * e2[2]);
       const cx = (c0[0] - p0[0]) * e1[0] + (c0[2] - p0[2]) * e1[2], cy = c0[1] - p0[1];
@@ -95,7 +90,6 @@ const Visor = (() => {
       ctx.stroke();
     }
     if (f.pas) {
-      // pás da hélice girante: a linha ligada de cada pá, grossa
       ctx.strokeStyle = "rgba(240,150,60,0.95)"; ctx.lineWidth = 2.6 * dpr; ctx.lineCap = "round"; ctx.beginPath();
       for (const a of f.pas) for (let i = 0; i + 5 < a.length; i += 3) {
         const p = proj(a[i], a[i + 1], a[i + 2]), b = proj(a[i + 3], a[i + 4], a[i + 5]);
@@ -129,7 +123,6 @@ const Visor = (() => {
   function graficoCL() {
     const W = cl.width, H = cl.height, Q = D.quadros, dpr = window.devicePixelRatio || 1;
     cctx.clearRect(0, 0, W, H);
-    // o 1º quadro leva o impulso de massa aparente da partida: fica fora da escala
     const t0 = Q[0].t, t1 = Q[Q.length - 1].t || 1, ys = (Q.length > 3 ? Q.slice(1) : Q).map(f => f.CL), y0 = Math.min(...ys), y1 = Math.max(...ys) + 1e-9;
     const px = t => 8 * dpr + (W - 16 * dpr) * (t - t0) / (t1 - t0 || 1), py = y => H - 6 * dpr - (H - 14 * dpr) * (y - y0) / (y1 - y0);
     cctx.strokeStyle = "#4a86c5"; cctx.lineWidth = 1.5 * dpr; cctx.beginPath();
@@ -147,7 +140,6 @@ const Visor = (() => {
   }
   function toca(sim) { tocando = sim; $("visor_play").textContent = sim ? "⏸" : "▶"; if (sim) requestAnimationFrame(anda); }
 
-  // interação: arrastar gira, Shift + arrastar (ou botão direito) desloca, roda dá zoom, duplo clique reajusta
   let arr = null;
   cv.addEventListener("pointerdown", ev => { arr = { x: ev.clientX, y: ev.clientY, pan: ev.shiftKey || ev.button === 2 }; cv.setPointerCapture(ev.pointerId); });
   cv.addEventListener("pointermove", ev => {

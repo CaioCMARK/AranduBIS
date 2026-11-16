@@ -1,6 +1,5 @@
 "use strict";
 
-// Aerodinâmica não estacionária: VLM com esteira de anéis no tempo (Katz & Plotkin cap. 13).
 const Uvlm3 = (() => {
   const CASOS = [["degrau", "Partida impulsiva (Wagner)"], ["rajada_degrau", "Rajada degrau (Küssner)"], ["rajada_1cos", "Rajada 1-cos (CS-23 / 14 CFR 23)"],
                  ["mergulho", "Mergulho harmônico (Theodorsen)"], ["arfagem", "Arfagem harmônica"]];
@@ -11,7 +10,6 @@ const Uvlm3 = (() => {
     { k: "H_cordas", r: "Comprimento H (cordas)", d: "14 CFR 23.333 e CS-23: H = 25 cordas médias.", so: ["rajada_1cos"] },
     { g: "Movimento", k: "f", r: "Frequência (Hz)", d: "Frequência reduzida k = π f c / V. Acima de 0,3, use ≥ 8 painéis na corda.", so: ["mergulho", "arfagem"] },
     { k: "amplitude", r: "Amplitude (m no mergulho, ° na arfagem)", d: "Linearizado: a geometria não se move, só a velocidade nos pontos de controle.", so: ["mergulho", "arfagem"] },
-    // discretização: só aparece no modo manual; vazio = o valor automático
     { g: "Discretização (vazio = automático)", k: "n_span", r: "Painéis na envergadura", d: "Por superfície. Automático: o recomendado pelo alongamento de cada uma (24 se AR ≥ 4, 48 se AR ≥ 1).", m: true },
     { k: "n_chord", r: "Painéis na corda", d: "A massa aparente pede painel na corda: erro na amplitude ≈ 1,2 k / n_chord. Rajada degrau: 8.", m: true },
     { k: "passos_por_corda", r: "Passos por corda", d: "dt = c / (passos × V). Wagner quase não depende dele; harmônico e rajada pedem ≥ 40 passos por ciclo ou por rajada.", m: true },
@@ -33,7 +31,7 @@ const Uvlm3 = (() => {
                    helice_girante: false, helice: "22x10E", rpm: 4500, sentido: 1, dpsi: null, n_el: null, voltas_rolagem: null,
                    solo: false, altura_solo: null, subida: 0, espera_cordas: null };
   const CHAVE = "aranduBIS.uvlm";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#8e6bbf", "#3fa7a0"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#8e6bbf", "#3fa7a0"];
   let v = Object.assign({}, PADRAO), res = null, seq = 0, rodando = false, gravando = false, supSel = null, cat = null;
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   if (!v.esteira) v.esteira = v.esteira_livre ? "livre" : "rigida";
@@ -188,7 +186,6 @@ const Uvlm3 = (() => {
   }
 
   const nomeCaso = k => (CASOS.find(c => c[0] === k) || [k, k])[1];
-  // pico depois do primeiro passo (o primeiro leva o impulso de massa aparente da partida, que em teoria é um delta)
   const resto = a => a.slice(1);
 
   function veredito() {

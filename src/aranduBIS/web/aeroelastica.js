@@ -6,7 +6,7 @@ const Aeroelastica3 = (() => {
     { k: "n", r: "Fator de carga n", d: "1 = voo reto nivelado; use o n de manobra para ver a carga limite." },
   ];
   const CHAVE = "aranduBIS.aeroelastica";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e"];
   let v = { V: null, n: 1 }, res = null, tempo = null, seq = 0, sel = null;
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "aeroelastica";

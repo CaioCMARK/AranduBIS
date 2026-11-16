@@ -1,9 +1,8 @@
 "use strict";
 
-// Hélice pelo BEMT (forma típica APC Thin Electric) comparada com o catálogo do fabricante, e o sopro dela na asa (VLM).
 const Helice2 = (() => {
   const CHAVE = "aranduBIS.helice";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#8e6bbf"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#8e6bbf"];
   let v = { helice: "22x10E", perfil: "CLARK_Y_AIRFOIL@n7", rpm: 4500, V: 12, alpha: 4, sentido: 1, rho: null };
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   let cat = null, res = null, tempo = null, seq = 0, sup = null;

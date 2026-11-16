@@ -312,11 +312,42 @@ def opcoes_da_linha(argv) -> tuple[int, bool]:
     return porta, abrir
 
 
-def servir(pasta_dados=None, porta: int = PORTA, abrir: bool = True) -> int:
+def quer_janela(argv, congelado: bool = False) -> bool:
+    if "--navegador" in argv or "--sem-navegador" in argv:
+        return False
+    return "--janela" in argv or congelado
+
+
+def _janela(url: str, srv) -> bool:
+    try:
+        import webview
+    except Exception:
+        return False
+    fio = threading.Thread(target=srv.serve_forever, daemon=True)
+    fio.start()
+    try:
+        webview.settings["ALLOW_DOWNLOADS"] = True
+        webview.create_window("AranduBIS", url, width=1440, height=900, min_size=(1024, 640))
+        webview.start()
+    except Exception as e:
+        print(f"[aranduBIS] janela propria indisponivel ({e}); abrindo no navegador")
+        webbrowser.open(url)
+        try:
+            while fio.is_alive():
+                fio.join(0.5)
+        except KeyboardInterrupt:
+            pass
+    srv.shutdown()
+    return True
+
+
+def servir(pasta_dados=None, porta: int = PORTA, abrir: bool = True, janela: bool = False) -> int:
     pasta = Path(pasta_dados) if pasta_dados else Path.cwd() / "dados"
     srv = ThreadingHTTPServer(("127.0.0.1", porta), fazer_handler(Estado(pasta)))
     url = f"http://127.0.0.1:{porta}/"
     print(f"[aranduBIS] {url}  (Ctrl+C encerra)")
+    if janela and _janela(url, srv):
+        return 0
     if abrir:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:
@@ -327,4 +358,4 @@ def servir(pasta_dados=None, porta: int = PORTA, abrir: bool = True) -> int:
 
 if __name__ == "__main__":
     porta, abrir = opcoes_da_linha(sys.argv[1:])
-    sys.exit(servir(porta=porta, abrir=abrir))
+    sys.exit(servir(porta=porta, abrir=abrir, janela=quer_janela(sys.argv[1:])))

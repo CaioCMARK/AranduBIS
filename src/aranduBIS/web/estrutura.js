@@ -68,7 +68,7 @@ const Estrutura = (() => {
     const bed = el("button", Nervura3D.ativo() ? "Terminar edição na vista 3D" : "Editar na vista 3D");
     bed.title = "Arraste as nervuras ao longo da envergadura na vista 3D, gire com Q/E, crie com Ctrl+clique e remova com Delete.";
     bed.onclick = () => { Nervura3D.liga(!Nervura3D.ativo()); refaz(); };
-    B.append(bed);
+    if (document.documentElement.dataset.interface !== "nova") B.append(bed);
     const gg = el("div", "", "prop"); gg.style.borderTop = "1px solid var(--linha)"; B.append(gg);
     let qtd = n.y && n.y.length ? n.y.length : 8, lei = "uniforme";
     linha(gg, lim && lim.simetrica ? "quantidade por semi-asa" : "quantidade na asa", entrada("number", qtd, v => { if (v !== null && v >= 2) qtd = Math.round(v); }));

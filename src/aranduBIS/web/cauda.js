@@ -14,7 +14,7 @@ const Cauda3 = (() => {
     { k: "junta_esmagamento_MPa", pad: 150, r: "Tubo: esmagamento (MPa)", d: "Pressão admissível do parafuso contra a parede do tubo. Hipótese conservadora para laminado." },
   ];
   const CHAVE = "aranduBIS.cauda";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8", "#5aaaaa", "#8a8a8a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8", "#5aaaaa", "#8a8a8a"];
   let v = {}, res = null, tempo = null, seq = 0;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v) || (c.pad !== undefined && v[c.k] === null)) v[c.k] = c.pad !== undefined ? c.pad : null; });
@@ -85,7 +85,7 @@ const Cauda3 = (() => {
       Grafico.desenha(g[0], { titulo: "Deslocamento vertical do boom (carga limite)", xlab: "x (m)", ylab: "mm", series: s("uz") });
       Grafico.desenha(g[1], { titulo: "Torção do boom em torno do seu eixo", xlab: "x (m)", ylab: "graus", series: s("rx") });
       Grafico.desenha(g[2], { titulo: "Margem mínima por trecho (carga de ruptura)", xlab: "x (m)", ylab: "margem (limitada a 2000 %)", yMin: -1, yMax: 20,
-        series: casos.map((c, i) => ({ nome: nome(c.caso), x: c.margem_x.x, y: c.margem_x.m, cor: COR[i % COR.length] })), refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#c85a5a" }] });
+        series: casos.map((c, i) => ({ nome: nome(c.caso), x: c.margem_x.x, y: c.margem_x.m, cor: COR[i % COR.length] })), refs: [{ tipo: "h", valor: 0, rotulo: "", cor: "#b9831a" }] });
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && ativa()) desenha(); }); }

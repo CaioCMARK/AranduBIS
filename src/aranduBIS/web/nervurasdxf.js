@@ -84,8 +84,8 @@ const NervurasDxf3 = (() => {
       }
       res.pecas.forEach(p => {
         const pts = p.contorno.map(q => `${q[0].toFixed(2)},${Y(p.folha, q[1]).toFixed(2)}`).join(" ");
-        svg.append(sv("polygon", { points: pts, fill: "#d98a3d", "fill-opacity": .18, stroke: "#c85a5a", "stroke-width": 1.2 / esc }));
-        p.furos.forEach(f => svg.append(sv("circle", { cx: f.c[0], cy: Y(p.folha, f.c[1]), r: f.d / 2, fill: "none", stroke: "#c85a5a", "stroke-width": 1.2 / esc })));
+        svg.append(sv("polygon", { points: pts, fill: "#d98a3d", "fill-opacity": .18, stroke: "#b9831a", "stroke-width": 1.2 / esc }));
+        p.furos.forEach(f => svg.append(sv("circle", { cx: f.c[0], cy: Y(p.folha, f.c[1]), r: f.d / 2, fill: "none", stroke: "#b9831a", "stroke-width": 1.2 / esc })));
         const m = p.contorno.reduce((a, q) => [a[0] + q[0] / p.contorno.length, a[1] + q[1] / p.contorno.length], [0, 0]);
         const t = sv("text", { x: m[0], y: Y(p.folha, m[1]), "text-anchor": "middle", fill: "currentColor", "font-size": Math.min(8, Math.max(3, p.altura_mm * 0.28)), opacity: .75 }); t.textContent = p.nome; svg.append(t);
       });

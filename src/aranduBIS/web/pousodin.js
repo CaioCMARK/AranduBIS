@@ -24,7 +24,7 @@ const PousoDin3 = (() => {
                    k_perna_bequilha: null, curso_trem_mm: 0, altura_pista_mm: 5, comprimento_pista_m: 0.3, V_taxi_rel: 0.8, sustentacao_taxi_rel: 0, mu_rolamento: 0.05, CD: 0.12, Cm_q: -8,
                    perfil_pista: "irregular", aplica_fe: true };
   const CHAVE = "aranduBIS.pouso_din";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e"];
   let v = Object.assign({}, PADRAO), res = null, tempo = null, seq = 0, caso = "pouso_2_pontos";
   try { Object.assign(v, JSON.parse(localStorage.getItem(CHAVE) || "{}")); } catch (e) {  }
   const ativa = () => Etapa3.ativa() && Etapa3.nome() === "pouso_din";
@@ -101,13 +101,13 @@ const PousoDin3 = (() => {
     const desenha = () => {
       Grafico.desenha(g[0], { titulo: `Reação do solo, ${nome(caso)} (× peso)`, xlab: "t (s)", ylab: "N / W",
         series: [{ nome: "principais", x: k.t, y: k.N_principal.map(n => n / W), cor: COR[0] }, { nome: "bequilha", x: k.t, y: k.N_bequilha.map(n => n / W), cor: COR[1] }],
-        refs: [{ tipo: "h", valor: res.fator_pouso_projeto, rotulo: "projeto", cor: "#c85a5a" }] });
+        refs: [{ tipo: "h", valor: res.fator_pouso_projeto, rotulo: "projeto", cor: "#b9831a" }] });
       Grafico.desenha(g[1], { titulo: `Arfagem e compressão do trem, ${nome(caso)}`, xlab: "t (s)", ylab: "° / mm",
         series: [{ nome: "arfagem (°)", x: k.t, y: k.theta_graus, cor: COR[2] }, { nome: "trem principal (mm)", x: k.t, y: k.delta_principal_mm, cor: COR[0], tracejado: true }, { nome: "bequilha (mm)", x: k.t, y: k.delta_bequilha_mm, cor: COR[1], tracejado: true }] });
       const r = res.varredura;
       Grafico.desenha(g[2], { titulo: "Fator de carga total × razão de descida", xlab: "m/s", ylab: "pico / W",
         series: [{ nome: "3 pontos", x: r.razao, y: r.pouso_3_pontos.fator_total, cor: COR[0] }, { nome: "2 pontos", x: r.razao, y: r.pouso_2_pontos.fator_total, cor: COR[1] }],
-        refs: [{ tipo: "h", valor: res.fator_pouso_projeto, rotulo: "projeto", cor: "#c85a5a" }, { tipo: "v", valor: v.vel_descida, rotulo: "agora", cor: "#999" }] });
+        refs: [{ tipo: "h", valor: res.fator_pouso_projeto, rotulo: "projeto", cor: "#b9831a" }, { tipo: "v", valor: v.vel_descida, rotulo: "agora", cor: "#999" }] });
     };
     desenha();
     if (!C._obsc) { C._obsc = true; Grafico.liga(C, () => { if (res && ativa()) desenha(); }); }

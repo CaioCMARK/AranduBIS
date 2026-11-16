@@ -42,7 +42,6 @@ const Etapa3 = (() => {
     massa: "Soma as massas da aeronave: o centro de gravidade contra a massa da estrutura desenhada e a massa por grupo de componentes. A parte não modelada entra pelo valor que você informar.",
   };
   const MODULOS = {};
-  // manual de boas práticas de cada vista
   const MANUAL = { nervuras_dxf: "fabricacao", planificacao: "fabricacao", cargas: "vlm", asa: "estrutura", torcao: "estrutura", massa_asa: "flutter", flutter: "flutter", aeroelastica: "vlm",
                    uvlm: "uvlm", calibracao: "verificacao", flambagem: "chapeado", juncao: "cauda", cauda: "cauda", trem: "cauda", pouso_din: "verificacao", massa: "verificacao" };
   let ativo = "cargas";
@@ -73,5 +72,7 @@ const Etapa3 = (() => {
     entra() { lista(); pinta(); },
     nome: () => ativo,
     ativa: () => document.body.dataset.etapa === "3",
+    itens: () => ITENS.map(([k, n]) => ({ chave: k, titulo: n, grupo: GRUPOS[k] })),
+    abre(k) { if (!ITENS.some(i => i[0] === k)) return; ativo = k; if (document.body.dataset.etapa === "3") { lista(); pinta(); } else Etapas.vai(3); },
   };
 })();

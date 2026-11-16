@@ -13,7 +13,7 @@ const Cargas3 = (() => {
     { k: "massa_kg", r: "Massa (kg, 0 = modelo)", d: "0 usa a massa das peças declaradas no modelo.", zero: true, p: 0 },
   ];
   const CHAVE = "aranduBIS.cargas";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#c85a5a", "#a278c8", "#5aaaaa"];
+  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8", "#5aaaaa"];
   let v = {}, res = null, tempo = null, seq = 0, sup = null;
   try { v = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { v = {}; }
   CAMPOS.forEach(c => { if (!(c.k in v)) v[c.k] = c.p === undefined ? null : c.p; });

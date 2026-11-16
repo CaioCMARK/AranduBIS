@@ -22,6 +22,10 @@ class Vista3D {
     this.pontos = null;
     this.hud = null;
     this.ferramenta = null;
+    this.aoMover = null;
+    this.aoDesenhar = null;
+    this.estilo = null;
+    this.solo = null;
     this._liga();
     new ResizeObserver(() => this.desenha()).observe(canvas.parentElement);
     Tema.aoMudar(() => this.desenha());
@@ -46,6 +50,8 @@ class Vista3D {
     this.centro = [0, 1, 2].map(i => (lo[i] + hi[i]) / 2);
     this.raio = Math.max(Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2, 1e-6);
     this.cg = m.cg_m;
+    const maior = Math.max(hi[0] - lo[0], hi[1] - lo[1]), passo = maior > 4 ? 0.5 : maior > 1.5 ? 0.25 : 0.1, f = v => Math.floor(v / passo) * passo, c = v => Math.ceil(v / passo) * passo;
+    this.solo = { z: lo[2], x0: f(lo[0]) - passo, x1: c(hi[0]) + passo, y0: f(lo[1]) - passo, y1: c(hi[1]) + passo, passo };
     this.desenha();
   }
 
@@ -87,7 +93,9 @@ class Vista3D {
     }
     const g = this.ctx;
     g.setTransform(d, 0, 0, d, 0, 0);
-    g.fillStyle = Tema.cor("--vista") || "#0f1722"; g.fillRect(0, 0, W, H);
+    if (this.estilo === "nova") { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, Tema.cor("--vista") || "#dde1d3"); gr.addColorStop(1, Tema.cor("--vista2") || "#c9cfbc"); g.fillStyle = gr; }
+    else g.fillStyle = Tema.cor("--vista") || "#0f1722";
+    g.fillRect(0, 0, W, H);
     if (!this.malha) {
       g.fillStyle = "#7f8da1"; g.font = "13px Segoe UI, sans-serif"; g.textAlign = "center";
       g.fillText("Abra uma aeronave ou insira um elemento", W / 2, H / 2);
@@ -101,12 +109,14 @@ class Vista3D {
       const q = this._projeta(V[3 * i], V[3 * i + 1], V[3 * i + 2], B, esc, W, H);
       P[3 * i] = q[0]; P[3 * i + 1] = q[1]; P[3 * i + 2] = q[2];
     }
+    if (this.estilo === "nova" && this.solo) this._desenhaSolo(g, B, esc, W, H);
     const ordem = [];
     for (let t = 0; t < nt; t++) {
       if (!this.visivel[zona[t]]) continue;
       const a = T[3 * t] * 3, b = T[3 * t + 1] * 3, c = T[3 * t + 2] * 3;
       ordem.push([(P[a + 2] + P[b + 2] + P[c + 2]) / 3, t]);
     }
+    this._P = P;
     ordem.sort((u, v) => v[0] - u[0]);
     const luz = [0.4, -0.5, 0.75], ll = Math.hypot(...luz);
     const cache = new Map();
@@ -135,7 +145,49 @@ class Vista3D {
     if (this.legenda) this._desenhaLegenda(g, W, H);
     if (this.hud) this._desenhaHud(g, W, H);
     if (this.cg) this._marcaCG(g, B, esc, W, H);
+    if (this.aoDesenhar) this.aoDesenhar(g, B, esc, W, H);
   }
+
+  _desenhaSolo(g, B, esc, W, H) {
+    const { z, x0, x1, y0, y1, passo } = this.solo;
+    g.save(); g.strokeStyle = Tema.cor("--linha") || "#999"; g.globalAlpha = 0.55; g.lineWidth = 1; g.beginPath();
+    for (let x = x0; x <= x1 + 1e-9; x += passo) { const a = this._projeta(x, y0, z, B, esc, W, H), b = this._projeta(x, y1, z, B, esc, W, H); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+    for (let y = y0; y <= y1 + 1e-9; y += passo) { const a = this._projeta(x0, y, z, B, esc, W, H), b = this._projeta(x1, y, z, B, esc, W, H); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+    g.stroke(); g.restore();
+  }
+
+  zonaEm(px, py) {
+    if (!this.malha || !this._P) return -1;
+    const { T, zona, nt } = this.malha, P = this._P;
+    let melhor = -1, prof = Infinity;
+    for (let t = 0; t < nt; t++) {
+      if (!this.visivel[zona[t]]) continue;
+      const a = T[3 * t] * 3, b = T[3 * t + 1] * 3, c = T[3 * t + 2] * 3;
+      const d1 = (px - P[b]) * (P[a + 1] - P[b + 1]) - (P[a] - P[b]) * (py - P[b + 1]);
+      const d2 = (px - P[c]) * (P[b + 1] - P[c + 1]) - (P[b] - P[c]) * (py - P[c + 1]);
+      const d3 = (px - P[a]) * (P[c + 1] - P[a + 1]) - (P[c] - P[a]) * (py - P[a + 1]);
+      if (((d1 < 0) || (d2 < 0) || (d3 < 0)) && ((d1 > 0) || (d2 > 0) || (d3 > 0))) continue;
+      const z = (P[a + 2] + P[b + 2] + P[c + 2]) / 3;
+      if (z < prof) { prof = z; melhor = zona[t]; }
+    }
+    return melhor;
+  }
+
+  verticeEm(px, py, raio = 12) {
+    if (!this.malha || !this._P) return null;
+    const { V, T, zona, nt } = this.malha, P = this._P;
+    let mel = -1, d0 = raio;
+    for (let t = 0; t < nt; t++) {
+      if (!this.visivel[zona[t]]) continue;
+      for (let k = 0; k < 3; k++) {
+        const i = T[3 * t + k], d = Math.hypot(P[3 * i] - px, P[3 * i + 1] - py);
+        if (d < d0) { d0 = d; mel = i; }
+      }
+    }
+    return mel < 0 ? null : [V[3 * mel], V[3 * mel + 1], V[3 * mel + 2]];
+  }
+
+  olha(yaw, pitch) { this.cam.yaw = yaw; this.cam.pitch = pitch; this.ajusta(); }
 
   projetaXY(x, y, z) {
     if (!this._ult) return null;
@@ -175,7 +227,8 @@ class Vista3D {
   }
 
   _desenhaHud(g, W, H) {
-    const L = this.hud;
+    let L = this.hud;
+    if (this.estilo === "nova") { const k = L.findIndex(t => t.startsWith("Arraste")); if (k > 0) L = L.slice(0, k).concat("? lista os atalhos · Esc sai"); }
     g.save(); g.font = "11px Segoe UI, sans-serif"; g.textAlign = "left";
     const w = Math.max(...L.map(t => g.measureText(t).width)) + 16, h = 8 + 15 * L.length, x = W - w - 12, y = 12;
     g.fillStyle = "rgba(20,26,34,.85)"; g.strokeStyle = "rgba(255,212,71,.55)"; g.lineWidth = 1;
@@ -217,7 +270,7 @@ class Vista3D {
       g.beginPath(); g.moveTo(o[0], o[1]); g.lineTo(o[0] + sx * L, o[1] - sy * L); g.stroke();
       g.font = "10px Segoe UI, sans-serif"; g.fillText(nome, o[0] + sx * (L + 7) - 3, o[1] - sy * (L + 7) + 3);
     };
-    eixo(1, 0, 0, "#e0615a", "x"); eixo(0, 1, 0, "#5cc16d", "y"); eixo(0, 0, 1, "#5c9bf0", "z");
+    eixo(1, 0, 0, "#d9a521", "x"); eixo(0, 1, 0, "#5cc16d", "y"); eixo(0, 0, 1, "#5c9bf0", "z");
   }
 
   _liga() {
@@ -234,7 +287,7 @@ class Vista3D {
       arr = null;
     });
     window.addEventListener("mousemove", e => {
-      if (!arr) return;
+      if (!arr) { if (this.aoMover && e.target === cv) { const r = cv.getBoundingClientRect(); this.aoMover(e.clientX - r.left, e.clientY - r.top, e); } return; }
       if (arr.ferr) { const r = cv.getBoundingClientRect(); this.ferramenta && this.ferramenta.move(e.clientX - r.left, e.clientY - r.top, e); return; }
       const dx = e.clientX - arr.x, dy = e.clientY - arr.y;
       arr.dist += Math.abs(dx) + Math.abs(dy);
