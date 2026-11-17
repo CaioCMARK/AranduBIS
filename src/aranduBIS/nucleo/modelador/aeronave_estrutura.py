@@ -164,7 +164,7 @@ def aplica_entelagem(x, zs, zi, c, b, eta, cfg):
             sel = (x >= a - 1e-12) & (x <= f + 1e-12)
             if sel.sum() < 3: continue
             xv = np.r_[a, x[(x > a + 1e-12) & (x < f - 1e-12)], f]; zv = np.interp(xv, x, z)
-            wv = abaula(xv * c, zv * c, [eta * b], b, r, sinal * dp / Tc)[0] / c
+            wv = zv if ka == 0.0 else abaula(xv * c, zv * c, [eta * b], b, r, sinal * dp / Tc)[0] / c
             w[sel] = np.interp(x[sel], xv, zv + ka * (wv - zv))
         Z.append(w)
     return Z[0], Z[1]
