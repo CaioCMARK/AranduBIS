@@ -288,7 +288,23 @@ def _constroi_placa(el, nome, esq):
     T = C3.orienta(V, T); zn = ["face-y", "face+y", "contorno"] + (["furos"] if furos else [])
     return V, np.asarray(T), np.array(lab), zn, {f"{nome}.aresta-y": list(range(m)) + [0], f"{nome}.aresta+y": [Nq + i for i in range(m)] + [Nq]}
 
+_CACHE_RODA: dict = {}
+
+
 def _constroi_roda(el, nome, esq):
+    import json
+    try:
+        chave = (json.dumps(el, sort_keys=True, default=str), nome)
+    except (TypeError, ValueError):
+        return _constroi_roda_(el, nome, esq)
+    if chave not in _CACHE_RODA:
+        if len(_CACHE_RODA) > 64: _CACHE_RODA.clear()
+        _CACHE_RODA[chave] = _constroi_roda_(el, nome, esq)
+    V, T, lab, zn, L = _CACHE_RODA[chave]
+    return V.copy(), T.copy(), lab.copy(), list(zn), {k: list(v) for k, v in L.items()}
+
+
+def _constroi_roda_(el, nome, esq):
     D = float(el.get("diametro", 0.0)); lar = float(el.get("largura", 0.0)); df = float(el.get("d_furo", 0.0)); dc = float(el.get("d_cubo", 0.0)); ane = float(el.get("anel", 0.1 * D)); na = int(el.get("n_aros", 0)); aro = float(el.get("aro", 0.0)); cx, cz = el.get("centro", [0.0, 0.0])
     if not (D > 0 and lar > 0): raise GeometriaInvalida(f"elemento {nome!r} (roda): diametro e largura precisam ser > 0")
     Re, Rc = 0.5 * D, 0.5 * dc; Ri = Re - ane; nc = int(el.get("n_circulo", 72)); th = 2 * np.pi * np.arange(nc) / nc; circ = lambda r: np.c_[cx + r * np.cos(th), cz + r * np.sin(th)]; furos = []
