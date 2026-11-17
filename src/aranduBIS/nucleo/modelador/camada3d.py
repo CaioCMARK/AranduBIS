@@ -1,5 +1,57 @@
 import numpy as np
 from collections import defaultdict
+from numba import njit
+
+
+@njit(cache=True)
+def _propaga_orientacao(T, ck, grp, n, nf):
+    visto = np.zeros(nf, np.bool_)
+    pilha = np.empty(nf + 1, np.int64)
+    for s in range(nf):
+        if visto[s]:
+            continue
+        visto[s] = True
+        topo = 0
+        pilha[0] = s
+        topo = 1
+        while topo > 0:
+            topo -= 1
+            f = pilha[topo]
+            for e in range(3):
+                a = T[f, e]
+                b = T[f, (e + 1) % 3]
+                chv = min(a, b) * n + max(a, b)
+                for q in range(np.searchsorted(ck, chv, "left"), np.searchsorted(ck, chv, "right")):
+                    g = grp[q]
+                    if visto[g]:
+                        continue
+                    visto[g] = True
+                    igual = False
+                    for r in range(3):
+                        if T[g, r] == a and T[g, (r + 1) % 3] == b:
+                            igual = True
+                    if igual:
+                        t0 = T[g, 0]
+                        T[g, 0] = T[g, 2]
+                        T[g, 2] = t0
+                    pilha[topo] = g
+                    topo += 1
+    return T
+
+
+def _orienta_triangulos(V, T):
+    T = np.array(T, dtype=np.int64)
+    nf = len(T)
+    a = T.reshape(-1)
+    b = np.roll(T, -1, axis=1).reshape(-1)
+    n = int(T.max()) + 1
+    chave = np.minimum(a, b) * n + np.maximum(a, b)
+    face = np.repeat(np.arange(nf), 3)
+    ordem = np.lexsort((face, chave))
+    ck = chave[ordem]
+    T = _propaga_orientacao(T, ck, face[ordem], n, nf)
+    vol = np.sum(np.einsum("ij,ij->i", V[T[:, 0]], np.cross(V[T[:, 1]], V[T[:, 2]]))) / 6
+    return T if vol > 0 else T[:, ::-1].copy()
 
 def normais_faces(V, T):
     N = []; A = []
@@ -46,28 +98,77 @@ def loft_asa(secoes, n_perfil=24, cod="4412", quads=False, dx_min=None, forma=No
                     if len(set(tri)) == 3: T.append(tri)
     return V, orienta(V, T)
 
-def triangula_poligono(P):
-    P = np.asarray(P, float); n = len(P); ind = list(range(n))
-    A = 0.5 * np.sum(P[:, 0] * np.roll(P[:, 1], -1) - P[:, 1] * np.roll(P[:, 0], -1))
-    if A < 0: ind.reverse()
-    cross = lambda o, a, b: (P[a, 0] - P[o, 0]) * (P[b, 1] - P[o, 1]) - (P[a, 1] - P[o, 1]) * (P[b, 0] - P[o, 0])
-    T = []; guarda = 0
-    while len(ind) > 3 and guarda < 10 * n * n:
-        guarda += 1; m = len(ind); achou = False
+@njit(cache=True)
+def _cruz(P, o, a, b):
+    return (P[a, 0] - P[o, 0]) * (P[b, 1] - P[o, 1]) - (P[a, 1] - P[o, 1]) * (P[b, 0] - P[o, 0])
+
+
+@njit(cache=True)
+def _orelhas_nb(P, ind0):
+    n = P.shape[0]
+    ind = ind0.copy()
+    m = n
+    T = np.empty((n, 3), np.int64)
+    nt = 0
+    guarda = 0
+    while m > 3 and guarda < 10 * n * n:
+        guarda += 1
+        achou = False
         for i in range(m):
-            a, b, c = ind[i - 1], ind[i], ind[(i + 1) % m]
-            if cross(a, b, c) <= 1e-18: continue
+            a = ind[i - 1]
+            b = ind[i]
+            c = ind[(i + 1) % m]
+            if _cruz(P, a, b, c) <= 1e-18:
+                continue
             dentro = False
-            for q in ind:
-                if q in (a, b, c): continue
-                if cross(a, b, q) >= 0 and cross(b, c, q) >= 0 and cross(c, a, q) >= 0: dentro = True; break
-            if not dentro: T.append((a, b, c)); ind.pop(i); achou = True; break
+            for k in range(m):
+                q = ind[k]
+                if q == a or q == b or q == c:
+                    continue
+                if _cruz(P, a, b, q) >= 0 and _cruz(P, b, c, q) >= 0 and _cruz(P, c, a, q) >= 0:
+                    dentro = True
+                    break
+            if not dentro:
+                T[nt, 0] = a
+                T[nt, 1] = b
+                T[nt, 2] = c
+                nt += 1
+                for k in range(i, m - 1):
+                    ind[k] = ind[k + 1]
+                m -= 1
+                achou = True
+                break
         if not achou:
-            ar = [abs(cross(ind[i - 1], ind[i], ind[(i + 1) % len(ind)])) for i in range(len(ind))]; ind.pop(int(np.argmin(ar)))
-    if len(ind) == 3 and abs(cross(*ind)) > 1e-18: T.append(tuple(ind))
-    return T
+            pior = 0
+            menor = 1e300
+            for i in range(m):
+                v = abs(_cruz(P, ind[i - 1], ind[i], ind[(i + 1) % m]))
+                if v < menor:
+                    menor = v
+                    pior = i
+            for k in range(pior, m - 1):
+                ind[k] = ind[k + 1]
+            m -= 1
+    if m == 3 and abs(_cruz(P, ind[0], ind[1], ind[2])) > 1e-18:
+        T[nt, 0] = ind[0]
+        T[nt, 1] = ind[1]
+        T[nt, 2] = ind[2]
+        nt += 1
+    return T[:nt]
+
+
+def triangula_poligono(P):
+    P = np.ascontiguousarray(np.asarray(P, float)); n = len(P); ind = np.arange(n, dtype=np.int64)
+    A = 0.5 * np.sum(P[:, 0] * np.roll(P[:, 1], -1) - P[:, 1] * np.roll(P[:, 0], -1))
+    if A < 0: ind = ind[::-1].copy()
+    return [tuple(int(v) for v in t) for t in _orelhas_nb(P, ind)]
 
 def orienta(V, T):
+    if len(T) and all(len(t) == 3 for t in T):
+        return _orienta_triangulos(V, T)
+    return _orienta_lento(V, T)
+
+def _orienta_lento(V, T):
     T = [list(t) for t in T]; ar = defaultdict(list)
     for f, t in enumerate(T):
         for e in range(len(t)): a, b = t[e], t[(e + 1) % len(t)]; ar[(min(a, b), max(a, b))].append(f)

@@ -1774,14 +1774,14 @@
   },
   {
    "nome": "fl_meio",
-   "minimo": -0.1,
-   "maximo": 0.3,
+   "minimo": -0.05,
+   "maximo": 0.1,
    "padrao": 0.0
   },
   {
    "nome": "fl_ponta",
-   "minimo": -0.1,
-   "maximo": 0.5,
+   "minimo": -0.05,
+   "maximo": 0.15,
    "padrao": 0.05
   },
   {
