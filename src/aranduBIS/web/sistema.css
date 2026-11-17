@@ -1,0 +1,178 @@
+/* AranduBIS - sistema de design (identidade tecnica de engenharia)
+   Carregado depois de estilo.css e nova.css: redefine os tokens e o visual dos componentes
+   sem alterar estrutura, scripts ou calculo. Tudo sai de variaveis, entao graficos e 3D
+   (que leem --tinta, --painel, --linha, --vista, --ouro em tempo de desenho) acompanham.
+
+   Escalas:  grafite (superficies)  ·  petroleo (acao e selecao)  ·  ambar (foco e alerta)
+   Forma:    cantos de 2 px, linhas de 1 px, sem sombra (exceto menus e janelas)
+   Texto:    12,5 px, numeros tabulares e monoespacados nas colunas de valor                  */
+
+/* ---------- 1. Primitivas ---------- */
+:root{
+ --g-0:#14181c;--g-1:#1b2025;--g-2:#232a30;--g-3:#2d353c;--g-4:#3a434b;--g-5:#4b555e;--g-6:#69747e;--g-7:#8b959f;
+ --g-8:#aeb6bf;--g-9:#cbd1d8;--g-10:#dde1e6;--g-11:#eaedf0;--g-12:#f4f5f7;
+ --pt-1:#103f4d;--pt-2:#15505f;--pt-3:#1b6479;--pt-4:#2a8197;--pt-5:#5aa6b8;--pt-6:#a9d3dd;
+ --am-1:#8a5a00;--am-2:#c47e0d;--am-3:#e29a2c;--am-4:#f0b95e;
+ --ok:#2f8f5b;--alerta:#c47e0d;--falha:#b3401f;
+ --fonte:"IBM Plex Sans","Segoe UI Variable Text","Segoe UI","Helvetica Neue",Arial,"Inter",system-ui,sans-serif;
+ --mono:"IBM Plex Mono","Cascadia Mono","Consolas","SF Mono","Liberation Mono",ui-monospace,monospace;
+ --r:2px;--r2:3px;--alt:26px;--ce:232px;--cd:300px;
+}
+
+/* ---------- 2. Temas (nomes antigos preservados: o codigo le essas variaveis) ---------- */
+:root[data-interface="nova"]{
+ --fundo:var(--g-10);--painel:var(--g-12);--linha:#b4bcc5;--tinta:#1b2229;--suave:#56626e;
+ --marinho:var(--pt-3);--cobre:var(--am-1);--ouro:var(--am-3);--erro:var(--falha);
+ --vista:#e6e9ed;--vista2:#c3cad2;--sombra:0 6px 18px rgba(16,24,32,.28);
+ --topo:var(--g-2);--topo-tinta:#e6eaee;--cabeca:var(--g-11);--zebra:rgba(27,100,121,.045);--sel-fundo:var(--pt-3);--sel-tinta:#fff;
+ color-scheme:light}
+:root[data-interface="nova"][data-tema="escuro"]{
+ --fundo:var(--g-1);--painel:var(--g-2);--linha:#39424b;--tinta:#e3e7eb;--suave:#9aa5b0;
+ --marinho:var(--pt-4);--cobre:var(--am-4);--ouro:var(--am-3);--erro:#ef8a63;
+ --vista:#222a31;--vista2:#12171b;--sombra:0 6px 18px rgba(0,0,0,.55);
+ --topo:var(--g-0);--topo-tinta:#d9dfe5;--cabeca:var(--g-3);--zebra:rgba(255,255,255,.035);--sel-fundo:var(--pt-2);--sel-tinta:#fff;
+ color-scheme:dark}
+:root[data-interface="nova"][data-tema="cinza"]{
+ --fundo:#33383e;--painel:#3e444b;--linha:#5b646d;--tinta:#eceff2;--suave:#b6bfc8;
+ --marinho:var(--pt-4);--cobre:var(--am-4);--ouro:var(--am-4);--erro:#f09a74;
+ --vista:#4a525a;--vista2:#2b3035;--sombra:0 6px 18px rgba(0,0,0,.5);
+ --topo:#262b30;--topo-tinta:#e3e8ec;--cabeca:#4a5159;--zebra:rgba(255,255,255,.04);--sel-fundo:var(--pt-2);--sel-tinta:#fff;
+ color-scheme:dark}
+@media (max-height:760px){:root[data-interface="nova"]{--alt:24px}}
+
+/* ---------- 3. Tipografia ---------- */
+[data-interface="nova"] body{font:12.5px/1.38 var(--fonte);letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+[data-interface="nova"] table,[data-interface="nova"] input,[data-interface="nova"] .rodape,[data-interface="nova"] .veredito,
+[data-interface="nova"] .menu-tecla,[data-interface="nova"] .prop input{font-variant-numeric:tabular-nums}
+[data-interface="nova"] td input,[data-interface="nova"] .prop input[type="text"],[data-interface="nova"] .prop input[type="number"],
+[data-interface="nova"] .opc input,[data-interface="nova"] #aba_conteudo td{font-family:var(--mono);font-size:12px}
+[data-interface="nova"] td:first-child,[data-interface="nova"] th{font-family:var(--fonte)}
+[data-interface="nova"] textarea,[data-interface="nova"] pre,[data-interface="nova"] code{font-family:var(--mono)}
+
+/* ---------- 4. Controles ---------- */
+[data-interface="nova"] button,[data-interface="nova"] .botao,[data-interface="nova"] select{
+ min-height:var(--alt);padding:1px 10px;border-radius:var(--r);font-weight:500;background:var(--painel);border:1px solid var(--linha)}
+[data-interface="nova"] button:hover,[data-interface="nova"] .botao:hover,[data-interface="nova"] select:hover{
+ border-color:var(--marinho);background:color-mix(in srgb,var(--marinho) 9%,var(--painel))}
+[data-interface="nova"] button:active{background:color-mix(in srgb,var(--marinho) 18%,var(--painel))}
+[data-interface="nova"] button.on,[data-interface="nova"] button.primario{background:var(--marinho);border-color:var(--marinho);color:#fff}
+[data-interface="nova"] button.primario:hover{filter:none;background:var(--pt-2);border-color:var(--pt-2)}
+[data-interface="nova"] button:disabled{opacity:.45;cursor:default}
+[data-interface="nova"] input,[data-interface="nova"] textarea,[data-interface="nova"] select{border-radius:var(--r)}
+[data-interface="nova"] input:not([type="checkbox"]):not([type="radio"]),[data-interface="nova"] textarea{border:1px solid var(--linha);background:color-mix(in srgb,var(--painel) 70%,var(--fundo) 30%)}
+[data-interface="nova"] input:focus,[data-interface="nova"] textarea:focus,[data-interface="nova"] select:focus{border-color:var(--marinho)}
+[data-interface="nova"] button:focus-visible,[data-interface="nova"] select:focus-visible,[data-interface="nova"] input:focus-visible,
+[data-interface="nova"] textarea:focus-visible,[data-interface="nova"] [tabindex]:focus-visible{outline:2px solid var(--ouro);outline-offset:0}
+[data-interface="nova"] input[type="checkbox"],[data-interface="nova"] input[type="radio"]{accent-color:var(--marinho)}
+[data-interface="nova"] #b_remove{color:var(--erro);border-color:color-mix(in srgb,var(--erro) 55%,var(--linha))}
+
+/* ---------- 5. Barra de menus (faixa grafite) ---------- */
+.menubar{background:var(--topo);color:var(--topo-tinta);min-height:28px;padding:0 6px;border-bottom:1px solid #000}
+[data-interface="nova"] .menubar .menu-tit{color:var(--topo-tinta);min-height:28px;padding:0 12px;font-weight:500;letter-spacing:.01em;border-radius:0}
+[data-interface="nova"] .menubar .menu-tit:hover,[data-interface="nova"] .menubar .menu-tit[aria-expanded="true"]{background:var(--g-4);color:#fff}
+.menubar-doc{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--g-8);opacity:1;letter-spacing:0}
+.menubar-doc::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;background:var(--ouro);transform:rotate(45deg)}
+.menu-pop{background:var(--painel);border:1px solid var(--g-6);border-radius:0;padding:3px;box-shadow:var(--sombra)}
+[data-interface="nova"] .menu-item{border-radius:0;min-height:25px;padding:2px 8px}
+[data-interface="nova"] .menu-item:hover:not(:disabled),[data-interface="nova"] .menu-item:focus-visible{background:var(--sel-fundo);color:var(--sel-tinta)}
+.menu-grupo{font-size:10.5px;letter-spacing:.09em;color:var(--suave)}
+.menu-sep{margin:3px 2px}
+
+/* ---------- 6. Barra de icones (faixa de comandos) ---------- */
+[data-interface="nova"] .barra{background:var(--cabeca);border-bottom:1px solid var(--linha);gap:4px;padding:4px 8px}
+[data-interface="nova"] .barra .sep{margin:0 4px;background:var(--linha)}
+[data-interface="nova"] .barra .busca{border-radius:var(--r);min-width:220px}
+[data-interface="nova"] button.icone{width:var(--alt)}
+
+/* ---------- 7. Etapas (guias do fluxo de projeto) ---------- */
+[data-interface="nova"] .etapas{background:var(--fundo);border-bottom:1px solid var(--linha);padding:0 8px;gap:0;align-items:stretch}
+[data-interface="nova"] .etapas div[data-etapa]{padding:6px 18px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--suave);
+ border-right:1px solid var(--linha);border-bottom:0;border-top:3px solid transparent;margin-bottom:-1px}
+[data-interface="nova"] .etapas div[data-etapa]:first-of-type{border-left:1px solid var(--linha)}
+[data-interface="nova"] .etapas div[data-etapa]:hover{color:var(--tinta);background:color-mix(in srgb,var(--painel) 55%,var(--fundo))}
+[data-interface="nova"] .etapas .at{background:var(--painel);color:var(--tinta);border-top-color:var(--ouro);border-bottom:0}
+[data-interface="nova"] .selo{width:8px;height:8px;border:1.5px solid var(--g-7);border-radius:0}
+[data-interface="nova"] .selo[data-estado="ok"]{background:var(--ok);border-color:var(--ok)}
+[data-interface="nova"] .selo[data-estado="aviso"]{background:var(--ouro);border-color:var(--ouro);border-radius:0;transform:none}
+[data-interface="nova"] .etapas .paineis button{border-radius:var(--r)}
+
+/* ---------- 8. Paineis: arvore, propriedades, guias ---------- */
+[data-interface="nova"] h4{padding:4px 10px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--suave);
+ background:var(--cabeca);border-bottom:1px solid var(--linha);border-top:1px solid var(--linha)}
+[data-interface="nova"] .col>h4:first-child{border-top:0}
+[data-interface="nova"] .bloco h5,[data-interface="nova"] .grupo-par,[data-interface="nova"] .inspetor h5,[data-interface="nova"] .c2-painel h5{
+ font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--suave)}
+[data-interface="nova"] .bloco h5{background:var(--cabeca);padding:3px 10px}
+[data-interface="nova"] .grupo-lista{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--suave)}
+[data-interface="nova"] .el{padding:2px 10px;min-height:24px;border-left:3px solid transparent}
+[data-interface="nova"] .el:hover{background:color-mix(in srgb,var(--marinho) 10%,transparent)}
+[data-interface="nova"] .el.sel{background:var(--sel-fundo);color:var(--sel-tinta);border-left-color:var(--ouro)}
+[data-interface="nova"] .el .cor{border-radius:0}
+[data-interface="nova"] .col-acoes{padding:5px 8px}
+[data-interface="nova"] .abas{background:var(--cabeca);border-bottom:1px solid var(--linha);padding:0 4px}
+[data-interface="nova"] .abas div{padding:4px 14px;font-weight:500;color:var(--suave);border-bottom:2px solid transparent;border-right:1px solid transparent}
+[data-interface="nova"] .abas div:hover{color:var(--tinta)}
+[data-interface="nova"] .abas div.at{background:var(--painel);color:var(--tinta);font-weight:600;border-bottom-color:var(--ouro)}
+[data-interface="nova"] .prop,[data-interface="nova"] .opc{gap:4px 8px}
+[data-interface="nova"] .prop label,[data-interface="nova"] .opc label{font-size:12px;font-weight:500;color:var(--suave)}
+[data-interface="nova"] .prop input,[data-interface="nova"] .prop select,[data-interface="nova"] .opc input,[data-interface="nova"] .opc select{
+ min-height:calc(var(--alt) - 4px);padding:1px 6px}
+[data-interface="nova"] .opc{border-bottom:1px solid color-mix(in srgb,var(--linha) 60%,transparent)}
+[data-interface="nova"] .inspetor{background:color-mix(in srgb,var(--ouro) 10%,var(--painel));border-bottom:1px solid var(--linha);border-left:3px solid var(--ouro)}
+
+/* ---------- 9. Tabelas e resultados numericos ---------- */
+[data-interface="nova"] table{border-collapse:separate;border-spacing:0}
+[data-interface="nova"] td,[data-interface="nova"] th{border:0;border-right:1px solid color-mix(in srgb,var(--linha) 55%,transparent);
+ border-bottom:1px solid color-mix(in srgb,var(--linha) 55%,transparent);padding:2px 8px}
+[data-interface="nova"] th{position:sticky;top:0;z-index:1;background:var(--cabeca);color:var(--suave);font-size:10.5px;font-weight:700;
+ letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--linha)}
+[data-interface="nova"] tbody tr:nth-child(even) td{background:var(--zebra)}
+[data-interface="nova"] tbody tr:hover td{background:color-mix(in srgb,var(--marinho) 12%,transparent)}
+[data-interface="nova"] td:first-child{color:var(--tinta)}
+[data-interface="nova"] td:last-child,[data-interface="nova"] th:last-child{border-right:0}
+[data-interface="nova"] .barra-valor{background:var(--marinho);border-radius:0;height:8px}
+[data-interface="nova"] .origem{border-radius:var(--r);font-size:10px;letter-spacing:.03em;text-transform:uppercase}
+[data-interface="nova"] .veredito{font-size:12.5px;padding:6px 12px;border-bottom:1px solid var(--linha)}
+[data-interface="nova"] .veredito.ok{background:color-mix(in srgb,var(--ok) 14%,var(--painel));border-left:4px solid var(--ok)}
+[data-interface="nova"] .veredito.ruim{background:color-mix(in srgb,var(--alerta) 15%,var(--painel));border-left:4px solid var(--alerta)}
+[data-interface="nova"] .veredito .total{font-family:var(--mono);font-size:13px}
+[data-interface="nova"] .graficos{gap:1px}
+[data-interface="nova"] .aviso{border-radius:0;border-left:3px solid var(--ouro);border-top:0;border-right:0;border-bottom:0;background:color-mix(in srgb,var(--ouro) 12%,var(--painel))}
+
+/* celulas editaveis: sem moldura ate o ponteiro chegar (leitura de planilha) */
+[data-interface="nova"] td input:not([type="checkbox"]):not([type="radio"]),[data-interface="nova"] td select{border-color:transparent;background:transparent}
+[data-interface="nova"] td input:hover,[data-interface="nova"] td select:hover{border-color:var(--linha)}
+[data-interface="nova"] td input:focus{border-color:var(--marinho);background:var(--painel)}
+[data-interface="nova"] td button{min-height:calc(var(--alt) - 6px)}
+
+/* ---------- 10. Vista 3D ---------- */
+[data-interface="nova"] .vista{background:linear-gradient(var(--vista),var(--vista2))}
+.paleta,.vgrupo{background:var(--painel);border:1px solid var(--linha);border-radius:var(--r2);box-shadow:none}
+.paleta{padding:2px;gap:1px}
+.paleta button{width:32px!important;height:32px;min-height:32px!important;border-radius:var(--r)!important}
+.paleta button:hover{background:color-mix(in srgb,var(--marinho) 14%,transparent);border-color:var(--linha)}
+.paleta button.on{background:var(--marinho);border-color:var(--marinho)}
+.vgrupo{padding:2px;gap:1px}
+.vgrupo button.on{background:var(--marinho)}
+
+/* ---------- 11. Rodape de estado ---------- */
+[data-interface="nova"] .rodape{background:var(--topo);color:var(--g-8);border-top:1px solid #000;font-size:11.5px;padding:3px 12px;gap:18px}
+[data-interface="nova"] .rodape b{color:#fff;font-family:var(--mono);font-weight:500}
+[data-interface="nova"] .rodape .link-rodape.alerta,[data-interface="nova"] .rodape .alerta{color:var(--am-4)}
+
+/* ---------- 12. Janelas, avisos, atalhos ---------- */
+[data-interface="nova"] dialog{border:1px solid var(--g-6);border-radius:0;box-shadow:var(--sombra)}
+dialog::backdrop{background:rgba(12,18,24,.55)}
+[data-interface="nova"] .dlg-topo{background:var(--topo);color:var(--topo-tinta);padding:5px 10px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+ border-bottom:2px solid var(--ouro)}
+[data-interface="nova"] .dlg-topo button{background:transparent;color:var(--topo-tinta);border-color:var(--g-5)}
+[data-interface="nova"] .dlg-topo button:hover{background:var(--g-4)}
+.toast{border-radius:0;border-left-width:4px;box-shadow:var(--sombra)}
+kbd{border-radius:var(--r);font:600 11px var(--mono);border-bottom-width:2px}
+.cmd{border-radius:0}
+.cmd.at,.cmd:hover{background:var(--sel-fundo);color:var(--sel-tinta)}
+[data-interface="nova"] .comandos input{font-size:13px}
+#manual_texto pre.eq{border-left-color:var(--ouro);font-family:var(--mono)}
+
+/* ---------- 13. Rolagem discreta ---------- */
+*{scrollbar-width:thin;scrollbar-color:var(--g-6) transparent}
