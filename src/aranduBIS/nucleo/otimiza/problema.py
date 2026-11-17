@@ -106,6 +106,11 @@ def monta(prob: dict, x: dict) -> tuple[dict, dict]:
     if prob.get("retira"):
         esq["elementos"] = [e for e in esq.get("elementos", []) if e.get("nome") not in set(prob["retira"])]
     for lg in prob.get("ligacoes", []):
+        if lg.get("retira_se"):
+            if _f(lg["formula"], ctx, "retira_se") > 0.5:
+                fora = set(lg["retira_se"])
+                esq["elementos"] = [e for e in esq.get("elementos", []) if e.get("nome") not in fora]
+            continue
         if lg.get("estica"):
             _estica(esq, lg["estica"], ctx)
             continue

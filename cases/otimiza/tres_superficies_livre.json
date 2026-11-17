@@ -1,0 +1,2288 @@
+{
+ "descricao": "Gerador livre: tres superficies com perfil, corda, torcao, enflechamento e diedro independentes por secao da asa; canard opcional; cauda e posicoes livres. Maximizar EE.",
+ "base": {
+  "versao": 1,
+  "nome": "tres_superficies_a",
+  "unidade": "m",
+  "marcas": [],
+  "referencia": {
+   "Sref": 1.116,
+   "Cref": 0.507,
+   "Bref": 2.2,
+   "fonte": "estimativa a partir de fotos"
+  },
+  "elementos": [
+   {
+    "nome": "asa",
+    "tipo": "asa",
+    "n_perfil": 60,
+    "posicao": [
+     0.0,
+     0.0,
+     0.2
+    ],
+    "secoes": [
+     {
+      "y": -1.1,
+      "xle": 0.05,
+      "zle": 0.0,
+      "corda": 0.34,
+      "ainc": 2.0,
+      "perfil": "S1223.dat"
+     },
+     {
+      "y": -0.65,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.55,
+      "ainc": 2.0,
+      "perfil": "S1223.dat"
+     },
+     {
+      "y": 0.0,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.55,
+      "ainc": 2.0,
+      "perfil": "S1223.dat"
+     },
+     {
+      "y": 0.65,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.55,
+      "ainc": 2.0,
+      "perfil": "S1223.dat"
+     },
+     {
+      "y": 1.1,
+      "xle": 0.05,
+      "zle": 0.0,
+      "corda": 0.34,
+      "ainc": 2.0,
+      "perfil": "S1223.dat"
+     }
+    ],
+    "estrutura": {
+     "nervuras": {
+      "y": [
+       0.06,
+       0.16,
+       0.26,
+       0.36,
+       0.46,
+       0.56,
+       0.66,
+       0.76,
+       0.86,
+       0.96,
+       1.06
+      ],
+      "espessura": 0.003,
+      "material": "balsa",
+      "alivio": 0.4
+     },
+     "longarinas": [
+      {
+       "xc": 0.28,
+       "largura": 0.006,
+       "material": "balsa"
+      }
+     ],
+     "chapeado": {
+      "ate_xc": 0.07,
+      "espessura": 0.001,
+      "material": "balsa"
+     },
+     "tubos": [
+      {
+       "xc": 0.28,
+       "lado": "extradorso",
+       "de": 0.008,
+       "di": 0.006,
+       "y": [
+        -0.65,
+        0.65
+       ]
+      },
+      {
+       "xc": 0.28,
+       "lado": "extradorso",
+       "de": 0.005,
+       "di": 0.0033,
+       "y": [
+        -1.1,
+        -0.65
+       ]
+      },
+      {
+       "xc": 0.28,
+       "lado": "extradorso",
+       "de": 0.005,
+       "di": 0.0033,
+       "y": [
+        0.65,
+        1.1
+       ]
+      },
+      {
+       "xc": 0.28,
+       "lado": "intradorso",
+       "de": 0.008,
+       "di": 0.006,
+       "y": [
+        -0.65,
+        0.65
+       ]
+      },
+      {
+       "xc": 0.28,
+       "lado": "intradorso",
+       "de": 0.005,
+       "di": 0.0033,
+       "y": [
+        -1.1,
+        -0.65
+       ]
+      },
+      {
+       "xc": 0.28,
+       "lado": "intradorso",
+       "de": 0.005,
+       "di": 0.0033,
+       "y": [
+        0.65,
+        1.1
+       ]
+      }
+     ]
+    },
+    "entelagem": {
+     "de_xc": 0.0,
+     "gramatura_g_m2": 40.0,
+     "coef_abaulamento": 0.0
+    },
+    "controles": [
+     {
+      "nome": "aileron",
+      "y": [
+       0.62,
+       1.05
+      ],
+      "corda": 0.085,
+      "deflexao": -6.0,
+      "modo": "anti",
+      "charneira": "extradorso",
+      "dobradica": "batente"
+     }
+    ]
+   },
+   {
+    "nome": "canard",
+    "tipo": "asa",
+    "n_perfil": 60,
+    "posicao": [
+     -0.38,
+     0.0,
+     0.17
+    ],
+    "secoes": [
+     {
+      "y": -0.45,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.2,
+      "ainc": 3.0,
+      "perfil": "NACA 4412"
+     },
+     {
+      "y": 0.45,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.2,
+      "ainc": 3.0,
+      "perfil": "NACA 4412"
+     }
+    ],
+    "estrutura": {
+     "nervuras": {
+      "y": [
+       0.03,
+       0.12,
+       0.22,
+       0.32,
+       0.42
+      ],
+      "espessura": 0.003,
+      "material": "balsa",
+      "alivio": 0.4
+     },
+     "longarinas": [
+      {
+       "xc": 0.28,
+       "largura": 0.006,
+       "material": "balsa"
+      }
+     ],
+     "chapeado": {
+      "ate_xc": 0.08,
+      "espessura": 0.001,
+      "material": "balsa"
+     }
+    },
+    "entelagem": {
+     "de_xc": 0.0,
+     "gramatura_g_m2": 40.0,
+     "coef_abaulamento": 0.0
+    }
+   },
+   {
+    "nome": "empenagem_h",
+    "tipo": "asa",
+    "n_perfil": 60,
+    "posicao": [
+     1.95,
+     0.0,
+     0.22
+    ],
+    "secoes": [
+     {
+      "y": -0.42,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.18,
+      "ainc": 0.0,
+      "perfil": "NACA 0012"
+     },
+     {
+      "y": 0.42,
+      "xle": 0.0,
+      "zle": 0.0,
+      "corda": 0.18,
+      "ainc": 0.0,
+      "perfil": "NACA 0012"
+     }
+    ],
+    "estrutura": {
+     "nervuras": {
+      "y": [
+       0.02,
+       0.1,
+       0.2,
+       0.3,
+       0.4
+      ],
+      "espessura": 0.003,
+      "material": "balsa",
+      "alivio": 0.4
+     },
+     "longarinas": [
+      {
+       "xc": 0.22,
+       "largura": 0.006,
+       "material": "balsa"
+      }
+     ],
+     "chapeado": {
+      "ate_xc": 0.22,
+      "espessura": 0.001,
+      "material": "balsa"
+     }
+    },
+    "entelagem": {
+     "de_xc": 0.0,
+     "gramatura_g_m2": 40.0,
+     "coef_abaulamento": 0.0
+    },
+    "controles": [
+     {
+      "nome": "profundor",
+      "y": [
+       0.0,
+       0.42
+      ],
+      "corda": 0.06,
+      "deflexao": 0.0,
+      "modo": "sim",
+      "charneira": "extradorso",
+      "dobradica": "batente"
+     }
+    ]
+   },
+   {
+    "nome": "deriva",
+    "tipo": "asa",
+    "n_perfil": 60,
+    "posicao": [
+     1.95,
+     0.0,
+     0.22
+    ],
+    "secoes": [
+     {
+      "y": 0.0,
+      "corda": 0.2,
+      "perfil": "NACA 0012"
+     },
+     {
+      "y": 0.4,
+      "corda": 0.16,
+      "perfil": "NACA 0012"
+     }
+    ],
+    "estrutura": {
+     "nervuras": {
+      "y": [
+       0.0,
+       0.1,
+       0.2,
+       0.3,
+       0.39
+      ],
+      "espessura": 0.003,
+      "material": "balsa",
+      "alivio": 0.4
+     },
+     "longarinas": [
+      {
+       "xc": 0.22,
+       "largura": 0.006,
+       "material": "balsa"
+      }
+     ],
+     "chapeado": {
+      "ate_xc": 0.22,
+      "espessura": 0.001,
+      "material": "balsa"
+     }
+    },
+    "entelagem": {
+     "de_xc": 0.0,
+     "gramatura_g_m2": 40.0,
+     "coef_abaulamento": 0.0
+    },
+    "controles": [
+     {
+      "nome": "leme",
+      "y": [
+       0.0,
+       0.4
+      ],
+      "corda": 0.06,
+      "deflexao": 0.0,
+      "modo": "lado",
+      "charneira": "extradorso",
+      "dobradica": "batente"
+     }
+    ],
+    "rolagem": 90.0
+   },
+   {
+    "nome": "fuselagem_tubos",
+    "tipo": "trelica",
+    "tubos": {
+     "D3": {
+      "de": 0.003,
+      "di": 0.002,
+      "material": "tubo_carbono"
+     },
+     "D4": {
+      "de": 0.004,
+      "di": 0.003,
+      "material": "tubo_carbono"
+     },
+     "D6": {
+      "de": 0.006,
+      "di": 0.004,
+      "material": "tubo_carbono"
+     }
+    },
+    "nos": [
+     [
+      -0.85,
+      -0.1,
+      0.0
+     ],
+     [
+      -0.85,
+      0.1,
+      0.0
+     ],
+     [
+      -0.85,
+      0.1,
+      0.16
+     ],
+     [
+      -0.85,
+      -0.1,
+      0.16
+     ],
+     [
+      -0.65,
+      -0.1,
+      0.0
+     ],
+     [
+      -0.65,
+      0.1,
+      0.0
+     ],
+     [
+      -0.65,
+      0.1,
+      0.16
+     ],
+     [
+      -0.65,
+      -0.1,
+      0.16
+     ],
+     [
+      -0.45,
+      -0.1,
+      0.0
+     ],
+     [
+      -0.45,
+      0.1,
+      0.0
+     ],
+     [
+      -0.45,
+      0.1,
+      0.16
+     ],
+     [
+      -0.45,
+      -0.1,
+      0.16
+     ],
+     [
+      -0.25,
+      -0.1,
+      0.0
+     ],
+     [
+      -0.25,
+      0.1,
+      0.0
+     ],
+     [
+      -0.25,
+      0.1,
+      0.16
+     ],
+     [
+      -0.25,
+      -0.1,
+      0.16
+     ],
+     [
+      -0.05,
+      -0.1,
+      0.0
+     ],
+     [
+      -0.05,
+      0.1,
+      0.0
+     ],
+     [
+      -0.05,
+      0.1,
+      0.16
+     ],
+     [
+      -0.05,
+      -0.1,
+      0.16
+     ],
+     [
+      0.15,
+      -0.1,
+      0.0
+     ],
+     [
+      0.15,
+      0.1,
+      0.0
+     ],
+     [
+      0.15,
+      0.1,
+      0.16
+     ],
+     [
+      0.15,
+      -0.1,
+      0.16
+     ],
+     [
+      0.35,
+      -0.1,
+      0.0
+     ],
+     [
+      0.35,
+      0.1,
+      0.0
+     ],
+     [
+      0.35,
+      0.1,
+      0.16
+     ],
+     [
+      0.35,
+      -0.1,
+      0.16
+     ],
+     [
+      0.55,
+      -0.1,
+      0.0
+     ],
+     [
+      0.55,
+      0.1,
+      0.0
+     ],
+     [
+      0.55,
+      0.1,
+      0.16
+     ],
+     [
+      0.55,
+      -0.1,
+      0.16
+     ]
+    ],
+    "barras": [
+     [
+      0,
+      1,
+      "D3"
+     ],
+     [
+      1,
+      2,
+      "D3"
+     ],
+     [
+      2,
+      3,
+      "D3"
+     ],
+     [
+      3,
+      0,
+      "D3"
+     ],
+     [
+      0,
+      2,
+      "D3"
+     ],
+     [
+      0,
+      4,
+      "D4"
+     ],
+     [
+      0,
+      5,
+      "D3"
+     ],
+     [
+      1,
+      5,
+      "D4"
+     ],
+     [
+      1,
+      6,
+      "D3"
+     ],
+     [
+      2,
+      6,
+      "D4"
+     ],
+     [
+      2,
+      7,
+      "D3"
+     ],
+     [
+      3,
+      7,
+      "D4"
+     ],
+     [
+      3,
+      4,
+      "D3"
+     ],
+     [
+      4,
+      5,
+      "D3"
+     ],
+     [
+      5,
+      6,
+      "D3"
+     ],
+     [
+      6,
+      7,
+      "D3"
+     ],
+     [
+      7,
+      4,
+      "D3"
+     ],
+     [
+      4,
+      6,
+      "D3"
+     ],
+     [
+      4,
+      8,
+      "D4"
+     ],
+     [
+      5,
+      8,
+      "D3"
+     ],
+     [
+      5,
+      9,
+      "D4"
+     ],
+     [
+      6,
+      9,
+      "D3"
+     ],
+     [
+      6,
+      10,
+      "D4"
+     ],
+     [
+      7,
+      10,
+      "D3"
+     ],
+     [
+      7,
+      11,
+      "D4"
+     ],
+     [
+      4,
+      11,
+      "D3"
+     ],
+     [
+      8,
+      9,
+      "D3"
+     ],
+     [
+      9,
+      10,
+      "D3"
+     ],
+     [
+      10,
+      11,
+      "D3"
+     ],
+     [
+      11,
+      8,
+      "D3"
+     ],
+     [
+      8,
+      10,
+      "D3"
+     ],
+     [
+      8,
+      12,
+      "D4"
+     ],
+     [
+      8,
+      13,
+      "D3"
+     ],
+     [
+      9,
+      13,
+      "D4"
+     ],
+     [
+      9,
+      14,
+      "D3"
+     ],
+     [
+      10,
+      14,
+      "D4"
+     ],
+     [
+      10,
+      15,
+      "D3"
+     ],
+     [
+      11,
+      15,
+      "D4"
+     ],
+     [
+      11,
+      12,
+      "D3"
+     ],
+     [
+      12,
+      13,
+      "D3"
+     ],
+     [
+      13,
+      14,
+      "D3"
+     ],
+     [
+      14,
+      15,
+      "D3"
+     ],
+     [
+      15,
+      12,
+      "D3"
+     ],
+     [
+      12,
+      14,
+      "D3"
+     ],
+     [
+      12,
+      16,
+      "D4"
+     ],
+     [
+      13,
+      16,
+      "D3"
+     ],
+     [
+      13,
+      17,
+      "D4"
+     ],
+     [
+      14,
+      17,
+      "D3"
+     ],
+     [
+      14,
+      18,
+      "D4"
+     ],
+     [
+      15,
+      18,
+      "D3"
+     ],
+     [
+      15,
+      19,
+      "D4"
+     ],
+     [
+      12,
+      19,
+      "D3"
+     ],
+     [
+      16,
+      17,
+      "D3"
+     ],
+     [
+      17,
+      18,
+      "D3"
+     ],
+     [
+      18,
+      19,
+      "D3"
+     ],
+     [
+      19,
+      16,
+      "D3"
+     ],
+     [
+      16,
+      18,
+      "D3"
+     ],
+     [
+      16,
+      20,
+      "D4"
+     ],
+     [
+      16,
+      21,
+      "D3"
+     ],
+     [
+      17,
+      21,
+      "D4"
+     ],
+     [
+      17,
+      22,
+      "D3"
+     ],
+     [
+      18,
+      22,
+      "D4"
+     ],
+     [
+      18,
+      23,
+      "D3"
+     ],
+     [
+      19,
+      23,
+      "D4"
+     ],
+     [
+      19,
+      20,
+      "D3"
+     ],
+     [
+      20,
+      21,
+      "D3"
+     ],
+     [
+      21,
+      22,
+      "D3"
+     ],
+     [
+      22,
+      23,
+      "D3"
+     ],
+     [
+      23,
+      20,
+      "D3"
+     ],
+     [
+      20,
+      22,
+      "D3"
+     ],
+     [
+      20,
+      24,
+      "D4"
+     ],
+     [
+      21,
+      24,
+      "D3"
+     ],
+     [
+      21,
+      25,
+      "D4"
+     ],
+     [
+      22,
+      25,
+      "D3"
+     ],
+     [
+      22,
+      26,
+      "D4"
+     ],
+     [
+      23,
+      26,
+      "D3"
+     ],
+     [
+      23,
+      27,
+      "D4"
+     ],
+     [
+      20,
+      27,
+      "D3"
+     ],
+     [
+      24,
+      25,
+      "D3"
+     ],
+     [
+      25,
+      26,
+      "D3"
+     ],
+     [
+      26,
+      27,
+      "D3"
+     ],
+     [
+      27,
+      24,
+      "D3"
+     ],
+     [
+      24,
+      26,
+      "D3"
+     ],
+     [
+      24,
+      28,
+      "D4"
+     ],
+     [
+      24,
+      29,
+      "D3"
+     ],
+     [
+      25,
+      29,
+      "D4"
+     ],
+     [
+      25,
+      30,
+      "D3"
+     ],
+     [
+      26,
+      30,
+      "D4"
+     ],
+     [
+      26,
+      31,
+      "D3"
+     ],
+     [
+      27,
+      31,
+      "D4"
+     ],
+     [
+      27,
+      28,
+      "D3"
+     ],
+     [
+      28,
+      29,
+      "D3"
+     ],
+     [
+      29,
+      30,
+      "D3"
+     ],
+     [
+      30,
+      31,
+      "D3"
+     ],
+     [
+      31,
+      28,
+      "D3"
+     ],
+     [
+      28,
+      30,
+      "D3"
+     ]
+    ]
+   },
+   {
+    "nome": "boom_tubos",
+    "tipo": "trelica",
+    "tubos": {
+     "D3": {
+      "de": 0.003,
+      "di": 0.002,
+      "material": "tubo_carbono"
+     },
+     "D4": {
+      "de": 0.004,
+      "di": 0.003,
+      "material": "tubo_carbono"
+     },
+     "D6": {
+      "de": 0.006,
+      "di": 0.004,
+      "material": "tubo_carbono"
+     }
+    },
+    "nos": [
+     [
+      0.35,
+      -0.05,
+      0.15
+     ],
+     [
+      0.35,
+      0.05,
+      0.15
+     ],
+     [
+      0.35,
+      0.0,
+      0.24
+     ],
+     [
+      0.55,
+      -0.05,
+      0.15
+     ],
+     [
+      0.55,
+      0.05,
+      0.15
+     ],
+     [
+      0.55,
+      0.0,
+      0.24
+     ],
+     [
+      0.75,
+      -0.05,
+      0.15
+     ],
+     [
+      0.75,
+      0.05,
+      0.15
+     ],
+     [
+      0.75,
+      0.0,
+      0.24
+     ],
+     [
+      0.95,
+      -0.05,
+      0.15
+     ],
+     [
+      0.95,
+      0.05,
+      0.15
+     ],
+     [
+      0.95,
+      0.0,
+      0.24
+     ],
+     [
+      1.15,
+      -0.05,
+      0.15
+     ],
+     [
+      1.15,
+      0.05,
+      0.15
+     ],
+     [
+      1.15,
+      0.0,
+      0.24
+     ],
+     [
+      1.35,
+      -0.05,
+      0.15
+     ],
+     [
+      1.35,
+      0.05,
+      0.15
+     ],
+     [
+      1.35,
+      0.0,
+      0.24
+     ],
+     [
+      1.55,
+      -0.05,
+      0.15
+     ],
+     [
+      1.55,
+      0.05,
+      0.15
+     ],
+     [
+      1.55,
+      0.0,
+      0.24
+     ],
+     [
+      1.75,
+      -0.05,
+      0.15
+     ],
+     [
+      1.75,
+      0.05,
+      0.15
+     ],
+     [
+      1.75,
+      0.0,
+      0.24
+     ],
+     [
+      1.95,
+      -0.05,
+      0.15
+     ],
+     [
+      1.95,
+      0.05,
+      0.15
+     ],
+     [
+      1.95,
+      0.0,
+      0.24
+     ]
+    ],
+    "barras": [
+     [
+      0,
+      1,
+      "D3"
+     ],
+     [
+      1,
+      2,
+      "D3"
+     ],
+     [
+      2,
+      0,
+      "D3"
+     ],
+     [
+      0,
+      3,
+      "D4"
+     ],
+     [
+      0,
+      4,
+      "D3"
+     ],
+     [
+      1,
+      4,
+      "D4"
+     ],
+     [
+      1,
+      5,
+      "D3"
+     ],
+     [
+      2,
+      5,
+      "D4"
+     ],
+     [
+      2,
+      3,
+      "D3"
+     ],
+     [
+      3,
+      4,
+      "D3"
+     ],
+     [
+      4,
+      5,
+      "D3"
+     ],
+     [
+      5,
+      3,
+      "D3"
+     ],
+     [
+      3,
+      6,
+      "D4"
+     ],
+     [
+      4,
+      6,
+      "D3"
+     ],
+     [
+      4,
+      7,
+      "D4"
+     ],
+     [
+      5,
+      7,
+      "D3"
+     ],
+     [
+      5,
+      8,
+      "D4"
+     ],
+     [
+      3,
+      8,
+      "D3"
+     ],
+     [
+      6,
+      7,
+      "D3"
+     ],
+     [
+      7,
+      8,
+      "D3"
+     ],
+     [
+      8,
+      6,
+      "D3"
+     ],
+     [
+      6,
+      9,
+      "D4"
+     ],
+     [
+      6,
+      10,
+      "D3"
+     ],
+     [
+      7,
+      10,
+      "D4"
+     ],
+     [
+      7,
+      11,
+      "D3"
+     ],
+     [
+      8,
+      11,
+      "D4"
+     ],
+     [
+      8,
+      9,
+      "D3"
+     ],
+     [
+      9,
+      10,
+      "D3"
+     ],
+     [
+      10,
+      11,
+      "D3"
+     ],
+     [
+      11,
+      9,
+      "D3"
+     ],
+     [
+      9,
+      12,
+      "D4"
+     ],
+     [
+      10,
+      12,
+      "D3"
+     ],
+     [
+      10,
+      13,
+      "D4"
+     ],
+     [
+      11,
+      13,
+      "D3"
+     ],
+     [
+      11,
+      14,
+      "D4"
+     ],
+     [
+      9,
+      14,
+      "D3"
+     ],
+     [
+      12,
+      13,
+      "D3"
+     ],
+     [
+      13,
+      14,
+      "D3"
+     ],
+     [
+      14,
+      12,
+      "D3"
+     ],
+     [
+      12,
+      15,
+      "D4"
+     ],
+     [
+      12,
+      16,
+      "D3"
+     ],
+     [
+      13,
+      16,
+      "D4"
+     ],
+     [
+      13,
+      17,
+      "D3"
+     ],
+     [
+      14,
+      17,
+      "D4"
+     ],
+     [
+      14,
+      15,
+      "D3"
+     ],
+     [
+      15,
+      16,
+      "D3"
+     ],
+     [
+      16,
+      17,
+      "D3"
+     ],
+     [
+      17,
+      15,
+      "D3"
+     ],
+     [
+      15,
+      18,
+      "D4"
+     ],
+     [
+      16,
+      18,
+      "D3"
+     ],
+     [
+      16,
+      19,
+      "D4"
+     ],
+     [
+      17,
+      19,
+      "D3"
+     ],
+     [
+      17,
+      20,
+      "D4"
+     ],
+     [
+      15,
+      20,
+      "D3"
+     ],
+     [
+      18,
+      19,
+      "D3"
+     ],
+     [
+      19,
+      20,
+      "D3"
+     ],
+     [
+      20,
+      18,
+      "D3"
+     ],
+     [
+      18,
+      21,
+      "D4"
+     ],
+     [
+      18,
+      22,
+      "D3"
+     ],
+     [
+      19,
+      22,
+      "D4"
+     ],
+     [
+      19,
+      23,
+      "D3"
+     ],
+     [
+      20,
+      23,
+      "D4"
+     ],
+     [
+      20,
+      21,
+      "D3"
+     ],
+     [
+      21,
+      22,
+      "D3"
+     ],
+     [
+      22,
+      23,
+      "D3"
+     ],
+     [
+      23,
+      21,
+      "D3"
+     ],
+     [
+      21,
+      24,
+      "D4"
+     ],
+     [
+      22,
+      24,
+      "D3"
+     ],
+     [
+      22,
+      25,
+      "D4"
+     ],
+     [
+      23,
+      25,
+      "D3"
+     ],
+     [
+      23,
+      26,
+      "D4"
+     ],
+     [
+      21,
+      26,
+      "D3"
+     ],
+     [
+      24,
+      25,
+      "D3"
+     ],
+     [
+      25,
+      26,
+      "D3"
+     ],
+     [
+      26,
+      24,
+      "D3"
+     ]
+    ]
+   },
+   {
+    "nome": "trem",
+    "tipo": "trelica",
+    "tubos": {
+     "D10": {
+      "de": 0.01,
+      "di": 0.008,
+      "material": "tubo_carbono"
+     }
+    },
+    "nos": [
+     [
+      0.25,
+      -0.22,
+      -0.12
+     ],
+     [
+      0.25,
+      0.22,
+      -0.12
+     ]
+    ],
+    "barras": [
+     [
+      0,
+      1,
+      "D10"
+     ]
+    ]
+   },
+   {
+    "nome": "roda_esq",
+    "tipo": "roda",
+    "diametro": 0.09,
+    "largura": 0.0081,
+    "d_furo": 0.016,
+    "d_cubo": 0.028,
+    "anel": 0.006,
+    "n_aros": 6,
+    "aro": 0.005,
+    "material": "nylon",
+    "y": -0.22,
+    "posicao": [
+     0.25,
+     0.0,
+     -0.12
+    ],
+    "camada": "estrutura"
+   },
+   {
+    "nome": "roda_dir",
+    "tipo": "roda",
+    "diametro": 0.09,
+    "largura": 0.0081,
+    "d_furo": 0.016,
+    "d_cubo": 0.028,
+    "anel": 0.006,
+    "n_aros": 6,
+    "aro": 0.005,
+    "material": "nylon",
+    "y": 0.22,
+    "posicao": [
+     0.25,
+     0.0,
+     -0.12
+    ],
+    "camada": "estrutura"
+   },
+   {
+    "nome": "roda_nariz",
+    "tipo": "roda",
+    "diametro": 0.07,
+    "largura": 0.006,
+    "d_furo": 0.0,
+    "d_cubo": 0.02,
+    "anel": 0.005,
+    "n_aros": 6,
+    "aro": 0.004,
+    "material": "nylon",
+    "y": 0.0,
+    "posicao": [
+     -0.5,
+     0.0,
+     -0.1
+    ],
+    "camada": "estrutura"
+   },
+   {
+    "nome": "motor",
+    "tipo": "corpo",
+    "camada": "estrutura",
+    "n_secao": 24,
+    "estacoes": [
+     {
+      "x": -0.98,
+      "a": 0.04,
+      "b": 0.04,
+      "zc": 0.08
+     },
+     {
+      "x": -0.9,
+      "a": 0.04,
+      "b": 0.04,
+      "zc": 0.08
+     }
+    ]
+   },
+   {
+    "nome": "helice",
+    "tipo": "asa",
+    "camada": "estrutura",
+    "perfil": "NACA 0012",
+    "n_perfil": 14,
+    "rolagem": 90.0,
+    "guinada": 90.0,
+    "posicao": [
+     -1.0,
+     0.0,
+     0.08
+    ],
+    "secoes": [
+     {
+      "y": -0.23,
+      "corda": 0.025
+     },
+     {
+      "y": -0.12,
+      "corda": 0.04
+     },
+     {
+      "y": 0.12,
+      "corda": 0.04
+     },
+     {
+      "y": 0.23,
+      "corda": 0.025
+     }
+    ]
+   },
+   {
+    "nome": "massa_equivalente",
+    "tipo": "ponto",
+    "massa": 0.714,
+    "posicao": [
+     -0.15,
+     0.0,
+     0.07
+    ],
+    "nota": "Motor, bateria, eletronica e servos somados num ponto (valor de referencia a calibrar)."
+   }
+  ]
+ },
+ "variaveis": [
+  {
+   "nome": "b",
+   "minimo": 1.6,
+   "maximo": 3.2,
+   "padrao": 2.2
+  },
+  {
+   "nome": "c_raiz",
+   "minimo": 0.3,
+   "maximo": 0.8,
+   "padrao": 0.55
+  },
+  {
+   "nome": "c_meio",
+   "minimo": 0.2,
+   "maximo": 0.8,
+   "padrao": 0.55
+  },
+  {
+   "nome": "c_ponta",
+   "minimo": 0.15,
+   "maximo": 0.7,
+   "padrao": 0.34
+  },
+  {
+   "nome": "ainc_raiz",
+   "minimo": -1,
+   "maximo": 6,
+   "padrao": 2
+  },
+  {
+   "nome": "ainc_meio",
+   "minimo": -1,
+   "maximo": 6,
+   "padrao": 2
+  },
+  {
+   "nome": "ainc_ponta",
+   "minimo": -3,
+   "maximo": 5,
+   "padrao": 2
+  },
+  {
+   "nome": "fl_meio",
+   "minimo": -0.1,
+   "maximo": 0.3,
+   "padrao": 0.0
+  },
+  {
+   "nome": "fl_ponta",
+   "minimo": -0.1,
+   "maximo": 0.5,
+   "padrao": 0.05
+  },
+  {
+   "nome": "dz_meio",
+   "minimo": -0.05,
+   "maximo": 0.15,
+   "padrao": 0.0
+  },
+  {
+   "nome": "dz_ponta",
+   "minimo": -0.1,
+   "maximo": 0.3,
+   "padrao": 0.0
+  },
+  {
+   "nome": "y_meio",
+   "minimo": 0.3,
+   "maximo": 0.8,
+   "padrao": 0.59
+  },
+  {
+   "nome": "p_raiz",
+   "minimo": 0,
+   "maximo": 5,
+   "padrao": 5,
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "nome": "p_meio",
+   "minimo": 0,
+   "maximo": 5,
+   "padrao": 5,
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "nome": "p_ponta",
+   "minimo": 0,
+   "maximo": 5,
+   "padrao": 5,
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "nome": "tem_can",
+   "minimo": 0,
+   "maximo": 1,
+   "padrao": 1,
+   "valores": [
+    0,
+    1
+   ]
+  },
+  {
+   "nome": "b_can",
+   "minimo": 0.4,
+   "maximo": 1.4,
+   "padrao": 0.9
+  },
+  {
+   "nome": "c_can",
+   "minimo": 0.1,
+   "maximo": 0.3,
+   "padrao": 0.2
+  },
+  {
+   "nome": "x_can",
+   "minimo": -0.9,
+   "maximo": -0.2,
+   "padrao": -0.38
+  },
+  {
+   "nome": "ainc_can",
+   "minimo": 0,
+   "maximo": 6,
+   "padrao": 3
+  },
+  {
+   "nome": "p_can",
+   "minimo": 0,
+   "maximo": 5,
+   "padrao": 2,
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "nome": "b_h",
+   "minimo": 0.4,
+   "maximo": 1.4,
+   "padrao": 0.84
+  },
+  {
+   "nome": "c_h",
+   "minimo": 0.1,
+   "maximo": 0.3,
+   "padrao": 0.18
+  },
+  {
+   "nome": "ainc_h",
+   "minimo": -4,
+   "maximo": 2,
+   "padrao": 0
+  },
+  {
+   "nome": "p_h",
+   "minimo": 0,
+   "maximo": 5,
+   "padrao": 0,
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "nome": "h_v",
+   "minimo": 0.2,
+   "maximo": 0.7,
+   "padrao": 0.4
+  },
+  {
+   "nome": "c_v",
+   "minimo": 0.1,
+   "maximo": 0.3,
+   "padrao": 0.2
+  },
+  {
+   "nome": "x_cauda",
+   "minimo": 1.2,
+   "maximo": 2.6,
+   "padrao": 1.95
+  },
+  {
+   "nome": "x_asa",
+   "minimo": -0.1,
+   "maximo": 0.3,
+   "padrao": 0.0
+  },
+  {
+   "nome": "x_bat",
+   "minimo": -0.7,
+   "maximo": 0.3,
+   "padrao": -0.15
+  }
+ ],
+ "ligacoes": [
+  {
+   "escala_y": {
+    "elementos": [
+     "asa"
+    ],
+    "fator": "b / 2.2"
+   }
+  },
+  {
+   "alvos": [
+    "asa.secoes[0].corda"
+   ],
+   "formula": "c_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[0].ainc"
+   ],
+   "formula": "ainc_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[0].perfil"
+   ],
+   "formula": "p_ponta",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "asa.secoes[1].corda"
+   ],
+   "formula": "c_meio"
+  },
+  {
+   "alvos": [
+    "asa.secoes[1].ainc"
+   ],
+   "formula": "ainc_meio"
+  },
+  {
+   "alvos": [
+    "asa.secoes[1].perfil"
+   ],
+   "formula": "p_meio",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "asa.secoes[2].corda"
+   ],
+   "formula": "c_raiz"
+  },
+  {
+   "alvos": [
+    "asa.secoes[2].ainc"
+   ],
+   "formula": "ainc_raiz"
+  },
+  {
+   "alvos": [
+    "asa.secoes[2].perfil"
+   ],
+   "formula": "p_raiz",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "asa.secoes[3].corda"
+   ],
+   "formula": "c_meio"
+  },
+  {
+   "alvos": [
+    "asa.secoes[3].ainc"
+   ],
+   "formula": "ainc_meio"
+  },
+  {
+   "alvos": [
+    "asa.secoes[3].perfil"
+   ],
+   "formula": "p_meio",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "asa.secoes[4].corda"
+   ],
+   "formula": "c_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[4].ainc"
+   ],
+   "formula": "ainc_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[4].perfil"
+   ],
+   "formula": "p_ponta",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "asa.secoes[0].xle",
+    "asa.secoes[4].xle"
+   ],
+   "formula": "fl_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[1].xle",
+    "asa.secoes[3].xle"
+   ],
+   "formula": "fl_meio"
+  },
+  {
+   "alvos": [
+    "asa.secoes[0].zle",
+    "asa.secoes[4].zle"
+   ],
+   "formula": "dz_ponta"
+  },
+  {
+   "alvos": [
+    "asa.secoes[1].zle",
+    "asa.secoes[3].zle"
+   ],
+   "formula": "dz_meio"
+  },
+  {
+   "alvos": [
+    "asa.posicao[0]"
+   ],
+   "formula": "x_asa"
+  },
+  {
+   "escala_y": {
+    "elementos": [
+     "canard"
+    ],
+    "fator": "b_can / 0.9"
+   }
+  },
+  {
+   "alvos": [
+    "canard.secoes[0].corda",
+    "canard.secoes[1].corda"
+   ],
+   "formula": "c_can"
+  },
+  {
+   "alvos": [
+    "canard.secoes[0].ainc",
+    "canard.secoes[1].ainc"
+   ],
+   "formula": "ainc_can"
+  },
+  {
+   "alvos": [
+    "canard.secoes[0].perfil",
+    "canard.secoes[1].perfil"
+   ],
+   "formula": "p_can",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "alvos": [
+    "canard.posicao[0]"
+   ],
+   "formula": "x_can"
+  },
+  {
+   "escala_y": {
+    "elementos": [
+     "empenagem_h"
+    ],
+    "fator": "b_h / 0.84"
+   }
+  },
+  {
+   "alvos": [
+    "empenagem_h.secoes[0].corda",
+    "empenagem_h.secoes[1].corda"
+   ],
+   "formula": "c_h"
+  },
+  {
+   "alvos": [
+    "empenagem_h.secoes[0].ainc",
+    "empenagem_h.secoes[1].ainc"
+   ],
+   "formula": "ainc_h"
+  },
+  {
+   "alvos": [
+    "empenagem_h.secoes[0].perfil",
+    "empenagem_h.secoes[1].perfil"
+   ],
+   "formula": "p_h",
+   "valores": [
+    "NACA 0012",
+    "NACA 2412",
+    "NACA 4412",
+    "NACA 4409",
+    "NACA 6412",
+    "S1223.dat"
+   ]
+  },
+  {
+   "escala_y": {
+    "elementos": [
+     "deriva"
+    ],
+    "fator": "h_v / 0.4"
+   }
+  },
+  {
+   "alvos": [
+    "deriva.secoes[0].corda"
+   ],
+   "formula": "c_v"
+  },
+  {
+   "alvos": [
+    "deriva.secoes[1].corda"
+   ],
+   "formula": "c_v * 0.8"
+  },
+  {
+   "estica": {
+    "elementos": [
+     "boom_tubos"
+    ],
+    "eixo": "x",
+    "de": 0.35,
+    "fim": "x_cauda - 0.05"
+   }
+  },
+  {
+   "alvos": [
+    "empenagem_h.posicao[0]",
+    "deriva.posicao[0]"
+   ],
+   "formula": "x_cauda"
+  },
+  {
+   "alvos": [
+    "massa_equivalente.posicao[0]"
+   ],
+   "formula": "x_bat"
+  },
+  {
+   "retira_se": [
+    "canard"
+   ],
+   "formula": "1 - tem_can"
+  }
+ ],
+ "objetivo": "50 * CP_bruta / PV",
+ "restricoes": [
+  {
+   "nome": "margem_estatica_min",
+   "formula": "margem_estatica",
+   "limite": 0.05,
+   "tipo": "min"
+  },
+  {
+   "nome": "margem_estatica_max",
+   "formula": "margem_estatica",
+   "limite": 0.3,
+   "tipo": "max"
+  }
+ ],
+ "analise": {
+  "V": 13.0,
+  "pista_m": 55.0,
+  "obstaculo_m": 0.9,
+  "T0": 40.2,
+  "V0": 28.0,
+  "potencia_W": 900.0,
+  "malha": {
+   "n_span": 8,
+   "n_chord": 3
+  }
+ }
+}
