@@ -50,6 +50,11 @@ def fixados() -> dict:
 
 def no_processo(fix: dict) -> None:
     _fixados.set(dict(fix or {}))
+    try:  # um processo por avaliacao: evita N processos x N threads do numba disputando os mesmos nucleos
+        import numba
+        numba.set_num_threads(1)
+    except Exception:
+        pass
 
 
 def fixado(chave: str):
