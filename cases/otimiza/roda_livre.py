@@ -20,7 +20,8 @@ from aranduBIS.nucleo.otimiza import busca as B
 from aranduBIS.nucleo.otimiza import problema as P
 
 SAIDA = Path(__file__).parent / "saida"
-NOME = "tres_superficies_livre"
+import os
+NOME = os.environ.get("ARANDU_PROBLEMA", "tres_superficies_livre")
 
 
 def figuras(prob, r, fim, t_evol):
@@ -90,9 +91,9 @@ def main(processos, populacao, geracoes, semente):
     for k, a in enumerate(fim, start=1):
         esq, _ = P.monta(prob, a["x"])
         esq = {c: v for c, v in esq.items() if not c.startswith("_")}
-        esq["nome"] = f"tres_superficies_livre_{k}"
+        esq["nome"] = f"{NOME}_{k}"
         esq["referencia"] = dict(esq.get("referencia", {}), fonte="saida do otimizador (cases/otimiza/roda_livre.py)")
-        (destino / f"tres_superficies_livre_{k}.json").write_text(json.dumps(esq, indent=2, ensure_ascii=False), encoding="utf8")
+        (destino / f"{NOME}_{k}.json").write_text(json.dumps(esq, indent=2, ensure_ascii=False), encoding="utf8")
     (SAIDA / f"{NOME}_progresso.txt").write_text("CONCLUIDO\n" + json.dumps({"melhor": fim[0]["objetivo"], "x": fim[0]["x"], "t_evolucao_s": round(t_evol), "avaliacoes": r["avaliacoes"]}), encoding="utf8")
 
 
