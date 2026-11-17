@@ -4,35 +4,35 @@ const Interface = (() => {
   const CHAVE = "aranduBIS.interface", CHAVE_PAINEIS = "aranduBIS.paineis";
   const nova = document.documentElement.dataset.interface !== "classica";
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
-  const svg = d => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const svg = d => `<svg class="ic" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${d}</svg>`;
   const ICONES = {
-    selecionar: '<path d="M5 3l6 16 2.5-6.5L20 10z"/>',
-    nervuras: '<path d="M3 14c3-7 13-8 18-2-5 3-13 4-18 2z"/><path d="M9 9.5v6M14 9v6.5"/>',
-    nos: '<circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><path d="M6 16.3l5-8.6M18 16.3l-5-8.6M7 18h10"/>',
-    secao: '<path d="M3 13c2-5 12-6 18-1-6 2-14 3-18 1z"/><path d="M12 3v18" stroke-dasharray="3 3"/>',
-    chapa: '<path d="M4 20V8l6-4h10v12l-6 4z"/><circle cx="13" cy="12" r="2.2"/>',
-    perfil: '<path d="M3 13c2-6 12-7 18-1-6 3-14 4-18 1z"/><circle cx="9" cy="11.5" r="1.4"/><circle cx="15" cy="11.5" r="1.4"/>',
-    medir: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/>',
-    esq: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
-    dir: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/>',
-    iso: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
-    lateral: '<path d="M3 13h13l5-3v3l-5 2H3z"/><path d="M8 13V9h4v4"/>',
-    topo: '<path d="M12 3v18M4 10h16M9 19h6"/>',
-    frontal: '<circle cx="12" cy="12" r="2.5"/><path d="M2 12h7.5M14.5 12H22M12 9.5V6"/>',
-    ajusta: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
-    solido: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="currentColor" fill-opacity=".35"/>',
-    malha: '<path d="M4 4h16v16H4zM4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/>',
-    tudo: '<path d="M12 4l9 4.5-9 4.5-9-4.5z"/><path d="M3 12.5l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5"/>',
-    aero: '<path d="M2 14c4-7 14-8 20-2-6 3-15 4-20 2z"/>',
-    estrutura: '<path d="M3 18L9 6l6 12 6-12M3 18h18M9 6h12"/>',
-    desfaz: '<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12"/>',
-    refaz: '<path d="M15 7l5 5-5 5"/><path d="M20 12H10a6 6 0 000 12"/>',
-    novo: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M12 11v6M9 14h6"/>',
-    abrir: '<path d="M3 7h6l2 2h10v10H3z"/>',
-    salvar: '<path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h7V3M8 21v-7h8v7"/>',
-    config: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
-    busca: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
-    ajuda: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.7-2.5 2-2.5 4M12 17.2v.3"/>',
+    selecionar: '<path d="M4.5 3v13l3.4-3.2 2.3 4.7 2-1-2.3-4.6h4.6z"/>',
+    nervuras: '<path d="M2 11.5c2.4-5.6 12.4-6.8 16-1.7-4 3.6-12.6 4.2-16 1.7z"/><path class="ac" d="M8 7.6v6.2M12.6 7.2v6.4"/>',
+    nos: '<path d="M3 16.5l7-13 7 13z"/><path d="M6.6 10h6.8"/><path class="ac" d="M2 15.5h2v2H2zM16 15.5h2v2h-2zM9 2.5h2v2H9z"/>',
+    secao: '<path d="M2 11.5c2.4-5.6 12.4-6.8 16-1.7-4 3.6-12.6 4.2-16 1.7z"/><path class="ac" d="M10 1.5v17" stroke-dasharray="3.5 1.5 1 1.5"/>',
+    chapa: '<path d="M3 6.5l3.5-3.5H17v10.5L13.5 17H3z"/><path class="ac" d="M8.2 10a1.8 1.8 0 103.6 0 1.8 1.8 0 10-3.6 0z"/>',
+    perfil: '<path d="M2 11.5c2.4-5.6 12.4-6.8 16-1.7-4 3.6-12.6 4.2-16 1.7z"/><path class="ac" d="M2 11.5h16"/>',
+    medir: '<path d="M2.5 15h15M2.5 11.5v7M17.5 11.5v7"/><path class="ac" d="M5 15l3-2.2M5 15l3 2.2M15 15l-3-2.2M15 15l-3 2.2M10 3v6"/>',
+    esq: '<path d="M3 4h14v12H3zM8 4v12"/>',
+    dir: '<path d="M3 4h14v12H3zM12 4v12"/>',
+    iso: '<path d="M10 2.5l7 4v7l-7 4-7-4v-7z"/><path class="ac" d="M10 10.5l7-4M10 10.5v7M10 10.5l-7-4"/>',
+    lateral: '<path d="M2.5 11.5h10.5l4.5-2.7v2.7l-4.5 1.8H2.5z"/><path class="ac" d="M6.5 11.5V8h3.5v3.5"/>',
+    topo: '<path d="M10 2.5v15M3 8.5l7 1.8 7-1.8M7 16.5h6"/><path class="ac" d="M10 6.5v0"/>',
+    frontal: '<path d="M10 3v14M3 10h14"/><path class="ac" d="M8 8h4v4H8z"/>',
+    ajusta: '<path d="M3.5 8V3.5H8M16.5 8V3.5H12M3.5 12v4.5H8M16.5 12v4.5H12"/>',
+    solido: '<path d="M10 2.5l7 4v7l-7 4-7-4v-7z" fill="currentColor" fill-opacity=".3"/>',
+    malha: '<path d="M3.5 3.5h13v13h-13zM3.5 7.8h13M3.5 12.2h13M7.8 3.5v13M12.2 3.5v13"/>',
+    tudo: '<path d="M10 3l7.5 3.8L10 10.6 2.5 6.8z"/><path class="ac" d="M2.5 10.2L10 14l7.5-3.8M2.5 13.6L10 17.4l7.5-3.8"/>',
+    aero: '<path d="M1.5 12.5c3.4-6.4 13.6-7.8 17-1.8-5 3.6-13.4 4.6-17 1.8z"/>',
+    estrutura: '<path d="M2.5 15.5L8 5l4.5 10.5L17.5 5M2.5 15.5h15M8 5h9.5"/>',
+    desfaz: '<path d="M7.5 5.5L3.5 9.5l4 4"/><path class="ac" d="M3.5 9.5h8.5a4 4 0 010 8H8"/>',
+    refaz: '<path d="M12.5 5.5l4 4-4 4"/><path class="ac" d="M16.5 9.5H8a4 4 0 000 8h4"/>',
+    novo: '<path d="M5 2.5h7l3.5 3.5v11.5H5z"/><path d="M12 2.5V6h3.5"/><path class="ac" d="M10 9.5v5M7.5 12h5"/>',
+    abrir: '<path d="M2.5 5.5h5.2l1.8 2H17.5v9h-15z"/><path class="ac" d="M2.5 9.5h15"/>',
+    salvar: '<path d="M3.5 3.5h11l2 2v11h-13z"/><path d="M6.5 3.5v4.5h6V3.5"/><path class="ac" d="M6.5 16.5v-5h7v5"/>',
+    config: '<path d="M10 7a3 3 0 100 6 3 3 0 000-6z"/><path class="ac" d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2 2M13.7 13.7l2 2M4.3 15.7l2-2M13.7 6.3l2-2"/>',
+    busca: '<path d="M8.5 3.5a5 5 0 100 10 5 5 0 000-10z"/><path class="ac" d="M12.4 12.4L17 17"/>',
+    ajuda: '<path d="M10 2.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z"/><path class="ac" d="M7.8 8a2.2 2.2 0 114.4 0c0 1.6-2.2 1.8-2.2 3.4M10 14.2v.8"/>',
   };
   const FERR = [
     ["selecionar", "Selecionar", "V", "Clique numa peça para selecioná-la. Arraste para girar a vista."],
@@ -398,6 +398,9 @@ const Interface = (() => {
       menu("Etapa", () => ["Geometria", "Análise", "Estrutura", "Otimizar", "Resultados"].map((n, i) => [`${i + 1} ${n}`, () => Etapas.vai(i + 1), String(i + 1), { marcado: Etapas.atual() === i + 1 }])),
       menu("Ferramentas", () => [...FERR.map(f => [f[1], () => ativa(f[0]), f[2], { marcado: ferr === f[0] }]), null, ["Procurar comando…", comandos, "Ctrl+K"]]),
       menu("Ajuda", () => [["Primeiros passos", clica("b_inicio")], ["Boas práticas (manuais)", clica("b_manual")], ["Atalhos de teclado", atalhos, "?"]]));
+    const marca = el("span", "marca"); marca.setAttribute("aria-label", "AranduBIS");
+    marca.innerHTML = '<svg class="marca-sinal" viewBox="0 0 28 20" width="28" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M1.5 11c4-7.6 17.5-9 24-2.2-6.6 4.8-18.6 5.6-24 2.2z"/><path d="M1.5 11h24" stroke-dasharray="3 1.5 1 1.5" opacity=".7"/><path class="ac" d="M9.2 11l2.2-2.2 2.2 2.2-2.2 2.2z" fill="currentColor"/></svg><span class="marca-nome"><b>ARANDU</b><i>BIS</i></span>';
+    mb.prepend(marca);
     const doc = el("span", "menubar-doc"); mb.append(doc);
     barra.before(mb);
     const tit = $i("titulo"), espelha = () => { const t = tit.textContent.replace(/^AranduBIS\s*[—-]\s*/, ""); doc.textContent = t === "AranduBIS" ? "" : t; document.title = doc.textContent ? `${doc.textContent} · AranduBIS` : "AranduBIS"; };

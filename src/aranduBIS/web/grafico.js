@@ -2,7 +2,15 @@
 
 const Grafico = (() => {
   const NS = "http://www.w3.org/2000/svg";
-  const COR = ["#4a86c5", "#d98a3d", "#6aa84f", "#8c7a2e", "#a278c8", "#5aaaaa"];
+  const COR = ["#2f93ad", "#e29a2c", "#c4533a", "#7aa35a", "#8a86c4", "#9aa6b2"];
+
+  const ROT = 'Bahnschrift,"DIN Alternate","Roboto Condensed","Arial Narrow",sans-serif', MONO = '"Cascadia Mono",Consolas,"SF Mono","Liberation Mono",monospace';
+  const CSS = `.g-sub{stroke:currentColor;opacity:.08;stroke-dasharray:1 3}.g-maj{stroke:currentColor;opacity:.17}.g-zero{stroke:currentColor;opacity:.55}
+.g-tick{stroke:currentColor;opacity:.75}.g-moldura{fill:none;stroke:currentColor;opacity:.6}
+.gt{fill:currentColor;opacity:.82;font-family:${MONO}}.g-eixo{fill:currentColor;opacity:.88;font-family:${ROT};letter-spacing:.04em}
+.g-titulo{fill:currentColor;font-family:${ROT};font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.g-marca{fill:#e29a2c}.g-ponto{stroke:currentColor;stroke-opacity:.85;stroke-width:1}`;
+  if (!document.getElementById("estilo-grafico")) { const st = document.createElement("style"); st.id = "estilo-grafico"; st.textContent = CSS; document.head.append(st); }
 
   const no = (tag, attrs = {}, txt) => {
     const e = document.createElementNS(NS, tag);
@@ -37,6 +45,7 @@ const Grafico = (() => {
     const cor = getComputedStyle(document.body).color;
     const fundo = getComputedStyle(document.documentElement).getPropertyValue("--painel").trim() || "#fff";
     clone.setAttribute("style", `color:${cor}`);
+    clone.insertBefore(no("style", {}, CSS), clone.firstChild);
     clone.insertBefore(no("rect", { x: 0, y: 0, width: W, height: H, fill: fundo }), clone.firstChild);
     const xml = new XMLSerializer().serializeToString(clone);
     const img = new Image();
@@ -79,18 +88,30 @@ const Grafico = (() => {
     const X = eixo(x0, x1, Math.max(3, W / 90)), Y = eixo(y0, y1, Math.max(3, H / 55));
     const px = v => m.e + (v - X.min) / (X.max - X.min) * (W - m.e - m.d);
     const py = v => H - m.b - (v - Y.min) / (Y.max - Y.min) * (H - m.b - m.c);
+    const sub = (T, pos, a, b, horiz) => {
+      for (let i = 0; i + 1 < T.length; i++) {
+        const mid = pos((T[i] + T[i + 1]) / 2);
+        svg.append(no("line", horiz ? { x1: a, x2: b, y1: mid, y2: mid, class: "g-sub" } : { x1: mid, x2: mid, y1: a, y2: b, class: "g-sub" }));
+      }
+    };
+    sub(Y.ticks, py, m.e, W - m.d, true); sub(X.ticks, px, m.c, H - m.b, false);
     for (const t of Y.ticks) {
-      svg.append(no("line", { x1: m.e, x2: W - m.d, y1: py(t), y2: py(t), stroke: "currentColor", opacity: t === 0 ? .45 : .12 }));
-      svg.append(no("text", { x: m.e - 6, y: py(t) + 3.5, "text-anchor": "end", fill: "currentColor", "font-size": 10.5, opacity: .75 }, fmt(t)));
+      svg.append(no("line", { x1: m.e, x2: W - m.d, y1: py(t), y2: py(t), class: t === 0 ? "g-zero" : "g-maj" }));
+      svg.append(no("line", { x1: m.e - 4, x2: m.e, y1: py(t), y2: py(t), class: "g-tick" }));
+      svg.append(no("text", { x: m.e - 7, y: py(t) + 3.5, "text-anchor": "end", class: "gt", "font-size": 10.5 }, fmt(t)));
     }
     for (const t of X.ticks) {
-      svg.append(no("line", { x1: px(t), x2: px(t), y1: m.c, y2: H - m.b, stroke: "currentColor", opacity: .08 }));
-      svg.append(no("text", { x: px(t), y: H - m.b + 14, "text-anchor": "middle", fill: "currentColor", "font-size": 10.5, opacity: .75 }, fmt(t)));
+      svg.append(no("line", { x1: px(t), x2: px(t), y1: m.c, y2: H - m.b, class: "g-maj" }));
+      svg.append(no("line", { x1: px(t), x2: px(t), y1: H - m.b, y2: H - m.b + 4, class: "g-tick" }));
+      svg.append(no("text", { x: px(t), y: H - m.b + 15, "text-anchor": "middle", class: "gt", "font-size": 10.5 }, fmt(t)));
     }
-    svg.append(no("rect", { x: m.e, y: m.c, width: W - m.e - m.d, height: H - m.c - m.b, fill: "none", stroke: "currentColor", opacity: .35 }));
-    if (o.xlab) svg.append(no("text", { x: (m.e + W - m.d) / 2, y: H - 6, "text-anchor": "middle", fill: "currentColor", "font-size": 11 }, o.xlab));
-    if (o.ylab) svg.append(no("text", { x: 12, y: (m.c + H - m.b) / 2, "text-anchor": "middle", fill: "currentColor", "font-size": 11, transform: `rotate(-90 12 ${(m.c + H - m.b) / 2})` }, o.ylab));
-    if (o.titulo) svg.append(no("text", { x: m.e, y: 15, fill: "currentColor", "font-size": 12, "font-weight": 600 }, o.titulo));
+    svg.append(no("rect", { x: m.e, y: m.c, width: W - m.e - m.d, height: H - m.c - m.b, class: "g-moldura" }));
+    if (o.xlab) svg.append(no("text", { x: (m.e + W - m.d) / 2, y: H - 6, "text-anchor": "middle", class: "g-eixo", "font-size": 11 }, o.xlab));
+    if (o.ylab) svg.append(no("text", { x: 12, y: (m.c + H - m.b) / 2, "text-anchor": "middle", class: "g-eixo", "font-size": 11, transform: `rotate(-90 12 ${(m.c + H - m.b) / 2})` }, o.ylab));
+    if (o.titulo) {
+      svg.append(no("path", { d: `M${m.e} 9.5l3.5-3.5 3.5 3.5-3.5 3.5z`, class: "g-marca" }));
+      svg.append(no("text", { x: m.e + 12, y: 14.5, class: "g-titulo", "font-size": 11.5 }, o.titulo));
+    }
     for (const r of o.refs || []) {
       const cor = r.cor || "#ca835c";
       const a = r.tipo === "h" ? { x1: m.e, x2: W - m.d, y1: py(r.valor), y2: py(r.valor) } : { x1: px(r.valor), x2: px(r.valor), y1: m.c, y2: H - m.b };
@@ -117,11 +138,11 @@ const Grafico = (() => {
         if (!vale(x) || !vale(s.y[i])) { aberto = false; return; }
         d += `${aberto ? "L" : "M"}${px(x).toFixed(1)} ${py(s.y[i]).toFixed(1)}`; aberto = true;
       });
-      svg.append(no("path", { d, fill: "none", stroke: cor, "stroke-width": 2, "stroke-dasharray": s.tracejado ? "5 3" : "none" }));
+      svg.append(no("path", { d, fill: "none", stroke: cor, "stroke-width": 1.9, "stroke-linejoin": "round", "stroke-dasharray": s.tracejado ? "5 3" : "none" }));
     });
     for (const p of o.pontos || []) {
       const cor = p.cor || "#ffd447";
-      svg.append(no("circle", { cx: px(p.x), cy: py(p.y), r: 5, fill: cor, stroke: "#000", "stroke-opacity": .4 }));
+      svg.append(no("path", { d: `M${px(p.x)} ${py(p.y) - 6.5}l6.5 6.5-6.5 6.5-6.5-6.5z`, fill: cor, class: "g-ponto" }));
       if (p.rotulo) svg.append(no("text", { x: px(p.x) + 8, y: py(p.y) - 6, fill: "currentColor", "font-size": 10.5 }, p.rotulo));
     }
     if (o.series.length > 1 || o.series.some(s => s.nome)) {
