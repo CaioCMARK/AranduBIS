@@ -164,7 +164,7 @@ def triangula_poligono(P):
     return [tuple(int(v) for v in t) for t in _orelhas_nb(P, ind)]
 
 def orienta(V, T):
-    if len(T) and all(len(t) == 3 for t in T):
+    if isinstance(T, np.ndarray) and T.ndim == 2 and T.shape[1] == 3 and len(T) or (not isinstance(T, np.ndarray) and len(T) and all(len(t) == 3 for t in T)):
         return _orienta_triangulos(V, T)
     return _orienta_lento(V, T)
 

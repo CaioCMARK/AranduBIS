@@ -174,14 +174,15 @@ def _constroi_asa_aneis(el, nome, esq):
         ai = np.radians(q[4]); cd = np.array([np.cos(ai), 0, -np.sin(ai)]); nd = np.array([np.sin(ai), 0, np.cos(ai)]); A0 = ES.anel_de(x, zs, zi)
         if comandos: A0 = SC.aplica(A0, comandos, y, y_ponta, q[3], q[0])
         aneis.append(np.array(q[:3]) + q[3] * (A0[:, 0:1] * cd + A0[:, 1:2] * nd)); D.append(A0)
-    V = np.vstack(aneis); ns = len(est); mA = 2 * n - 2; T = []; lab = []; idx = lambda j, k: j * mA + (k % mA)
-    for j in range(ns - 1):
-        for k in range(mA):
-            T += [[idx(j, k), idx(j, k + 1), idx(j + 1, k + 1)], [idx(j, k), idx(j + 1, k + 1), idx(j + 1, k)]]; z_ = 1 if (k >= n - 1) else 0; lab += [z_, z_]
+    V = np.vstack(aneis); ns = len(est); mA = 2 * n - 2; idx = lambda j, k: j * mA + (k % mA)
+    jj, kk = np.meshgrid(np.arange(ns - 1), np.arange(mA), indexing="ij"); jj = jj.reshape(-1); kk = kk.reshape(-1)
+    i00, i01, i11, i10 = jj * mA + kk, jj * mA + (kk + 1) % mA, (jj + 1) * mA + (kk + 1) % mA, (jj + 1) * mA + kk
+    Tl = np.empty((2 * len(jj), 3), np.int64); Tl[0::2] = np.c_[i00, i01, i11]; Tl[1::2] = np.c_[i00, i11, i10]
+    lab = np.repeat((kk >= n - 1).astype(int), 2).tolist(); Tex = []
     orelhas = C3.triangula_poligono(D[0])
     for j, z_ in ((0, 2), (ns - 1, 3)):
-        for a, b, c in orelhas: T.append([idx(j, a), idx(j, b), idx(j, c)]); lab.append(z_)
-    T = C3.orienta(V, T); L = {f"{nome}.bordo_fuga": [idx(j, 0) for j in range(ns)], f"{nome}.bordo_ataque": [idx(j, n - 1) for j in range(ns)],
+        for a, b, c in orelhas: Tex.append([idx(j, a), idx(j, b), idx(j, c)]); lab.append(z_)
+    T = C3.orienta(V, np.vstack([Tl, np.array(Tex, np.int64).reshape(-1, 3)])); L = {f"{nome}.bordo_fuga": [idx(j, 0) for j in range(ns)], f"{nome}.bordo_ataque": [idx(j, n - 1) for j in range(ns)],
                                 f"{nome}.contorno_ponta-y": [idx(0, k) for k in range(mA)] + [idx(0, 0)], f"{nome}.contorno_ponta+y": [idx(ns - 1, k) for k in range(mA)] + [idx(ns - 1, 0)]}
     if ent:
         r, Tc = ES.razao_tensoes(ent); esq["_info"].setdefault(nome, {})["entelagem"] = {"flecha_max_mm": 1e3 * flecha, "coef_abaulamento_max": coef, "razao_tensoes": r, "tensao_corda_N_m": Tc, "baias": len(baias), "maior_baia_mm": 1e3 * max(b - a for a, b in baias), "corte": corte, "por_baia": [{"indice": k, "y": [a, b], "flecha_mm": por_baia[k]} for k, (a, b) in enumerate(baias)]}
